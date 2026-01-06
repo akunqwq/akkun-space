@@ -12,7 +12,7 @@ export default function ArticlesPage() {
 
   return (
     <main className="max-w-5xl mx-auto px-6 pt-24 md:pt-12 pb-12">
-      <h1 className="text-4xl font-bold mb-10 tracking-tight dark:text-gray-100">
+      <h1 className="text-4xl font-bold mb-10 tracking-tight text-[var(--text-primary)]">
         文章列表
       </h1>
 
@@ -23,15 +23,14 @@ export default function ArticlesPage() {
             href={`/articles/${a.slug}`}
             className="
         group block overflow-hidden
-        rounded-2xl bg-white/60 backdrop-blur-md
-        border border-gray-200/50 shadow-sm
+        rounded-2xl bg-[var(--card-bg)] backdrop-blur-md
+        border border-[var(--border-color)] shadow-sm
         hover:shadow-xl hover:-translate-y-1
         transition-all duration-300
-        dark:bg-gray-800/70 dark:border-gray-700
       "
           >
             {/* 顶部封面 */}
-            <div className="h-40 w-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+            <div className="h-40 w-full overflow-hidden bg-[var(--border-color)]">
               {a.cover ? (
                 <img
                   src={a.cover}
@@ -43,7 +42,7 @@ export default function ArticlesPage() {
             "
                 />
               ) : (
-                <div className="w-full h-full bg-linear-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600" />
+                <div className="w-full h-full bg-linear-to-br from-[var(--border-color)] to-[var(--text-muted)]" />
               )}
             </div>
 
@@ -53,10 +52,9 @@ export default function ArticlesPage() {
               {/* 小缩略图（左侧） */}
               <div
                 className="
-      w-20 h-20 rounded-xl overflow-hidden bg-gray-200
+      w-20 h-20 rounded-xl overflow-hidden bg-[var(--border-color)]
       shrink-0
       md:w-24 md:h-24
-      dark:bg-gray-700
     "
               >
                 {a.thumbnail ? (
@@ -72,19 +70,19 @@ export default function ArticlesPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gray-300 dark:bg-gray-700" />
+                  <div className="w-full h-full bg-[var(--text-muted)]" />
                 )}
               </div>
 
               {/* 右侧文字区域 */}
               <div className="flex-1 pt-1">
-                <div className="text-sm text-gray-500 dark:text-gray-400">{a.date}</div>
+                <div className="text-sm text-[var(--text-muted)]">{a.date}</div>
 
-                <h2 className="text-xl font-semibold mt-1 leading-snug dark:text-gray-100">
+                <h2 className="text-xl font-semibold mt-1 leading-snug text-[var(--text-primary)]">
                   {a.title}
                 </h2>
 
-                <p className="text-gray-600 dark:text-gray-300 mt-2 line-clamp-2 leading-relaxed">
+                <p className="text-[var(--text-secondary)] mt-2 line-clamp-2 leading-relaxed">
                   {a.summary}
                 </p>
               </div>

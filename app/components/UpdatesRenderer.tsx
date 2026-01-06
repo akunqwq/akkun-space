@@ -84,7 +84,7 @@ const updatesComponents: MDXComponents = {
   // 引用块 - 更简洁的样式
   blockquote: ({ children, ...props }) => (
     <blockquote
-      className=" bg-blue-50 dark:bg-blue-950/30 pl-3 pr-2 py-3 my-4 text-gray-700 dark:text-gray-200 rounded-r text-sm text-left overflow-x-auto whitespace-nowrap"
+      className="bg-[var(--blockquote-bg)] border-l-4 border-blue-400 pl-3 pr-2 py-3 my-4 text-[var(--text-primary)] rounded-r text-sm text-left overflow-x-auto whitespace-nowrap"
       {...props}
     >
       {children}
@@ -94,7 +94,7 @@ const updatesComponents: MDXComponents = {
   // 标题 - 更小的字体和间距
   h1: ({ children, ...props }) => (
     <h1
-      className="text-xl font-bold mt-4 mb-2 text-gray-800 dark:text-gray-100"
+      className="text-xl font-bold mt-4 mb-2 text-[var(--text-primary)]"
       {...props}
     >
       {children}
@@ -103,7 +103,7 @@ const updatesComponents: MDXComponents = {
 
   h2: ({ children, ...props }) => (
     <h2
-      className="text-lg font-semibold mt-3 mb-2 text-gray-800 dark:text-gray-100"
+      className="text-lg font-semibold mt-3 mb-2 text-[var(--text-primary)]"
       {...props}
     >
       {children}
@@ -112,7 +112,7 @@ const updatesComponents: MDXComponents = {
 
   h3: ({ children, ...props }) => (
     <h3
-      className="text-base font-semibold mt-2 mb-1 text-gray-800 dark:text-gray-100"
+      className="text-base font-semibold mt-2 mb-1 text-[var(--text-primary)]"
       {...props}
     >
       {children}
@@ -122,7 +122,7 @@ const updatesComponents: MDXComponents = {
   // 列表项 - 更紧凑的样式
   li: ({ children, ...props }) => (
     <li
-      className="leading-relaxed text-gray-800 dark:text-gray-200 text-sm mb-1"
+      className="leading-relaxed text-[var(--text-primary)] text-sm mb-1"
       {...props}
     >
       {children}
@@ -145,20 +145,20 @@ const updatesComponents: MDXComponents = {
   // 表格 - 更紧凑的样式
   table: ({ children, ...props }) => (
     <div className="overflow-x-auto my-3">
-      <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600 text-sm" {...props}>
+      <table className="min-w-full border-collapse border border-[var(--border-color)] text-sm" {...props}>
         {children}
       </table>
     </div>
   ),
 
   thead: ({ children, ...props }) => (
-    <thead className="bg-gray-50 dark:bg-gray-800" {...props}>
+    <thead className="bg-[var(--card-bg)]" {...props}>
       {children}
     </thead>
   ),
 
   tbody: ({ children, ...props }) => (
-    <tbody className="bg-white dark:bg-gray-900" {...props}>
+    <tbody className="bg-[var(--background)]" {...props}>
       {children}
     </tbody>
   ),
@@ -170,13 +170,13 @@ const updatesComponents: MDXComponents = {
   ),
 
   th: ({ children, ...props }) => (
-    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider border dark:border-gray-600" {...props}>
+    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wider border border-[var(--border-color)]" {...props}>
       {children}
     </th>
   ),
 
   td: ({ children, ...props }) => (
-    <td className="px-3 py-2 whitespace-nowrap text-xs border dark:border-gray-600" {...props}>
+    <td className="px-3 py-2 whitespace-nowrap text-xs border border-[var(--border-color)]" {...props}>
       {children}
     </td>
   ),
@@ -197,7 +197,7 @@ const updatesComponents: MDXComponents = {
 
   // 段落 - 更小的字体和间距
   p: ({ children, ...props }) => (
-    <p className="my-2 leading-relaxed text-gray-800 dark:text-gray-200 text-sm" {...props}>
+    <p className="my-2 leading-relaxed text-[var(--text-primary)] text-sm" {...props}>
       {children}
     </p>
   ),
@@ -211,12 +211,12 @@ interface UpdatesRendererProps {
 // 单个动态卡片组件
 function UpdateCard({ update }: { update: Update }) {
   return (
-    <div className="updates-card bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/70 dark:border-gray-700/70 rounded-xl p-4 mb-3">
+    <div className="updates-card bg-[var(--card-bg)] backdrop-blur-sm border border-[var(--border-color)] rounded-xl p-4 mb-3">
       {/* 动态标题栏 */}
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200/50 dark:border-gray-700/50">
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--border-color)]">
         {update.emoji && <span className="text-xl">{update.emoji}</span>}
-        <h3 className="text-base font-bold text-gray-900 dark:text-gray-100">{update.title}</h3>
-        <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+        <h3 className="text-base font-bold text-[var(--text-primary)]">{update.title}</h3>
+        <span className="ml-auto text-xs text-[var(--text-muted)]">
           {new Date(update.date).toLocaleDateString('zh-CN')}
         </span>
       </div>

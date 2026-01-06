@@ -149,10 +149,9 @@ export default function Header() {
   }, [quote]);
 
   return (
-    <header className="fixed top-0 left-0 w-full 
-  bg-white/20 backdrop-blur-xl 
-  shadow-lg border-b border-white/30 z-50
-  dark:bg-gray-900/60 dark:border-gray-700">
+    <header className="fixed top-0 left-0 w-full
+  bg-[var(--header-bg)] backdrop-blur-xl
+  shadow-lg border-b border-[var(--header-border)] z-50">
 
       <div className="flex items-center w-full px-8 py-4">
 
@@ -161,7 +160,7 @@ export default function Header() {
           <h1 className="text-2xl font-bold text-pink-300 dark:text-pink-400 tracking-wide">
             {titleText}
             {isTitleTyping && (
-              <span className="animate-pulse text-gray-700 dark:text-gray-300">|</span>
+              <span className="animate-pulse text-[var(--text-primary)]">|</span>
             )}
           </h1>
         </div>
@@ -171,7 +170,7 @@ export default function Header() {
           <p suppressHydrationWarning
             className={`text-sm ${displayMode === 'time' || displayMode === 'countdown'
               ? "text-pink-300 dark:text-pink-400 font-mono"
-              : "text-gray-700 dark:text-gray-300"
+              : "text-[var(--text-primary)]"
               }`}
           >
             {displayedText}
@@ -210,7 +209,7 @@ export default function Header() {
 
       {/* 移动端菜单 */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-white/30 dark:bg-gray-900/90 dark:border-gray-700">
+        <div className="md:hidden bg-[var(--header-bg)] backdrop-blur-xl border-t border-[var(--header-border)]">
           <nav className="flex flex-col py-4 px-8 space-y-3">
 
             <a

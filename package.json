@@ -22,6 +22,7 @@
     "contentlayer": "^0.3.4",
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
+    "lucide-react": "^0.562.0",
     "marked": "^17.0.1",
     "next": "16.0.10",
     "next-mdx-remote": "^5.0.0",

@@ -23,11 +23,10 @@ export default function Home() {
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
 
         {/* 卡片 1：最近文章  */}
-        <div className="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-sm
-                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto
-                        dark:bg-gray-800/70 dark:border dark:border-gray-700">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">📘 最近文章</h2>
-          <ul className="space-y-2 text-gray-600 dark:text-gray-300">
+        <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
+                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">📘 最近文章</h2>
+          <ul className="space-y-2 text-[var(--text-secondary)]">
             {latestPosts.length > 0 ? (
               latestPosts.map((post: PostListItem, index: number) => (
                 <li key={post.slug} className="flex items-center gap-3 text-sm">
@@ -40,7 +39,7 @@ export default function Home() {
                   >
                     · {post.title}
                   </Link>
-                  <span className="text-gray-400 whitespace-nowrap">
+                  <span className="text-[var(--text-muted)] whitespace-nowrap">
                     {new Date(post.date).toLocaleDateString('zh-CN', {
                       month: 'short',
                       day: 'numeric'
@@ -49,32 +48,30 @@ export default function Home() {
                 </li>
               ))
             ) : (
-              <li className="text-gray-400">暂无文章</li>
+              <li className="text-[var(--text-muted)]">暂无文章</li>
             )}
           </ul>
         </div>
 
         {/* 卡片 2 - 桌面端显示，移动端隐藏 */}
-        <div className="hidden md:block bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-sm
-                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto
-                        dark:bg-gray-800/70 dark:border dark:border-gray-700">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">🌸 我的兴趣</h2>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+        <div className="hidden md:block bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
+                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">🌸 我的兴趣</h2>
+          <p className="text-[var(--text-secondary)] leading-relaxed">
             ACG / 纯音乐 / MMD / 原神 / 敲代码
             <br />才...才不是猫娘喵。
           </p>
         </div>
 
         {/* 卡片 3 - 桌面端显示，移动端隐藏 */}
-        <div className="hidden md:block bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-sm
-                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto
-                        dark:bg-gray-800/70 dark:border dark:border-gray-700">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">💖 关注我</h2>
-          <p className="text-gray-600 dark:text-gray-300">你可以在这里找到我：</p>
+        <div className="hidden md:block bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
+                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">💖 关注我</h2>
+          <p className="text-[var(--text-secondary)]">你可以在这里找到我：</p>
           <ul className="mt-2 text-pink-500 space-y-1">
             <li><a href="https://space.bilibili.com/286757068" target="_blank" title="点击跳转到我的bilibili主页~">- Bilibili:是阿鲲酱鸭</a></li>
           </ul>
-          <ul className="mt-2 text-black space-y-1 dark:text-gray-200">
+          <ul className="mt-2 text-black space-y-1">
             <li><a href="https://github.com/akunqwq" target="_blank" title="这是我的GitHub主页~">- GiHub:akunqwq</a></li>
           </ul>
           <ul className="mt-2 text-blue-500 space-y-1">
@@ -95,7 +92,7 @@ export default function Home() {
           {/* 中间文章内容流 */}
           <div className="md:col-span-4 space-y-16">
             {postsWithContent.map((post) => (
-              <article key={post.slug} className="pb-10 border-b border-gray-300 dark:border-gray-700">
+              <article key={post.slug} className="pb-10 border-b border-[var(--border-color)]">
                 <MDXRenderer source={post.bodyRaw} />
               </article>
             ))}
@@ -109,26 +106,24 @@ export default function Home() {
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-28 pb-2 md:hidden">
 
         {/* 卡片 2：我的兴趣 */}
-        <div className="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-sm
-                        hover:shadow-md transition w-full max-w-[360px] mx-auto
-                        dark:bg-gray-800/70 dark:border dark:border-gray-700">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">🌸 我的兴趣</h2>
-          <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+        <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
+                        hover:shadow-md transition w-full max-w-[360px] mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">🌸 我的兴趣</h2>
+          <p className="text-[var(--text-secondary)] leading-relaxed">
             ACG / 纯音乐 / MMD / 原神 / 敲代码
             <br />才...才不是猫娘喵。
           </p>
         </div>
 
         {/* 卡片 3：关注我 */}
-        <div className="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-sm
-                        hover:shadow-md transition w-full max-w-[360px] mx-auto
-                        dark:bg-gray-800/70 dark:border dark:border-gray-700">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">💖 关注我</h2>
-          <p className="text-gray-600 dark:text-gray-300">你可以在这里找到我：</p>
+        <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
+                        hover:shadow-md transition w-full max-w-[360px] mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">💖 关注我</h2>
+          <p className="text-[var(--text-secondary)]">你可以在这里找到我：</p>
           <ul className="mt-2 text-pink-500 space-y-1">
             <li><a href="https://space.bilibili.com/286757068" target="_blank" title="点击跳转到我的bilibili主页~">- Bilibili:是阿鲲酱鸭</a></li>
           </ul>
-          <ul className="mt-2 text-black space-y-1 dark:text-gray-200">
+          <ul className="mt-2 text-black space-y-1">
             <li><a href="https://github.com/akunqwq" target="_blank" title="这是我的GitHub主页~">- GiHub:akunqwq</a></li>
           </ul>
           <ul className="mt-2 text-blue-500 space-y-1">

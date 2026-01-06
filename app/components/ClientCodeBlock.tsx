@@ -14,14 +14,29 @@ export default function ClientCodeBlock({ children, className }: ClientCodeBlock
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // 检测当前主题状态
+  const checkTheme = () => {
+    const htmlElement = document.documentElement;
+    const isDarkMode = htmlElement.classList.contains('dark');
+    setIsDark(isDarkMode);
+  };
+
   // 组件挂载后才启用主题检测
   useEffect(() => {
     setMounted(true);
-    setIsDark(window.matchMedia("(prefers-color-scheme: dark)").matches);
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
+    checkTheme();
+
+    // 监听主题切换
+    const observer = new MutationObserver(() => {
+      checkTheme();
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -66,10 +81,10 @@ export default function ClientCodeBlock({ children, className }: ClientCodeBlock
   };
 
   return (
-    <div className="relative my-6 rounded-lg overflow-hidden border border-gray-700">
+    <div className="relative my-6 rounded-lg overflow-hidden border border-[var(--border-color)]">
 
       {/* 顶部工具栏 */}
-      <div className={`flex items-center justify-between px-3 py-2 text-xs border-b ${mounted && isDark ? 'bg-[#1a1a2e] border-gray-700 text-gray-400' : 'bg-gray-100 border-gray-200 text-gray-600'}`}>
+      <div className="flex items-center justify-between px-3 py-2 text-xs border-b bg-[var(--code-header-bg)] border-[var(--code-header-border)] text-[var(--code-header-text)]">
 
         {/* 左：语言标签 */}
         <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-gray-800/50 text-white">

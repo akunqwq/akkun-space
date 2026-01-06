@@ -27,7 +27,7 @@ export default function Hero() {
             src={images[index]}
             className="w-full h-[400px] object-cover rounder-xl fade opacity-100"
             />
-            <div className="absolute inset-0 bg-white/40 dark:bg-black/30"></div>
+            <div className="absolute inset-0 bg-[var(--hero-overlay)]"></div>
         </div>
     )
 }

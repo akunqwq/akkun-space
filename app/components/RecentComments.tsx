@@ -137,27 +137,27 @@ export default function RecentComments() {
           onClick={() => setShowForm(false)}
         >
           <div
-            className="bg-white rounded-2xl p-8 w-full max-w-lg mx-4 shadow-xl dark:bg-gray-800"
+            className="bg-[var(--card-bg)] rounded-2xl p-8 w-full max-w-lg mx-4 shadow-xl border border-[var(--border-color)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">写留言</h3>
+              <h3 className="text-xl font-bold text-[var(--text-primary)]">写留言</h3>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-2xl leading-none"
+                className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-2xl leading-none"
               >
                 ×
               </button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
                 placeholder="你的昵称"
                 value={newComment.user_name}
                 onChange={(e) => setNewComment({...newComment, user_name: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pink-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-pink-500"
+                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pink-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-pink-500"
                 required
                 title="你的昵称"
               />
@@ -165,14 +165,14 @@ export default function RecentComments() {
                 placeholder="写下你的留言..."
                 value={newComment.text}
                 onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pink-300 h-32 resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 dark:focus:ring-pink-500"
+                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pink-300 h-32 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-pink-500"
                 required
                 title="留下你宝贵的意见~"
               />
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-pink-300 text-white py-3 rounded-lg text-base font-medium hover:bg-pink-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors dark:bg-pink-500 dark:hover:bg-pink-600"
+                className="w-full bg-[var(--btn-primary)] text-white py-3 rounded-lg text-base font-medium hover:bg-[var(--btn-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isSubmitting ? '提交中...' : '提交留言'}
               </button>
@@ -183,7 +183,7 @@ export default function RecentComments() {
 
       <aside
         className={`
-          bg-white/70 backdrop-blur-md
+          bg-[var(--card-bg)] backdrop-blur-md
           p-3 md:p-6 rounded-3xl
           w-56 md:w-80
           fixed bottom-28 md:bottom-34
@@ -191,13 +191,13 @@ export default function RecentComments() {
           z-[60]
           hover:shadow-lg
           transition-all duration-300
-          dark:bg-gray-800/70 dark:border dark:border-gray-700
+          border border-[var(--border-color)]
         `}
       >
         {/* 移动端收起按钮 - 在右侧 */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="md:hidden absolute -right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-md hover:bg-white transition-colors dark:bg-gray-700/80 dark:hover:bg-gray-600"
+          className="md:hidden absolute -right-2 top-1/2 -translate-y-1/2 bg-[var(--card-bg)] backdrop-blur-sm rounded-full p-1 shadow-md hover:bg-[var(--card-bg-hover)] transition-colors border border-[var(--border-color)]"
           title={isCollapsed ? "展开留言板" : "收起留言板"}
         >
           <svg 
@@ -210,10 +210,10 @@ export default function RecentComments() {
           </svg>
         </button>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base md:text-lg font-bold text-center dark:text-gray-100">留言板</h2>
+          <h2 className="text-base md:text-lg font-bold text-center text-[var(--text-primary)]">留言板</h2>
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`${isCollapsed ? 'md:inline hidden' : ''} text-pink-300 hover:text-pink-500 text-xs md:text-sm font-medium dark:text-pink-400`}
+            className={`${isCollapsed ? 'md:inline hidden' : ''} text-pink-300 hover:text-pink-500 text-xs md:text-sm font-medium`}
           >
             {showForm ? '取消' : '写留言'}
           </button>
@@ -221,13 +221,13 @@ export default function RecentComments() {
 
         {/* 移动端表单 */}
         {showForm && (
-          <form onSubmit={handleSubmit} className="mb-4 p-3 bg-gray-50 rounded-lg space-y-3 md:hidden dark:bg-gray-700">
+          <form onSubmit={handleSubmit} className="mb-4 p-3 bg-[var(--card-bg)] rounded-lg space-y-3 md:hidden border border-[var(--border-color)]">
             <input
               type="text"
               placeholder="你的昵称"
               value={newComment.user_name}
               onChange={(e) => setNewComment({...newComment, user_name: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 dark:bg-gray-600 dark:border-gray-500 dark:text-white dark:placeholder-gray-400"
+              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               required
               title="你的昵称"
             />
@@ -235,14 +235,14 @@ export default function RecentComments() {
               placeholder="写下你的留言..."
               value={newComment.text}
               onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-              className="w-full px-3 py-2 border border-gray-100 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 h-20 resize-none dark:bg-gray-600 dark:border-gray-500 dark:text-white dark:placeholder-gray-400"
+              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 h-20 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               required
               title="留下你宝贵的意见~"
             />
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-pink-300 text-white py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed dark:bg-pink-500 dark:hover:bg-pink-600"
+              className="w-full bg-[var(--btn-primary)] text-white py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--btn-primary-hover)]"
             >
               {isSubmitting ? '提交中...' : '提交留言'}
             </button>
@@ -251,7 +251,7 @@ export default function RecentComments() {
 
         {/* 错误提示 */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm dark:bg-red-950/30 dark:border-red-800 dark:text-red-300">
+          <div className="mb-4 p-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-lg text-[var(--error-text)] text-sm">
             {error}
           </div>
         )}
@@ -266,21 +266,21 @@ export default function RecentComments() {
                 const skeletonCount = hasLoadedOnce ? Math.min(comments.length || 1, 3) : 1;
                 return Array.from({ length: skeletonCount }, (_, i) => (
                   <div key={i} className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-600 animate-pulse"></div>
+                    <div className="w-10 h-10 rounded-full bg-[var(--border-color)] animate-pulse"></div>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-center mb-1">
-                        <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-20 animate-pulse"></div>
-                        <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-12 animate-pulse"></div>
+                        <div className="h-4 bg-[var(--border-color)] rounded w-20 animate-pulse"></div>
+                        <div className="h-3 bg-[var(--border-color)] rounded w-12 animate-pulse"></div>
                       </div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-full mb-1 animate-pulse"></div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-600 rounded w-3/4 animate-pulse"></div>
+                      <div className="h-3 bg-[var(--border-color)] rounded w-full mb-1 animate-pulse"></div>
+                      <div className="h-3 bg-[var(--border-color)] rounded w-3/4 animate-pulse"></div>
                     </div>
                   </div>
                 ));
               })()}
             </>
           ) : comments.length === 0 ? (
-            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8">
+            <div className="text-center text-[var(--text-muted)] text-sm py-8">
               <span className="md:inline hidden">暂无留言，快留下宝贵的意见反馈吧！</span>
               <span className="md:hidden">暂无留言</span>
             </div>
@@ -299,7 +299,7 @@ export default function RecentComments() {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-white dark:text-gray-200 text-sm font-medium">
+                      <div className="w-full h-full bg-[var(--border-color)] flex items-center justify-center text-[var(--text-primary)] text-sm font-medium">
                         {c.user_name.charAt(0)}
                       </div>
                     )}
@@ -307,12 +307,12 @@ export default function RecentComments() {
 
                   {/* 内容区域 */}
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm text-gray-600 dark:text-gray-300 flex justify-between">
+                    <div className="text-sm text-[var(--text-secondary)] flex justify-between">
                       <span className="font-medium">{c.user_name}</span>
-                      <span className="text-gray-400 dark:text-gray-500">{timeAgo(c.date)}</span>
+                      <span className="text-[var(--text-muted)]">{timeAgo(c.date)}</span>
                     </div>
 
-                    <p className="text-gray-700 dark:text-gray-200 text-sm mt-1 line-clamp-2">
+                    <p className="text-[var(--text-primary)] text-sm mt-1 line-clamp-2">
                       {c.text}
                     </p>
                   </div>

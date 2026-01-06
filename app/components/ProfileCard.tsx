@@ -11,14 +11,14 @@ export default function ProfileCard() {
     fixed bottom-4 md:bottom-8
     ${isCollapsed ? '-left-20 md:left-4 md:right-8 md:left-auto' : 'left-4 md:left-8 md:right-8 md:left-auto'}
     flex items-center gap-4 md:gap-6
-    bg-white/70 backdrop-blur-lg
-    p-3 md:p-6 rounded-3xl 
+    bg-[var(--card-bg)] backdrop-blur-lg
+    p-3 md:p-6 rounded-3xl
     hover:shadow-xl
     transition-all duration-300
     flex flex-row-reverse md:flex-row
     ${!isCollapsed ? 'z-[80] md:z-[60]' : 'z-[60]'}
     cursor-pointer
-    dark:bg-gray-800/70 dark:border dark:border-gray-700
+    border border-[var(--border-color)]
   `}
             onClick={() => {
                 if (!isCollapsed) {
@@ -32,7 +32,7 @@ export default function ProfileCard() {
                     e.stopPropagation();
                     setIsCollapsed(!isCollapsed);
                 }}
-                className="md:hidden absolute -right-2 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-1 shadow-md hover:bg-white transition-colors dark:bg-gray-700/80 dark:hover:bg-gray-600"
+                className="md:hidden absolute -right-2 top-1/2 -translate-y-1/2 bg-[var(--card-bg)] backdrop-blur-sm rounded-full p-1 shadow-md hover:bg-[var(--card-bg-hover)] border border-[var(--border-color)]"
                 title={isCollapsed ? "展开" : "收起"}
             >
                 <svg 
@@ -47,10 +47,10 @@ export default function ProfileCard() {
 
             {/* 移动端：右侧文本，桌面端：左侧文本 */}
             <div className={`${isCollapsed ? 'md:block hidden' : ''} text-right md:text-left`} title="点击跳转到我的bilibili主页~">
-                <h1 className="text-lg md:text-2xl font-bold text-pink-500 dark:text-pink-400">
+                <h1 className="text-lg md:text-2xl font-bold text-pink-500">
                     你好，我是阿鲲
                 </h1>
-                <p className="text-sm md:text-base text-gray-600 dark:text-gray-300 mt-1">
+                <p className="text-sm md:text-base text-[var(--text-secondary)] mt-1">
                     这里是我的博客 🌸
                 </p>
             </div>
@@ -62,7 +62,7 @@ export default function ProfileCard() {
                 title="干嘛！看什么看！"
                 className="
       w-16 h-16 md:w-20 md:h-20 rounded-full
-      border-2 border-stone-100 dark:border-gray-600
+      border-2 border-[var(--border-color)]
       object-cover
       hover:scale-105 transition
     "

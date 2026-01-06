@@ -1,15 +1,121 @@
 @import "tailwindcss";
 
+/* 默认 light 变量 */
 :root {
-  /* light theme */
   --background: #ffffff;
   --foreground: #000000;
+
+  /* 卡片背景 */
+  --card-bg: #f8f9fa;
+  --card-bg-hover: #ffffff;
+
+  /* 代码块相关 */
+  --code-header-bg: #f3f4f6;
+  --code-header-border: #e5e7eb;
+  --code-header-text: #4b5563;
+
+  /* Header相关 */
+  --header-bg: rgba(255, 255, 255, 0.2);
+  --header-border: rgba(255, 255, 255, 0.3);
+
+  /* Footer相关 */
+  --footer-bg: rgba(255, 255, 255, 0.2);
+  --footer-border: rgba(255, 255, 255, 0.3);
+  --footer-text: #6b7280;
+
+  /* 输入框背景 */
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+
+  /* 文本颜色 */
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+
+  /* 边框颜色 */
+  --border-color: #e5e7eb;
+
+  /* 按钮主色 */
+  --btn-primary: #f9a8d4;
+  --btn-primary-hover: #f472b6;
+
+  /* 主题切换按钮 */
+  --theme-toggle-bg: #e5e7eb;
+  --theme-toggle-hover: #d1d5db;
+
+  /* 引用块背景 */
+  --blockquote-bg: #dbeafe;
+
+  /* 标签背景 */
+  --tag-bg: #fce7f3;
+  --tag-text: #be185d;
+
+  /* 错误提示 */
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #dc2626;
+
+  /* 轮播图遮罩 */
+  --hero-overlay: transparent;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
+
+/* class-based dark */
+html.dark {
   --background: #0d1116;
   --foreground: #f0f0f0;
-}
+
+  /* 卡片背景 */
+  --card-bg: #1f2937;
+  --card-bg-hover: #1f2937;
+
+  /* 代码块相关 - dark模式下的值 */
+  --code-header-bg: #1a1a2e;
+  --code-header-border: #374151;
+  --code-header-text: #9ca3af;
+
+  /* Header相关 - dark模式下的值 */
+  --header-bg: rgba(17, 24, 39, 0.6);
+  --header-border: rgba(55, 65, 81, 1);
+
+  /* Footer相关 - dark模式下的值 */
+  --footer-bg: rgba(17, 24, 39, 0.6);
+  --footer-border: rgba(55, 65, 81, 1);
+  --footer-text: #9ca3af;
+
+  /* 输入框背景 */
+  --input-bg: #374151;
+  --input-border: #4b5563;
+
+  /* 文本颜色 */
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+
+  /* 边框颜色 */
+  --border-color: #374151;
+
+  /* 按钮主色 */
+  --btn-primary: #ec4899;
+  --btn-primary-hover: #db2777;
+
+  /* 主题切换按钮 */
+  --theme-toggle-bg: #374151;
+  --theme-toggle-hover: #4b5563;
+
+  /* 引用块背景 */
+  --blockquote-bg: #1e3a5f;
+
+  /* 标签背景 */
+  --tag-bg: #831843;
+  --tag-text: #fbcfe8;
+
+  /* 错误提示 */
+  --error-bg: #450a0a;
+  --error-border: #7f1d1d;
+  --error-text: #fca5a5;
+
+  /* 轮播图遮罩 */
+  --hero-overlay: rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
@@ -17,6 +123,35 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* 卡片主题色 */
+  --color-card-bg: var(--card-bg);
+  --color-card-bg-hover: var(--card-bg-hover);
+  /* 代码块主题色 */
+  --color-code-header-bg: var(--code-header-bg);
+  --color-code-header-border: var(--code-header-border);
+  --color-code-header-text: var(--code-header-text);
+  /* Header主题色 */
+  --color-header-bg: var(--header-bg);
+  --color-header-border: var(--header-border);
+  /* Footer主题色 */
+  --color-footer-bg: var(--footer-bg);
+  --color-footer-border: var(--footer-border);
+  --color-footer-text: var(--footer-text);
+  /* 输入框主题色 */
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  /* 文本颜色 */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  /* 边框颜色 */
+  --color-border: var(--border-color);
+  /* 按钮主题色 */
+  --color-btn-primary: var(--btn-primary);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  /* 主题切换按钮 */
+  --color-theme-toggle-bg: var(--theme-toggle-bg);
+  --color-theme-toggle-hover: var(--theme-toggle-hover);
 }
 
 body {
@@ -74,8 +209,34 @@ body {
 .mdx-content tr,
 .mdx-content h4,
 .mdx-content hr {
-  color: var(--foreground) !important;
-  border-color: var(--text-muted) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* 卡片通用样式 */
+.card {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+/* 输入框通用样式 */
+.input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--text-primary);
+}
+
+/* 按钮主色通用样式 */
+.btn-primary {
+  background: var(--btn-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: var(--btn-primary-hover);
 }
 
 @keyframes fadeIn {

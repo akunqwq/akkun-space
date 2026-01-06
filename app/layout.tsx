@@ -6,6 +6,9 @@ import ProfileCard from "./components/ProfileCard";
 import Footer from "./components/Footer";
 import RecentComments from "./components/RecentComments";
 import StructuredData from "./components/StructuredData";
+import { ThemeProvider } from "./components/ThemeProvider";
+import FloatingThemeToggle from "./components/FloatingThemeToggle";
+import Script from "next/script";
 
 const geistSans = localFont({
   src: [
@@ -107,21 +110,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh">
+    <html lang="zh" suppressHydrationWarning>
       <head>
         <StructuredData type="website" />
+        {/* 在 React 之前执行，避免闪烁 */}
+        <Script id="set-theme" strategy="beforeInteractive">
+          {`(function(){
+            try {
+              var key = 'theme';
+              var saved = localStorage.getItem(key);
+              if (saved === 'dark') { document.documentElement.classList.add('dark'); return; }
+              if (saved === 'light') { document.documentElement.classList.remove('dark'); return; }
+              var mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+              if (mql && mql.matches) document.documentElement.classList.add('dark');
+            } catch (e) { /* ignore */ }
+          })();`}
+        </Script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        <main className="pt-16 pb-16">
-          {children}
-        </main>
-        
-        <Footer />
-        <ProfileCard />
-        <RecentComments />
+        <ThemeProvider>
+          <Header />
+          <main className="pt-16 pb-16">
+            {children}
+          </main>
+
+          <Footer />
+          <ProfileCard />
+          <RecentComments />
+          <FloatingThemeToggle />
+        </ThemeProvider>
       </body>
     </html>
   );

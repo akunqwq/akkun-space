@@ -9,11 +9,13 @@ export default function Live2DWidget() {
   // 绘制占位内容的通用函数
   const drawPlaceholder = (canvas: HTMLCanvasElement | null) => {
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     if (ctx) {
-      // 直接绘制文字，背景色由 CSS 的 bg-white/80 提供
-      ctx.fillStyle = '#666';
+      // 使用CSS变量获取文本颜色，支持主题切换
+      const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim() || '#666';
+
+      ctx.fillStyle = textColor;
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Live2D角色', canvas.width / 2, canvas.height / 2 - 10);
@@ -47,9 +49,9 @@ export default function Live2DWidget() {
           ref={desktopCanvasRef}
           width={200}
           height={250}
-          className="bg-white/80 backdrop-blur-sm rounded-lg shadow-lg border border-gray-200 transition-transform duration-200 hover:scale-105 cursor-pointer dark:bg-gray-800/80 dark:border-gray-600"
+          className="bg-[var(--card-bg)] backdrop-blur-sm rounded-lg shadow-lg border border-[var(--border-color)] transition-transform duration-200 hover:scale-105 cursor-pointer"
         />
-        <div className="text-xs text-gray-500 text-center mt-2 dark:text-gray-400">
+        <div className="text-xs text-[var(--text-muted)] text-center mt-2">
           Live2D 角色
         </div>
       </div>
@@ -60,7 +62,7 @@ export default function Live2DWidget() {
           ref={mobileCanvasRef}
           width={160}
           height={200}
-          className="bg-white/70 backdrop-blur-lg rounded-3xl shadow-sm border border-gray-200 transition-transform duration-200 hover:scale-105 cursor-pointer dark:bg-gray-800/70 dark:border-gray-600"
+          className="bg-[var(--card-bg)] backdrop-blur-lg rounded-3xl shadow-sm border border-[var(--border-color)] transition-transform duration-200 hover:scale-105 cursor-pointer"
         />
       </div>
     </>

@@ -84,7 +84,7 @@ code: ({ children, className, ...props }) => {
   // 引用块
   blockquote: ({ children, ...props }) => (
     <blockquote
-      className="border-l-4 border-pink-400 bg-pink-50 dark:bg-pink-950/30 pl-4 pr-3 py-4 my-6 italic text-gray-800 dark:text-gray-100 rounded-r-lg shadow-sm sm:pl-6 sm:pr-4"
+      className="border-l-4 border-pink-400 bg-[var(--blockquote-bg)] pl-4 pr-3 py-4 my-6 italic text-[var(--text-primary)] rounded-r-lg shadow-sm sm:pl-6 sm:pr-4"
       {...props}
     >
       {children}
@@ -94,7 +94,7 @@ code: ({ children, className, ...props }) => {
   // 标题
   h1: ({ children, ...props }) => (
     <h1
-      className="text-3xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-100"
+      className="text-3xl font-bold mt-8 mb-4 text-[var(--text-primary)]"
       {...props}
     >
       {children}
@@ -103,7 +103,7 @@ code: ({ children, className, ...props }) => {
 
   h2: ({ children, ...props }) => (
     <h2
-      className="text-2xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100 text-center"
+      className="text-2xl font-semibold mt-6 mb-3 text-[var(--text-primary)] text-center"
       {...props}
     >
       {children}
@@ -112,7 +112,7 @@ code: ({ children, className, ...props }) => {
 
   h3: ({ children, ...props }) => (
     <h3
-      className="text-xl font-semibold mt-4 mb-2 text-gray-900 dark:text-gray-100"
+      className="text-xl font-semibold mt-4 mb-2 text-[var(--text-primary)]"
       {...props}
     >
       {children}
@@ -120,7 +120,7 @@ code: ({ children, className, ...props }) => {
   ),
   li: ({ children, ...props }) => (
   <li
-    className="leading-relaxed text-gray-800 dark:text-gray-200 text-lg"
+    className="leading-relaxed text-[var(--text-primary)] text-lg"
     {...props}
   >
     {children}
@@ -140,7 +140,7 @@ code: ({ children, className, ...props }) => {
   // 表格容器 - 提供横向滚动
   table: ({ children, ...props }) => (
     <div className="overflow-x-auto my-6">
-      <table className="min-w-full border-collapse border border-gray-300 dark:border-gray-600" {...props}>
+      <table className="min-w-full border-collapse border border-[var(--border-color)]" {...props}>
         {children}
       </table>
     </div>
@@ -148,14 +148,14 @@ code: ({ children, className, ...props }) => {
 
   // 表头
   thead: ({ children, ...props }) => (
-    <thead className="bg-gray-50 dark:bg-gray-800" {...props}>
+    <thead className="bg-[var(--card-bg)]" {...props}>
       {children}
     </thead>
   ),
 
   // 表格主体
   tbody: ({ children, ...props }) => (
-    <tbody className="bg-white dark:bg-gray-900" {...props}>
+    <tbody className="bg-[var(--background)]" {...props}>
       {children}
     </tbody>
   ),
@@ -169,7 +169,7 @@ code: ({ children, className, ...props }) => {
 
   // 表头单元格
   th: ({ children, ...props }) => (
-    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border" {...props}>
+    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border text-[var(--text-primary)]" {...props}>
       {children}
     </th>
   ),
@@ -197,7 +197,7 @@ code: ({ children, className, ...props }) => {
 
   // 段落
   p: ({ children, ...props }) => (
-    <p className="my-4 leading-relaxed text-gray-800 dark:text-gray-200 text-lg" {...props}>
+    <p className="my-4 leading-relaxed text-[var(--text-primary)] text-lg" {...props}>
       {children}
     </p>
   ),

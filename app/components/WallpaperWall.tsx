@@ -78,8 +78,8 @@ export default function WallpaperWall() {
 
   return (
     <>
-      <div className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-sm p-6 dark:bg-gray-800/70 dark:border dark:border-gray-700">
-        <h2 className="text-xl font-bold mb-4 text-gray-800 text-center dark:text-gray-100">🌸壁纸收藏馆</h2>
+      <div className="bg-[var(--card-bg)] backdrop-blur-lg rounded-2xl shadow-sm p-6 border border-[var(--border-color)]">
+        <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)] text-center">🌸壁纸收藏馆</h2>
 
         {/* Masonry Grid */}
         <div className="
@@ -130,7 +130,7 @@ export default function WallpaperWall() {
 
         {/* 懒加载触发器 */}
         {displayedWallpapers.length < allWallpapers.length && (
-          <div ref={observerRef} className="flex justify-center py-6 text-gray-500 dark:text-gray-400">
+          <div ref={observerRef} className="flex justify-center py-6 text-[var(--text-muted)]">
             {loading ? "加载中..." : "下滑加载更多..."}
           </div>
         )}
@@ -143,7 +143,7 @@ export default function WallpaperWall() {
           onClick={() => setSelectedWallpaper(null)}
         >
           <div
-            className="relative bg-white rounded-xl overflow-hidden w-full max-w-6xl h-[90vh] flex flex-col sm:flex-row dark:bg-gray-800"
+            className="relative bg-[var(--card-bg)] rounded-xl overflow-hidden w-full max-w-6xl h-[90vh] flex flex-col sm:flex-row border border-[var(--border-color)]"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex-1 bg-black/5 flex items-center justify-center">
@@ -155,47 +155,47 @@ export default function WallpaperWall() {
             </div>
 
             <div className="w-full sm:w-96 p-6 overflow-y-auto">
-              <h3 className="text-2xl font-bold mb-4 dark:text-gray-100">{selectedWallpaper.title}</h3>
+              <h3 className="text-2xl font-bold mb-4 text-[var(--text-primary)]">{selectedWallpaper.title}</h3>
 
               <div className="space-y-3 mb-6">
                 {selectedWallpaper.author && (
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">作者</span>
-                    <p className="font-medium dark:text-gray-100">{selectedWallpaper.author}</p>
+                    <span className="text-[var(--text-muted)] text-sm">作者</span>
+                    <p className="font-medium text-[var(--text-primary)]">{selectedWallpaper.author}</p>
                   </div>
                 )}
 
                 {selectedWallpaper.resolution && (
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">分辨率</span>
-                    <p className="font-medium dark:text-gray-100">{selectedWallpaper.resolution}</p>
+                    <span className="text-[var(--text-muted)] text-sm">分辨率</span>
+                    <p className="font-medium text-[var(--text-primary)]">{selectedWallpaper.resolution}</p>
                   </div>
                 )}
 
                 {selectedWallpaper.fileSize && (
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">文件大小</span>
-                    <p className="font-medium dark:text-gray-100">{selectedWallpaper.fileSize}</p>
+                    <span className="text-[var(--text-muted)] text-sm">文件大小</span>
+                    <p className="font-medium text-[var(--text-primary)]">{selectedWallpaper.fileSize}</p>
                   </div>
                 )}
 
                 {selectedWallpaper.uploadedAt && (
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">上传时间</span>
-                    <p className="font-medium dark:text-gray-100">{selectedWallpaper.uploadedAt}</p>
+                    <span className="text-[var(--text-muted)] text-sm">上传时间</span>
+                    <p className="font-medium text-[var(--text-primary)]">{selectedWallpaper.uploadedAt}</p>
                   </div>
                 )}
 
                 {selectedWallpaper.source && (
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">来源</span>
-                    <p className="font-medium dark:text-gray-100">
+                    <span className="text-[var(--text-muted)] text-sm">来源</span>
+                    <p className="font-medium text-[var(--text-primary)]">
                       {selectedWallpaper.sourceUrl ? (
                         <a
                           href={selectedWallpaper.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline dark:text-blue-400 dark:hover:text-blue-300"
+                          className="text-blue-600 hover:text-blue-800 underline"
                         >
                           {selectedWallpaper.source}
                         </a>
@@ -208,12 +208,12 @@ export default function WallpaperWall() {
 
                 {selectedWallpaper.tags && selectedWallpaper.tags.length > 0 && (
                   <div>
-                    <span className="text-gray-500 dark:text-gray-400 text-sm">标签</span>
+                    <span className="text-[var(--text-muted)] text-sm">标签</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                       {selectedWallpaper.tags.map(tag => (
                         <span
                           key={tag}
-                          className="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-sm dark:bg-pink-900/50 dark:text-pink-300"
+                          className="bg-[var(--tag-bg)] text-[var(--tag-text)] px-3 py-1 rounded-full text-sm"
                         >
                           {tag}
                         </span>
@@ -225,7 +225,7 @@ export default function WallpaperWall() {
 
               <button
                 onClick={() => handleDownload(selectedWallpaper.url, selectedWallpaper.title)}
-                className="w-full py-3 bg-pink-500 text-white rounded-xl hover:bg-pink-600 transition-all font-medium dark:bg-pink-600 dark:hover:bg-pink-700"
+                className="w-full py-3 bg-[var(--btn-primary)] text-white rounded-xl hover:bg-[var(--btn-primary-hover)] transition-all font-medium"
               >
                 下载原图
               </button>
@@ -233,7 +233,7 @@ export default function WallpaperWall() {
 
             <button
               onClick={() => setSelectedWallpaper(null)}
-              className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg dark:bg-gray-700 dark:text-gray-100"
+              className="absolute top-4 right-4 bg-[var(--card-bg)] rounded-full p-2 shadow-lg text-[var(--text-primary)] border border-[var(--border-color)]"
             >
               ✕
             </button>
