@@ -9,7 +9,6 @@ export interface PostMeta {
   title: string;
   date: string;
   cover?: string;
-  thumbnail?: string;
   summary?: string;
   tags?: string[];
   [key: string]: any;

@@ -3,8 +3,8 @@ import Link from "next/link";
 import { getAllPosts, type PostListItem } from "../../lib/posts";
 
 export const metadata: Metadata = {
-  title: "阿鲲 の小窝 - 文章",
-  description: "阿鲲的文章列表",
+  title: "阿鲲 の小窝 - 专栏",
+  description: "阿鲲的专栏",
 };
 
 export default function ArticlesPage() {
@@ -13,7 +13,7 @@ export default function ArticlesPage() {
   return (
     <main className="max-w-5xl mx-auto px-6 pt-24 md:pt-12 pb-12">
       <h1 className="text-4xl font-bold mb-10 tracking-tight text-[var(--text-primary)]">
-        文章列表
+        专栏列表
       </h1>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -46,47 +46,20 @@ export default function ArticlesPage() {
               )}
             </div>
 
-            {/* 下方内容区：小图 + 文字 */}
-            <div className="p-6 flex items-start gap-4">
-
-              {/* 小缩略图（左侧） */}
-              <div
-                className="
-      w-20 h-20 rounded-xl overflow-hidden bg-[var(--border-color)]
-      shrink-0
-      md:w-24 md:h-24
-    "
-              >
-                {a.thumbnail ? (
-                  <img
-                    src={a.thumbnail}
-                    alt={a.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : a.cover ? (
-                  <img
-                    src={a.cover}
-                    alt={a.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[var(--text-muted)]" />
-                )}
-              </div>
-
-              {/* 右侧文字区域 */}
-              <div className="flex-1 pt-1">
-                <div className="text-sm text-[var(--text-muted)]">{a.date}</div>
-
-                <h2 className="text-xl font-semibold mt-1 leading-snug text-[var(--text-primary)]">
+            {/* 下方内容区：文字 */}
+            <div className="p-6">
+              <div className="flex items-baseline justify-between gap-3 mb-3">
+                <h2 className="text-xl font-semibold leading-snug text-[var(--text-primary)] group-hover:text-pink-500 transition-colors">
                   {a.title}
                 </h2>
-
-                <p className="text-[var(--text-secondary)] mt-2 line-clamp-2 leading-relaxed">
-                  {a.summary}
-                </p>
+                <span className="text-xs text-[var(--text-muted)] shrink-0 bg-[var(--border-color)] px-2 py-1 rounded-full">
+                  {a.date}
+                </span>
               </div>
 
+              <p className="text-[var(--text-secondary)] text-sm line-clamp-3 leading-relaxed">
+                {a.summary}
+              </p>
             </div>
           </Link>
         ))}

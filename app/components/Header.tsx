@@ -186,7 +186,7 @@ export default function Header() {
           <nav className="hidden md:flex gap-6 text-pink-300 dark:text-pink-400">
             <a href="/" className="hover:text-pink-500">首页</a>
             <a href="/wallpapers" className="hover:text-pink-500">壁纸</a>
-            <a href="/articles" className="hover:text-pink-500">文章</a>
+            <a href="/articles" className="hover:text-pink-500">专栏</a>
 
             <a href="/about" className="hover:text-pink-500">关于本喵</a>
           </nav>
@@ -231,7 +231,7 @@ export default function Header() {
               className="text-pink-300 dark:text-pink-400 hover:text-pink-500 py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              文章
+              专栏
             </a>
 
 

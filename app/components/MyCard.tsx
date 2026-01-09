@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function ProfileCard() {
+export default function MyCard() {
     const [isCollapsed, setIsCollapsed] = useState(true);
 
     return (

@@ -67,7 +67,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             href="/articles"
             className="inline-block px-6 py-3 bg-[var(--btn-primary)] text-white rounded-lg hover:bg-[var(--btn-primary-hover)] transition-colors"
           >
-            返回文章列表
+            返回专栏列表
           </Link>
         </div>
       </main>
@@ -85,7 +85,8 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
               alt={post.title}
               width={800}
               height={400}
-              className="w-full h-64 md:h-96 object-cover rounded-2xl shadow-lg"
+              className="w-full h-auto rounded-2xl shadow-lg"
+              priority
             />
           )}
         </div>
@@ -142,7 +143,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             href="/articles"
             className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-800 transition-colors"
           >
-            ← 返回文章列表
+            ← 返回专栏列表
           </Link>
         </div>
       </footer>

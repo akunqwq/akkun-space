@@ -22,22 +22,31 @@ export default function Home() {
       {/* 顶部卡片 - 桌面端显示最近文章，移动端隐藏其他卡片 */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
 
-        {/* 卡片 1：最近文章  */}
+        {/* 卡片 1 桌面端显示，移动端隐藏  */}
+        <div className="hidden md:block bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
+                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">🌸 我的兴趣</h2>
+          <p className="text-[var(--text-secondary)] leading-relaxed">
+            ACG / 纯音乐 / MMD / 原神 / 敲代码
+            <br />才...才不是猫娘喵。
+          </p>
+        </div>
+
+
+        {/* 卡片 2: 最新发布 */}
         <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
                         hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">📘 最近文章</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">📘 最新发布</h2>
           <ul className="space-y-2 text-[var(--text-secondary)]">
             {latestPosts.length > 0 ? (
               latestPosts.map((post: PostListItem, index: number) => (
                 <li key={post.slug} className="flex items-center gap-3 text-sm">
                   <Link
                     href={`/articles/${post.slug}`}
-                    className={`cursor-pointer transition-colors truncate ${index === 0
-                        ? 'text-pink-500  hover:text-pink-600'
-                        : 'hover:text-pink-500'
-                      }`}
+                    className={`cursor-pointer transition-colors truncate hover:text-pink-500`}
                   >
-                    · {post.title}
+                    {index === 0 && <span className="mr-1 text-xs bg-pink-400 text-white px-1.5 py-0.5 rounded">NEW</span>}
+                    {post.title}
                   </Link>
                   <span className="text-[var(--text-muted)] whitespace-nowrap">
                     {new Date(post.date).toLocaleDateString('zh-CN', {
@@ -51,16 +60,6 @@ export default function Home() {
               <li className="text-[var(--text-muted)]">暂无文章</li>
             )}
           </ul>
-        </div>
-
-        {/* 卡片 2 - 桌面端显示，移动端隐藏 */}
-        <div className="hidden md:block bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
-                        hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">🌸 我的兴趣</h2>
-          <p className="text-[var(--text-secondary)] leading-relaxed">
-            ACG / 纯音乐 / MMD / 原神 / 敲代码
-            <br />才...才不是猫娘喵。
-          </p>
         </div>
 
         {/* 卡片 3 - 桌面端显示，移动端隐藏 */}
@@ -88,7 +87,7 @@ export default function Home() {
           <div className="hidden md:block md:col-span-4">
             {/* 未来功能占位 */}
           </div>
-          
+
           {/* 中间文章内容流 */}
           <div className="md:col-span-4 space-y-16">
             {postsWithContent.map((post) => (
@@ -97,7 +96,7 @@ export default function Home() {
               </article>
             ))}
           </div>
-          
+
 
         </div>
       </section>

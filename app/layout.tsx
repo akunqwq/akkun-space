@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
 import Header from "./components/Header";
-import ProfileCard from "./components/ProfileCard";
+import MyCard from "./components/MyCard";
 import Footer from "./components/Footer";
 import RecentComments from "./components/RecentComments";
 import StructuredData from "./components/StructuredData";
 import { ThemeProvider } from "./components/ThemeProvider";
 import FloatingThemeToggle from "./components/FloatingThemeToggle";
+import FloatingEmojis from "./components/FloatingEmojis";
 import Script from "next/script";
 
 const geistSans = localFont({
@@ -113,31 +114,45 @@ export default function RootLayout({
     <html lang="zh" suppressHydrationWarning>
       <head>
         <StructuredData type="website" />
-        {/* 在 React 之前执行，避免闪烁 */}
-        <Script id="set-theme" strategy="beforeInteractive">
-          {`(function(){
-            try {
-              var key = 'theme';
-              var saved = localStorage.getItem(key);
-              if (saved === 'dark') { document.documentElement.classList.add('dark'); return; }
-              if (saved === 'light') { document.documentElement.classList.remove('dark'); return; }
-              var mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
-              if (mql && mql.matches) document.documentElement.classList.add('dark');
-            } catch (e) { /* ignore */ }
-          })();`}
-        </Script>
+        {/* 设置主题 */}
+        <script
+          id="set-theme"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+              try {
+                // 先隐藏页面
+                document.documentElement.style.visibility = 'hidden';
+
+                var key = 'theme';
+                var saved = localStorage.getItem(key);
+                if (saved === 'dark') { document.documentElement.classList.add('dark'); }
+                else if (saved === 'light') { document.documentElement.classList.remove('dark'); }
+                else {
+                  var mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+                  if (mql && mql.matches) document.documentElement.classList.add('dark');
+                }
+
+                // 等一帧确保 CSS 加载完成，然后显示页面
+                requestAnimationFrame(function() {
+                  document.documentElement.style.visibility = 'visible';
+                });
+              } catch (e) { /* ignore */ }
+            })();`,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
+          <FloatingEmojis />
           <Header />
           <main className="pt-16 pb-16">
             {children}
           </main>
 
           <Footer />
-          <ProfileCard />
+          <MyCard />
           <RecentComments />
           <FloatingThemeToggle />
         </ThemeProvider>
