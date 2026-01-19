@@ -55,26 +55,7 @@ export default function WallpaperWall() {
     }, 200)
   }
 
-  const handleDownload = async (url: string, title: string) => {
-    try {
-      const ext = url.split("?")[0].split(".").pop() || "jpg"
-      const safeName = title.replace(/[\/\\:*?"<>|]/g, "_")
-      const fileName = `${safeName}.${ext}`
 
-      const response = await fetch(url)
-      const blob = await response.blob()
-      const blobUrl = URL.createObjectURL(blob)
-
-      const link = document.createElement("a")
-      link.href = blobUrl
-      link.download = fileName
-      link.click()
-
-      URL.revokeObjectURL(blobUrl)
-    } catch {
-      window.open(url, "_blank")
-    }
-  }
 
   return (
     <>
@@ -223,12 +204,6 @@ export default function WallpaperWall() {
                 )}
               </div>
 
-              <button
-                onClick={() => handleDownload(selectedWallpaper.url, selectedWallpaper.title)}
-                className="w-full py-3 bg-[var(--btn-primary)] text-white rounded-xl hover:bg-[var(--btn-primary-hover)] transition-all font-medium"
-              >
-                下载原图
-              </button>
             </div>
 
             <button

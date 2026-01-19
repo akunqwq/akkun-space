@@ -8,6 +8,7 @@ const postsDir = path.join(process.cwd(), "content/posts");
 export interface PostMeta {
   title: string;
   date: string;
+  author?: string;
   cover?: string;
   summary?: string;
   tags?: string[];

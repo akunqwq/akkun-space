@@ -11,15 +11,19 @@
     "fetch-meta": "ts-node scripts/fetch-meta.ts",
     "seo:submit": "node scripts/submit-urls.js",
     "seo:verify": "node scripts/verify-seo.js",
-    "seo:check": "npm run dev & sleep 3 && node scripts/verify-seo.js"
+    "seo:check": "npm run dev & sleep 3 && node scripts/verify-seo.js",
+    "sync-wallpapers": "node --loader ts-node/esm scripts/sync-wallpapers.ts"
   },
   "dependencies": {
     "@contentlayer/source-files": "^0.3.4",
     "@contentlayer/utils": "^0.3.4",
     "@next/mdx": "^16.0.4",
     "@supabase/supabase-js": "^2.86.0",
+    "axios": "^1.13.2",
     "canvas": "^3.2.0",
+    "cheerio": "^1.1.2",
     "contentlayer": "^0.3.4",
+    "fs-extra": "^11.3.3",
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.562.0",
@@ -34,6 +38,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

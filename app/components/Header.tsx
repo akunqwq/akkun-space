@@ -81,13 +81,20 @@ export default function Header() {
   useEffect(() => {
     mounted.current = true;
 
-    // 立即切到随机一句（避免与服务端不同而报错，先等到客户端）
-    const first = cleanText(quotes[Math.floor(Math.random() * quotes.length)]);
+    // 每次随机时，确保名言不会连续重复
+    let currentIndex = Math.floor(Math.random() * quotes.length);
+    const first = cleanText(quotes[currentIndex]);
     setQuote(first);
 
     // 启动轮换（每 4 秒）
     rotationIntervalRef.current = window.setInterval(() => {
-      const next = cleanText(quotes[Math.floor(Math.random() * quotes.length)]);
+      let nextIndex;
+      do {
+        nextIndex = Math.floor(Math.random() * quotes.length);
+      } while (nextIndex === currentIndex && quotes.length > 1);
+      
+      currentIndex = nextIndex;
+      const next = cleanText(quotes[nextIndex]);
       setQuote(next);
     }, 4000);
 

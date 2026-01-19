@@ -104,6 +104,12 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 day: 'numeric'
               })}
             </time>
+               {post.author && (
+              <>
+                <span>•</span>
+                <span className="text-sm">{post.author}</span>
+              </>
+            )}
             {post.tags && post.tags.length > 0 && (
               <>
                 <span>•</span>
@@ -113,7 +119,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                       key={tag}
                       className="px-2 py-1 bg-[var(--tag-bg)] text-[var(--tag-text)] text-xs rounded-full"
                     >
-                      {tag}
+                      #{tag}
                     </span>
                   ))}
                 </div>
@@ -122,7 +128,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </div>
 
           {post.summary && (
-            <p className="text-lg text-[var(--text-secondary)] italic">
+            <p className="text-lg text-[var(--text-secondary)] italic whitespace-pre-wrap">
               {post.summary}
             </p>
           )}
