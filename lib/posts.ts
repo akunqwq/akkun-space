@@ -20,6 +20,7 @@ export interface PostListItem extends PostMeta {
   slug: string;
   summary: string;
   readingTime: number;
+  fileCreatedTime: number;
 }
 
 // 文章详情类型
@@ -50,6 +51,10 @@ export function getAllPosts(): PostListItem[] {
         const raw = fs.readFileSync(filePath, "utf-8");
         const { data: meta, content } = matter(raw);
 
+        // 获取文件创建时间
+        const stats = fs.statSync(filePath);
+        const fileCreatedTime = stats.birthtime.getTime();
+
         // 计算阅读时间
         const wordsPerMinute = 200;
         const wordCount = content.split(/\s+/).length;
@@ -60,9 +65,14 @@ export function getAllPosts(): PostListItem[] {
           ...meta,
           summary: meta.summary ?? content.slice(0, 100) + '...',
           readingTime,
+          fileCreatedTime,
         } as unknown as PostListItem;
       })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      .sort((a, b) => {
+        const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
+        if (dateDiff !== 0) return dateDiff;
+        return b.fileCreatedTime - a.fileCreatedTime;
+      });
   } catch (error) {
     console.error('Error reading posts:', error);
     return [];

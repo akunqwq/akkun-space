@@ -5,7 +5,10 @@ import MDXRenderer from "./components/MDXRenderer";
 
 export default function Home() {
   const allPosts = getAllPosts(); // 获取所有文章
-  const latestPosts = allPosts.slice(0, 3); // 获取最新的3篇文章
+  const latestPosts = allPosts.slice(0, 5); // 获取最新的5篇文章
+
+  // 获取最新创建的文章的文件创建时间
+  const latestFileCreatedTime = latestPosts.length > 0 ? latestPosts[0].fileCreatedTime : null;
 
   // 按日期从新到旧排序，然后获取完整内容
   const postsWithContent = allPosts
@@ -33,22 +36,23 @@ export default function Home() {
         </div>
 
 
-        {/* 卡片 2: 最新发布 */}
+        {/* 卡片 2: 文章发布信息*/}
         <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)]
                         hover:shadow-md transition w-full max-w-none md:max-w-2xl mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">📘 最新发布</h2>
+          <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)] text-center">最新发布</h2>
           <ul className="space-y-2 text-[var(--text-secondary)]">
             {latestPosts.length > 0 ? (
               latestPosts.map((post: PostListItem, index: number) => (
                 <li key={post.slug} className="flex items-center gap-3 text-sm">
                   <Link
                     href={`/articles/${post.slug}`}
-                    className={`cursor-pointer transition-colors truncate hover:text-pink-500`}
+                    className={`cursor-pointer transition-colors truncate ${
+                      latestFileCreatedTime && post.fileCreatedTime === latestFileCreatedTime ? 'text-pink-500' : 'hover:text-pink-500'
+                      }`}
                   >
-                    {index === 0 && <span className="mr-1 text-xs bg-pink-400 text-white px-1.5 py-0.5 rounded">NEW</span>}
                     {post.title}
                   </Link>
-                  <span className="text-[var(--text-muted)] whitespace-nowrap">
+                  <span className="ml-auto text-[var(--text-muted)] whitespace-nowrap">
                     {new Date(post.date).toLocaleDateString('zh-CN', {
                       month: 'short',
                       day: 'numeric'
@@ -92,6 +96,34 @@ export default function Home() {
           <div className="md:col-span-4 space-y-16">
             {postsWithContent.map((post) => (
               <article key={post.slug} className="pb-10 border-b border-[var(--border-color)]">
+                {/* 文章标题和元数据 */}
+                <header className="mb-6">
+                  <h1 className="text-3xl font-bold text-[var(--text-primary)] mb-2 text-center">
+                    {post.title}
+                  </h1>
+                  <div className="flex items-center justify-center text-sm text-[var(--text-secondary)]">
+                    {post.author && (
+                      <span className="mr-4">
+                        作者: {post.author}
+                      </span>
+                    )}
+                    <time dateTime={post.date}>
+                      {new Date(post.date).toLocaleDateString('zh-CN', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </time>
+                  </div>
+                  {post.summary && (
+                    <div className="mt-4 mb-6">
+                      <p className="text-lg text-[var(--text-secondary)] italic whitespace-pre-wrap text-center ">
+                        {post.summary}
+                      </p>
+                    </div>
+                  )}
+                </header>
+                {/* 文章内容 */}
                 <MDXRenderer source={post.bodyRaw} />
               </article>
             ))}
