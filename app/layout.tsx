@@ -10,6 +10,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import FloatingThemeToggle from "./components/FloatingThemeToggle";
 import FloatingEmojis from "./components/FloatingEmojis";
 import Script from "next/script";
+import { getAllPosts, getPostBySlug } from "../lib/posts";
 
 const geistSans = localFont({
   src: [
@@ -26,84 +27,105 @@ const geistMono = localFont({
   variable: "--font-geist-mono",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "阿鲲 の小窝",
-    template: "%s | 阿鲲 の小窝"
-  },
-  icons: {
-    icon: '/favicon.png', 
-    shortcut: '/favicon-16x16.png',
-  },
-  description: "阿鲲の小窝 - 一个专注于 ACG、前端技术和二次元文化的个人博客。分享 React、Next.js、TypeScript 等技术学习心得，以及生活感悟和创作作品。",
-  keywords: [
-    "阿鲲",
-    "个人博客",
-    "ACG",
-    "二次元",
-    "前端开发",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "技术博客",
-    "MMD",
-    "原神",
-    "生活记录"
-  ],
-  authors: [{ name: "阿鲲" }],
-  creator: "阿鲲",
-  publisher: "阿鲲",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL('https://www.akkun.online'), 
-  alternates: {
-    canonical: '/',
-    languages: {
-      'zh-CN': '/zh-CN',
-      'en': '/en'
-    }
-  },
-  openGraph: {
-    title: "阿鲲 の小窝",
-    description: "一个专注于 ACG、前端技术和二次元文化的个人博客",
-    url: '/',
-    siteName: "阿鲲 の小窝",
-    images: [
-      {
-        url: '/HeadIMG.jpg',
-        width: 800,
-        height: 800,
-        alt: "阿鲲的头像",
-      },
+export async function generateMetadata(): Promise<Metadata> {
+  const allPosts = getAllPosts();
+  let dynamicDescription = "阿鲲の小窝 - 一个边做边上线的个人博客，随时可能翻车，但也在不断进化 ✨";
+
+  if (allPosts.length > 0) {
+    const latestPost = allPosts[0];
+    const postWithContent = getPostBySlug(latestPost.slug);
+    const postSummary = postWithContent?.summary || 
+      (postWithContent?.bodyRaw ? postWithContent.bodyRaw.substring(0, 60) + "..." : "");
+    
+    dynamicDescription = `${dynamicDescription} 《${latestPost.title}》${postSummary ? " - " + postSummary : ""}`;
+  }
+
+  const finalDescription = dynamicDescription.length > 160 
+    ? dynamicDescription.substring(0, 157) + "..."
+    : dynamicDescription;
+
+  return {
+    title: {
+      default: "阿鲲 の小窝",
+      template: "%s | 阿鲲 の小窝"
+    },
+    icons: {
+      icon: [
+        { url: '/favicon.ico', sizes: 'any' },           
+        { url: '/favicon-16x16.png', sizes: '16x16' }, 
+        { url: '/favicon.png', sizes: '32x32', type: 'image/png' }, 
+      ],
+      apple: '/favicon.png',
+    },
+    description: finalDescription,
+    keywords: [
+      "阿鲲",
+      "个人博客",
+      "ACG",
+      "二次元",
+      "前端开发",
+      "React",
+      "Next.js",
+      "TypeScript",
+      "MMD",
+      "原神",
+      "是阿鲲酱鸭"
     ],
-    locale: 'zh_CN',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: "阿鲲 の小窝",
-    description: "一个专注于 ACG、前端技术和二次元文化的个人博客",
-    images: ['/HeadIMG.jpg'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    authors: [{ name: "阿鲲" }],
+    creator: "阿鲲",
+    publisher: "阿鲲",
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+    metadataBase: new URL('https://www.akkun.online'), 
+    alternates: {
+      canonical: '/',
+      languages: {
+        'zh-CN': '/zh-CN',
+        'en': '/en'
+      }
+    },
+    openGraph: {
+      title: "阿鲲 の小窝",
+      description: "一个专注于 游戏、ACG、技术的个人博客",
+      url: '/',
+      siteName: "阿鲲 の小窝",
+      images: [
+        {
+          url: '/HeadIMG.jpg',
+          width: 800,
+          height: 800,
+          alt: "阿鲲的头像",
+        },
+      ],
+      locale: 'zh_CN',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: "阿鲲 の小窝",
+      description: "一个专注于 游戏、ACG、技术的个人博客",
+      images: ['/HeadIMG.jpg'],
+    },
+    robots: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
     },
-  },
-  verification: {
-    google: 'your-google-verification-code', // 可选：Google Search Console 验证码
-    yandex: 'your-yandex-verification-code', // 可选：Yandex 验证码
-  },
-};
+    verification: {
+      google: 'your-google-verification-code',
+      yandex: 'your-yandex-verification-code',
+    },
+  };
+}
 
 export default function RootLayout({
   children,
