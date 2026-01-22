@@ -1,161 +1,101 @@
 # 阿鲲の小窝 
 
-一个基于 Next.js 构建的 ACG 风格我的个人博客，具有现代化的设计和丰富的交互功能。
+> 一个边做边上线的个人博客，随时可能翻车，但也在不断进化 ✨
 
-## ✨ 特性
+这是我的 ACG 风格个人博客，用着 Next.js 搭的，主打一个随心所欲、想到啥做啥。
 
--  **现代化设计**：采用毛玻璃效果和响应式布局
--  **添加响应式适配**：为移动端设备优化
--  **兴趣标签墙**：展示个人兴趣和技能
--  **MDX 支持**：动态内容管理，支持富文本编辑
--  **Live2D 角色**：二次元风格互动角色（待开发）
--  **高性能**：基于 Next.js App Router，优化加载速度
+## ✨ 目前有啥
 
-## 🚀 快速开始
+- **毛玻璃设计**：看着还行，手机也能看
+- **兴趣标签墙**：展示我乱七八糟的兴趣爱好
+- **MDX 写文章**：写东西挺方便的，支持各种花里胡哨的语法
+- **深/浅色模式**：白天不刺眼，晚上不晃眼
+- **文章系统**：能发文章了，虽然还在完善
 
-### 环境要求
-
-- Node.js 最新版本
-- npm、yarn、pnpm 或 bun
-
-### 安装依赖
+## 🚀 怎么跑起来
 
 ```bash
+# 装依赖
 npm install
-# 或
-yarn install
-# 或
-pnpm install
-```
 
-### 启动开发服务器
-
-```bash
+# 跑开发服务器
 npm run dev
-# 或
-yarn dev
-# 或
-pnpm dev
-# 或
-bun dev
+
+# 打开浏览器看效果
+# http://localhost:3000
 ```
 
-打开 [http://localhost:3000](http://localhost:3000) 查看效果。
-
-## 📁 项目结构
+## 📁 项目结构（简单说）
 
 ```
 my-blog/
-├── app/                    # Next.js App Router
-│   ├── components/         # React 组件
-│   │   ├── Header.tsx      # 页面头部
-│   │   ├── Footer.tsx      # 页面底部
-│   │   ├── ProfileCard.tsx # 个人资料卡片
-│   │   ├── TagWall.tsx     # 兴趣标签墙
-│   │   ├── UpdatesRenderer.tsx # 动态内容渲染器
-│   │   └── Live2DWidget.tsx # Live2D 角色组件
-│   ├── about/              # 关于页面
-│   ├── layout.tsx          # 根布局
-│   ├── page.tsx            # 首页
-│   └── globals.css         # 全局样式
-├── content/                # 内容文件
-│   └── updates.mdx         # 动态内容（MDX 格式）
-├── lib/                    # 工具函数
-│   ├── interests.ts        # 兴趣标签数据
-│   └── updates.ts          # 动态内容处理
-├── public/                 # 静态资源
-│   ├── images/             # 图片资源
-│   └── HeadIMG.jpg         # 头像
-└── README.md
+├── app/              # 页面和组件
+├── content/posts/    # 博客文章（MDX 格式）
+├── public/images/    # 图片资源
+└── lib/              # 工具函数
 ```
 
-## ⚙ 自定义配置
+## ⚙️ 怎么改
 
-### 修改个人信息
+### 改个人信息
 
-编辑 `app/about/page.tsx` 文件中的个人信息：
+编辑 `app/about/page.tsx`，换个头像、改个昵称啥的
 
-```tsx
-// 修改头像、昵称、简介等
-<img src="/HeadIMG.jpg" title="我的设定" />
-<p>你好，我是阿鲲，一只正在学习 React 和 Tailwind 的鲲。</p>
-```
+### 改兴趣标签
 
-### 更新兴趣标签
+编辑 `lib/interests.ts`，在数组里加你喜欢的标签就行
 
-编辑 `lib/interests.ts` 文件来修改兴趣标签：
-在下面的数组中添加你感兴趣的标签即可。
 ```ts
 export const interests = [
   "音乐发烧友",
-  "纯音乐",
+  "纯音乐", 
   "原神",
-  "折腾怪",
-  "ACG",
-  "MMD学习中",
-  "喵星人",
-  "React",
-  "崩坏·星穹铁道",
-  "明日方舟",
-  "宅",
-  "二次元",
-  "Blue Archive",
-  "蔚蓝档案",
-  "敲代码",
-  "个人自媒体"
+  // ...随便加
 ];
 ```
 
-### 发布动态
+### 发文章
 
-编辑 `content/updates.mdx` 文件来更新动态内容，支持 MDX 语法：
+在 `content/posts/` 目录下新建 `.mdx` 文件，按格式写就行
 
-```mdx
----
-title: "我的动态"
-date: "2025-11-30"
-type: "updates"
----
+## ⚡用的啥技术
 
-##  新功能上线！
+- **Next.js 14** - 框架（App Router 真香）
+- **Tailwind CSS** - 样式（class 写到爽）
+- **MDX** - 内容管理（写东西方便）
+- **TypeScript** - 类型检查（减少翻车）
+- **Vercel** - 部署（一键上线，真方便）
 
-最近完成了XX的功能开发...
+## 🎯 随缘开发计划
 
-> 持续学习中，欢迎交流反馈！
-```
+- [x] 基础博客功能
+- [x] 文章系统
+- [x] 深浅色模式
+- [ ] 评论系统（看心情）
+- [ ] 搜索功能（可能会做）
+- [ ] Live2D 角色（画饼中）
+- [ ] SEO 优化（慢慢搞）
 
-## ⚡技术栈
+## 🚀 怎么部署
 
-- **框架**：Next.js 14 (App Router)
-- **样式**：Tailwind CSS
-- **字体**：Geist Sans & Geist Mono
-- **内容**：MDX
-- **部署**：Vercel（推荐）
+### Vercel（推荐）
 
-## ❗开发计划
-
-- [ ] 完善 Live2D 角色功能
-- [ ] 添加博客文章系统
-- [ ] 集成评论系统
-- [ ] 添加搜索功能
-- [ ] 优化 SEO 配置
-
-## 通过Vercel 部署 (推荐)
-
+点一下就能部署，真的爽
 
 ### 其他平台
 
 ```bash
-# 构建生产版本
+# 构建
 npm run build
 
-# 启动生产服务器
+# 启动
 npm run start
 ```
 
-## ⭐贡献
+## 💭 最后说两句
 
-欢迎提交 Issue 和 Pull Request！
+这个项目就是边学边做的，代码可能有点乱，功能可能有点简陋，但我在持续改进中。欢迎提 Issue 和 PR，一起折腾！
 
 ---
-** by⭐是阿鲲鸭**
+
+**⭐ by 是阿鲲鸭**
