@@ -62,52 +62,51 @@ export default function WallpaperWall() {
       <div className="bg-[var(--card-bg)] backdrop-blur-lg rounded-2xl shadow-sm p-6 border border-[var(--border-color)]">
         <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)] text-center">🌸壁纸收藏馆</h2>
 
-        {/* Masonry Grid */}
-        <div className="
-          grid 
-          grid-cols-1 
-          sm:grid-cols-2 
-          lg:grid-cols-3 
-          gap-4
-          auto-rows-[10px]
-        ">
-          {displayedWallpapers.map(item => {
-            // 自动计算 Masonry 高度
-            const [w, h] = item.resolution?.split("×").map(Number) ?? [1,1]
-            const span = Math.ceil((h / w) * 30) // 控制高度比例
+        {/* Masonry Grid - 使用CSS columns实现更稳定的瀑布流 */}
+      <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+        {displayedWallpapers.map(item => {
+          // 解析分辨率，支持多种格式（×、x、空格）
+          const [w, h] = (item.resolution ?? "1×1")
+            .replace(/\s/g, "")
+            .replace(/[×x]/gi, "x")
+            .split("x")
+            .map(n => Number(n) || 1)
 
-            return (
-              <div
-                key={item.id}
-                style={{ gridRowEnd: `span ${span}` }}
-                className="relative overflow-hidden rounded-xl cursor-pointer group"
-                onClick={() => setSelectedWallpaper(item)}
-              >
-                <img
-                  src={item.thumbnail}
-                  alt={item.title}
-                  className="w-full h-full object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
-                  loading="lazy"
-                />
+          return (
+            <div
+              key={item.id}
+              className="break-inside-avoid relative mb-4 rounded-xl overflow-hidden cursor-pointer group"
+              onClick={() => setSelectedWallpaper(item)}
+            >
+              <img
+                src={item.thumbnail}
+                alt={item.title}
+                // 使用aspect-ratio预留空间，防止图片加载时布局跳动
+                style={{ aspectRatio: `${w} / ${h}` }}
+                width={w}
+                height={h}
+                className="w-full h-auto object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent 
-                  opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
-                  <div className="text-white">
-                    <p className="font-semibold">{item.title}</p>
-                    <p className="text-xs opacity-80">{item.resolution} • {item.fileSize}</p>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {item.tags?.slice(0, 3).map(tag => (
-                        <span key={tag} className="text-xs bg-white/20 px-2 py-1 rounded-full">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent 
+                opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end p-4">
+                <div className="text-white">
+                  <p className="font-semibold">{item.title}</p>
+                  <p className="text-xs opacity-80">{item.resolution} • {item.fileSize}</p>
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {item.tags?.slice(0, 3).map(tag => (
+                      <span key={tag} className="text-xs bg-white/20 px-2 py-1 rounded-full">
+                        {tag}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )
+        })}
+      </div>
 
         {/* 懒加载触发器 */}
         {displayedWallpapers.length < allWallpapers.length && (
