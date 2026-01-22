@@ -121,8 +121,7 @@ export async function generateMetadata(): Promise<Metadata> {
       },
     },
     verification: {
-      google: 'your-google-verification-code',
-      yandex: 'your-yandex-verification-code',
+      google: '782ba3cc522dd4f6'
     },
   };
 }
