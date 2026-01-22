@@ -57,6 +57,12 @@
 
   /* 轮播图遮罩 */
   --hero-overlay: transparent;
+
+  /* 链接颜色 */
+  --link-color: #4361ee;
+  --link-hover: #3a0ca3;
+  --link-underline: rgba(67, 97, 238, 0.3);
+  --link-underline-hover: rgba(58, 12, 163, 0.8);
 }
 
 /* class-based dark */
@@ -116,6 +122,12 @@ html.dark {
 
   /* 轮播图遮罩 */
   --hero-overlay: rgba(0, 0, 0, 0.5);
+
+  /* 链接颜色 */
+  --link-color: #4cc9f0;
+  --link-hover: #7209b7;
+  --link-underline: rgba(76, 201, 240, 0.4);
+  --link-underline-hover: rgba(114, 9, 183, 0.9);
 }
 
 @theme inline {

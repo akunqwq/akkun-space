@@ -7,11 +7,9 @@ import MDXRenderer from "../../components/MDXRenderer";
 export async function generateStaticParams() {
   const posts = getAllPosts();
   
-  return posts
-    .filter((post: any) => post.slug) // 过滤掉空的 slug
-    .map((post: any) => ({
-      slug: post.slug,
-    }));
+  return posts.map((post: any) => ({
+    slug: post.slug,
+  }));
 }
 
 // 生成静态元数据

@@ -53,7 +53,11 @@ export default function ArticlesPage() {
                   {a.title}
                 </h2>
                 <span className="text-xs text-[var(--text-muted)] shrink-0 bg-[var(--border-color)] px-2 py-1 rounded-full">
-                  {a.date}
+                  {new Date(a.date).toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                  })}
                 </span>
               </div>
 

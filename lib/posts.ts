@@ -12,6 +12,8 @@ export interface PostMeta {
   cover?: string;
   summary?: string;
   tags?: string[];
+  order?: number;
+  slug?: string;   // 自定义 URL
   [key: string]: any;
 }
 
@@ -69,9 +71,16 @@ export function getAllPosts(): PostListItem[] {
         } as unknown as PostListItem;
       })
       .sort((a, b) => {
+        // 先按日期降序（新的在前）
         const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
         if (dateDiff !== 0) return dateDiff;
-        return b.fileCreatedTime - a.fileCreatedTime;
+
+        // 日期相同再按 order 降序（大的在前）
+        const orderDiff = (b.order || 0) - (a.order || 0);
+        if (orderDiff !== 0) return orderDiff;
+
+        // 最后按 slug 排序
+        return a.slug.localeCompare(b.slug);
       });
   } catch (error) {
     console.error('Error reading posts:', error);
@@ -86,10 +95,33 @@ export function getPostBySlug(slug: string): Post | null {
       return null;
     }
 
-    const filePath = path.join(postsDir, slug + ".mdx");
+    // URL 解码（处理中文文件名）
+    const decodedSlug = decodeURIComponent(slug);
+
+    // 先尝试直接匹配文件名
+    let filePath = path.join(postsDir, decodedSlug + ".mdx");
     
     if (!fs.existsSync(filePath)) {
-      return null;
+      // 如果直接文件名不存在，遍历所有文件查找匹配的自定义 slug
+      const files = fs.readdirSync(postsDir);
+      const mdxFiles = files.filter(file => /\.mdx?$/.test(file));
+      
+      for (const file of mdxFiles) {
+        const tempPath = path.join(postsDir, file);
+        const raw = fs.readFileSync(tempPath, "utf-8");
+        const { data: meta } = matter(raw);
+        
+        // 检查 meta.slug 是否匹配请求的 slug（支持编码后的URL）
+        if (meta.slug === decodedSlug || meta.slug === slug) {
+          filePath = tempPath;
+          break;
+        }
+      }
+      
+      // 如果没找到匹配的文件
+      if (!fs.existsSync(filePath)) {
+        return null;
+      }
     }
     
     const raw = fs.readFileSync(filePath, "utf-8");
@@ -100,9 +132,12 @@ export function getPostBySlug(slug: string): Post | null {
     const wordCount = content.split(/\s+/).length;
     const readingTime = Math.ceil(wordCount / wordsPerMinute);
 
+    // 使用自定义 slug 或文件名
+    const finalSlug = meta.slug || decodedSlug;
+
     return {
-      slug,
-      url: `/articles/${slug}`,
+      slug: finalSlug,
+      url: `/articles/${finalSlug}`,
       ...meta,
       body: {
         raw: content,
@@ -123,7 +158,7 @@ export function getPostsCount(): number {
 
 // 根据标签获取文章
 export function getPostsByTag(tag: string): PostListItem[] {
-  return getAllPosts().filter((post) => 
+  return getAllPosts().filter((post) =>
     post.tags && post.tags.includes(tag)
   );
 }

@@ -30,16 +30,19 @@ const mdxComponents: MDXComponents = {
   a: ({ href, children, ...props }) => {
     const isExternal = href?.startsWith('http');
 
+    const linkClass = "text-[var(--link-color)] hover:text-[var(--link-hover)] underline underline-offset-2 decoration-[var(--link-underline)] hover:decoration-[var(--link-underline-hover)] transition-all duration-200";
+
     if (isExternal) {
       return (
         <a
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 underline"
+          className={linkClass}
           {...props}
         >
           {children}
+          <span className="ml-1 text-xs">↗</span>
         </a>
       );
     }
@@ -47,7 +50,7 @@ const mdxComponents: MDXComponents = {
     return (
       <Link
         href={href || ''}
-        className="text-blue-600 hover:text-blue-800 underline"
+        className={linkClass}
         {...props}
       >
         {children}
@@ -73,8 +76,7 @@ code: ({ children, className, ...props }) => {
 
   return (
     <code
-      className="text-sm font-mono text-slate-700 dark:text-yellow-200
-        bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md border border-slate-300 dark:border-slate-600 shadow-sm"
+      className="text-sm font-mono text-[var(--link-color)] bg-[var(--card-bg)] px-2 py-1 rounded-md border border-[var(--border-color)] shadow-sm"
       {...props}
     >
       {children}
