@@ -79,8 +79,7 @@ export function getAllPosts(): PostListItem[] {
         const orderDiff = (b.order || 0) - (a.order || 0);
         if (orderDiff !== 0) return orderDiff;
 
-        // 最后按 slug 排序
-        return a.slug.localeCompare(b.slug);
+        return 0;
       });
   } catch (error) {
     console.error('Error reading posts:', error);

@@ -5,10 +5,12 @@ import MDXRenderer from "./components/MDXRenderer";
 
 export default function Home() {
   const allPosts = getAllPosts(); // 获取所有文章
-  const latestPosts = allPosts.slice(0, 5); // 获取最新的5篇文章
-
-  // 获取最新创建的文章的文件创建时间
-  const latestFileCreatedTime = latestPosts.length > 0 ? latestPosts[0].fileCreatedTime : null;
+  
+  // 按日期排序获取最新的5篇文章
+  const latestPosts = allPosts.slice(0, 5);
+  
+  // 获取日期最新的文章（用于标记最新发布）
+  const newestPostDate = allPosts.length > 0 ? allPosts[0].date : null;
 
   // 按日期从新到旧排序，然后获取完整内容
   const postsWithContent = allPosts
@@ -47,7 +49,7 @@ export default function Home() {
                   <Link
                     href={`/articles/${post.slug}`}
                     className={`cursor-pointer transition-colors truncate ${
-                      latestFileCreatedTime && post.fileCreatedTime === latestFileCreatedTime ? 'text-pink-500' : 'hover:text-pink-500'
+                      newestPostDate && post.date === newestPostDate ? 'text-pink-500' : 'hover:text-pink-500'
                       }`}
                   >
                     {post.title}
