@@ -65,7 +65,7 @@ export function getAllPosts(): PostListItem[] {
         return {
           slug,
           ...meta,
-          summary: meta.summary ?? content.slice(0, 100) + '...',
+          summary: meta.summary ?? "-",
           readingTime,
           fileCreatedTime,
         } as unknown as PostListItem;

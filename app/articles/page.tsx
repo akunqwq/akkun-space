@@ -62,7 +62,7 @@ export default function ArticlesPage() {
               </div>
 
               <p className="text-[var(--text-secondary)] text-sm line-clamp-3 leading-relaxed">
-                {a.summary}
+                {a.summary || "-"}
               </p>
             </div>
           </Link>
