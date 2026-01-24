@@ -188,7 +188,7 @@ code: ({ children, className, ...props }) => {
     <iframe
       src={src}
       title={title || ''}
-      className="w-full aspect-video rounded-lg shadow-lg"
+      className="w-full aspect-video rounded-lg shadow-lg min-h-[500px]"  
       frameBorder="0"
       allowFullScreen
       loading="lazy"
