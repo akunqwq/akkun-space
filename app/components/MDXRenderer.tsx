@@ -198,7 +198,7 @@ code: ({ children, className, ...props }) => {
   ),
 
   // 段落
-  p: ({ children, ...props }) => (
+  p: ({ children, style, ...props }) => (
     <p className="my-4 leading-relaxed text-[var(--text-primary)] text-lg" {...props}>
       {children}
     </p>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getPostBySlug, getAllPosts, type Post } from "../../../lib/posts";
+import { formatDate } from "../../../lib/formatDate";
 import MDXRenderer from "../../components/MDXRenderer";
 
 // 生成静态路径
@@ -96,11 +97,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
 
           <div className="flex items-center justify-center gap-4 text-[var(--text-secondary)] mb-6">
             <time dateTime={post.date} className="text-sm">
-              {new Date(post.date).toLocaleDateString('zh-CN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
+              {formatDate(post.date)}
             </time>
                {post.author && (
               <>

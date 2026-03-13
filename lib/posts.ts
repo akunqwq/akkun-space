@@ -70,16 +70,15 @@ export function getAllPosts(): PostListItem[] {
           fileCreatedTime,
         } as unknown as PostListItem;
       })
+      .filter((post) => {
+        // 必须有 order，否则不展示
+        return typeof post.order === 'number' && !isNaN(post.order);
+      })
       .sort((a, b) => {
-        // 先按日期降序（新的在前）
-        const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime();
-        if (dateDiff !== 0) return dateDiff;
-
-        // 日期相同再按 order 降序（大的在前）
-        const orderDiff = (b.order || 0) - (a.order || 0);
-        if (orderDiff !== 0) return orderDiff;
-
-        return 0;
+        // 1. 按 order 降序（数字越大越新，排越前）
+        if (a.order! !== b.order!) return (b.order ?? 0) - (a.order ?? 0);
+        // 2. order 相同时按文件创建时间降序（新的在前）
+        return b.fileCreatedTime - a.fileCreatedTime;
       });
   } catch (error) {
     console.error('Error reading posts:', error);

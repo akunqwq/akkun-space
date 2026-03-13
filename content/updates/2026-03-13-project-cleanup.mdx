@@ -1,0 +1,26 @@
+---
+title: "项目整理与爬虫修复"
+date: "2026-03-13"
+emoji: "🧹"
+category: "milestone"
+---
+
+
+### 2026-03-13 更新
+
+**项目清理**
+- 移除未使用依赖：Contentlayer、@next/mdx、marked、rehype-autolink-headings、rehype-slug
+- 清理 200+ 调试 HTML 文件，crawler 调试输出改到 `debug/` 目录
+- 更新 `.gitignore`，忽略 `debug-article-*.html` 和 `/debug/`
+
+**新闻爬虫修复**
+- 修复 `types` 模块导入（`../types.js` → `../types`）
+- 补全 `types/index.ts` 类型定义
+- 修复 `postsDir` 未定义问题
+- 优化 MDX 模板，移除末尾多余分隔符
+- `createMDX` 支持可选 `order` 参数
+
+**文档**
+- 重写 README，补充完整项目结构说明
+- 更新技术栈说明（Next.js 16、React 19、Tailwind 4）
+- 添加常用命令与内容管理说明

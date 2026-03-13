@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ClientCodeBlock from './ClientCodeBlock';
 import type { Update } from '@/lib/updates';
+import { formatDate } from '@/lib/formatDate';
 
 // 专门为动态内容设计的 MDX 组件映射
 const updatesComponents: MDXComponents = {
@@ -217,7 +218,7 @@ function UpdateCard({ update }: { update: Update }) {
         {update.emoji && <span className="text-xl">{update.emoji}</span>}
         <h3 className="text-base font-bold text-[var(--text-primary)]">{update.title}</h3>
         <span className="ml-auto text-xs text-[var(--text-muted)]">
-          {new Date(update.date).toLocaleDateString('zh-CN')}
+          {formatDate(update.date)}
         </span>
       </div>
 
