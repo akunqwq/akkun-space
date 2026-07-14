@@ -8,6 +8,7 @@ import RecentComments from "./components/RecentComments";
 import StructuredData from "./components/StructuredData";
 import { ThemeProvider } from "./components/ThemeProvider";
 import FloatingThemeToggle from "./components/FloatingThemeToggle";
+import FloatingActions from "./components/FloatingActions";
 import FloatingEmojis from "./components/FloatingEmojis";
 import Script from "next/script";
 import { getAllPosts, getPostBySlug } from "../lib/posts";
@@ -176,6 +177,7 @@ export default function RootLayout({
           <MyCard />
           <RecentComments />
           <FloatingThemeToggle />
+          <FloatingActions />
         </ThemeProvider>
       </body>
     </html>

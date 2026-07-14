@@ -157,7 +157,7 @@ export default function RecentComments() {
                 placeholder="你的昵称"
                 value={newComment.user_name}
                 onChange={(e) => setNewComment({...newComment, user_name: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pink-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-pink-500"
+                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-violet-500"
                 required
                 title="你的昵称"
               />
@@ -165,7 +165,7 @@ export default function RecentComments() {
                 placeholder="写下你的留言..."
                 value={newComment.text}
                 onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-pink-300 h-32 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-pink-500"
+                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-300 h-32 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-violet-500"
                 required
                 title="留下你宝贵的意见~"
               />
@@ -213,7 +213,7 @@ export default function RecentComments() {
           <h2 className="text-base md:text-lg font-bold text-center text-[var(--text-primary)]">留言板</h2>
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`${isCollapsed ? 'md:inline hidden' : ''} text-pink-300 hover:text-pink-500 text-xs md:text-sm font-medium`}
+            className={`${isCollapsed ? 'md:inline hidden' : ''} text-[var(--link-color)] hover:text-[var(--link-hover)] text-xs md:text-sm font-medium`}
           >
             {showForm ? '取消' : '写留言'}
           </button>
@@ -227,7 +227,7 @@ export default function RecentComments() {
               placeholder="你的昵称"
               value={newComment.user_name}
               onChange={(e) => setNewComment({...newComment, user_name: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               required
               title="你的昵称"
             />
@@ -235,7 +235,7 @@ export default function RecentComments() {
               placeholder="写下你的留言..."
               value={newComment.text}
               onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-pink-300 h-20 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 h-20 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               required
               title="留下你宝贵的意见~"
             />

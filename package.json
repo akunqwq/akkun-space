@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/generate-posts-index.ts",
     "build": "next build",
+    "generate-index": "tsx scripts/generate-posts-index.ts",
     "start": "next start",
     "lint": "next lint",
     "fetch-meta": "ts-node scripts/fetch-meta.ts",

@@ -8,16 +8,16 @@ interface TagWallProps {
 }
 
 const tagColors = [
-  "text-pink-500",
+  "text-sky-500",
   "text-blue-500",
-  "text-purple-500",
-  "text-green-500",
-  "text-yellow-500",
-  "text-red-500",
   "text-indigo-500",
-  "text-teal-500",
-  "text-orange-500",
+  "text-violet-500",
+  "text-purple-500",
+  "text-fuchsia-500",
   "text-cyan-500",
+  "text-blue-400",
+  "text-indigo-400",
+  "text-violet-400",
 ];
 
 // 响应式网格分布，根据屏幕宽度调整列数

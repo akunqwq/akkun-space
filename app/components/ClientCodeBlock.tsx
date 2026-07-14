@@ -1,11 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createHighlighter } from "shiki";
+import { createHighlighter, type Highlighter } from "shiki";
 
 interface ClientCodeBlockProps {
   children: string;
   className?: string;
+}
+
+// 全局单例：所有代码块共享同一个 highlighter 实例，避免每个代码块重复创建
+// 使用 undefined 表示尚未初始化；若初始化失败则清空，下次可重试
+let highlighterPromise: Promise<Highlighter> | undefined;
+
+function getSharedHighlighter(): Promise<Highlighter> {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({
+      themes: ["vitesse-dark", "github-light"],
+      langs: [
+        "javascript", "typescript", "json", "css",
+        "html", "bash", "python", "cpp", "java", "markdown",
+        "vue", "tsx", "jsx"
+      ],
+    }).catch((err) => {
+      // 初始化失败：清空缓存，让后续代码块可以重新尝试创建
+      highlighterPromise = undefined;
+      throw err;
+    });
+  }
+  return highlighterPromise;
 }
 
 export default function ClientCodeBlock({ children, className }: ClientCodeBlockProps) {
@@ -41,20 +63,13 @@ export default function ClientCodeBlock({ children, className }: ClientCodeBlock
 
   useEffect(() => {
     async function runHighlight() {
-      const highlighter = await createHighlighter({
-        themes: ["vitesse-dark", "github-light"],
-        langs: [
-          "javascript", "typescript", "json", "css",
-          "html", "bash", "python", "cpp", "java", "markdown",
-           "vue", "tsx", "jsx" 
-        ],
-      });
+      const highlighter = await getSharedHighlighter();
 
       let lang = className?.replace("language-", "") || "text";
       // 添加映射支持简写
       if (lang === "js") lang = "javascript";
       if (lang === "ts") lang = "typescript";
-      if (lang === "md") lang = "markdown"; 
+      if (lang === "md") lang = "markdown";
       if (lang === "vue") lang = "html";
       if (lang === "tsx") lang = "typescript";
       if (lang === "jsx") lang = "javascript";

@@ -3,9 +3,12 @@ import type { MDXComponents } from 'mdx/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import ClientCodeBlock from './ClientCodeBlock';
+import Underline from './mdx/Underline';
 
 // 自定义 MDX 组件映射
 const mdxComponents: MDXComponents = {
+  // 手绘风下划线强调
+  Underline,
   // 自定义图片组件
   img: ({ src, alt, ...props }) => {
     if (!src) return null;
@@ -86,7 +89,7 @@ code: ({ children, className, ...props }) => {
   // 引用块
   blockquote: ({ children, ...props }) => (
     <blockquote
-      className="border-l-4 border-pink-400 bg-[var(--blockquote-bg)] pl-4 pr-3 py-4 my-6 italic text-[var(--text-primary)] rounded-r-lg shadow-sm sm:pl-6 sm:pr-4"
+      className="border-l-4 border-[var(--blockquote-border)] bg-[var(--blockquote-bg)] pl-4 pr-3 py-4 my-6 italic text-[var(--blockquote-text)] rounded-r-lg shadow-sm sm:pl-6 sm:pr-4"
       {...props}
     >
       {children}
@@ -96,7 +99,7 @@ code: ({ children, className, ...props }) => {
   // 标题
   h1: ({ children, ...props }) => (
     <h1
-      className="text-3xl font-bold mt-8 mb-4 text-[var(--text-primary)]"
+      className="text-3xl font-bold mt-8 mb-4 text-[var(--text-primary)] text-center"
       {...props}
     >
       {children}

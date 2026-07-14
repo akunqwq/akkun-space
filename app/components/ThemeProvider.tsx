@@ -65,8 +65,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme, applyToDocument]);
 
   // 仅在用户未显式保存时，跟随系统变化
+  // 挂载后运行一次：若已显式保存主题则跳过，否则监听系统偏好变化
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!mounted) return;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) return;

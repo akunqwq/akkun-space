@@ -1,8 +1,48 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import { calcReadingTime } from './reading-time';
 
 const postsDir = path.join(process.cwd(), "content/posts");
+const indexFile = path.join(process.cwd(), "data/posts.json");
+
+/**
+ * 读取构建时生成的文章索引（data/posts.json）。
+ * 若索引文件不存在（例如首次运行 / 开发时未生成），
+ * 自动回退到实时读取文件系统，保证始终可用。
+ */
+export function getPostsIndex(): PostIndexItem[] {
+  try {
+    if (fs.existsSync(indexFile)) {
+      const raw = fs.readFileSync(indexFile, "utf-8");
+      const data = JSON.parse(raw);
+      // 兼容新旧格式：新格式带 posts 字段，旧格式直接是数组
+      return (data.posts ?? data) as PostIndexItem[];
+    }
+  } catch (error) {
+    console.error("读取文章索引失败，回退到文件系统:", error);
+  }
+  // 回退：实时从文件系统读取（返回结构兼容 PostIndexItem）
+  return getAllPosts() as unknown as PostIndexItem[];
+}
+
+// 文章类型：用于内容分层（技术 / 折腾 / 随笔 / 资讯存档）
+// tech=技术  tinker=折腾  essay=随笔  news=资讯存档（新闻搬运）
+export type PostType = 'tech' | 'tinker' | 'essay' | 'news';
+
+export const POST_TYPE_LABELS: Record<PostType, string> = {
+  tech: '技术',
+  tinker: '折腾',
+  essay: '随笔',
+  news: '资讯',
+};
+
+const VALID_TYPES: PostType[] = ['tech', 'tinker', 'essay', 'news'];
+
+// 归一化 type：非法/缺失时默认归为 essay（个人随笔，避免被误隐藏）
+export function normalizePostType(type: unknown): PostType {
+  return VALID_TYPES.includes(type as PostType) ? (type as PostType) : 'essay';
+}
 
 // 文章元数据类型
 export interface PostMeta {
@@ -13,6 +53,7 @@ export interface PostMeta {
   summary?: string;
   tags?: string[];
   order?: number;
+  type?: PostType;
   slug?: string;   // 自定义 URL
   [key: string]: any;
 }
@@ -21,6 +62,21 @@ export interface PostMeta {
 export interface PostListItem extends PostMeta {
   slug: string;
   summary: string;
+  readingTime: number;
+  fileCreatedTime: number;
+}
+
+// 文章索引项类型（来自 data/posts.json，不含正文）
+export interface PostIndexItem {
+  slug: string;
+  title: string;
+  date: string;
+  author?: string | null;
+  cover?: string;
+  summary: string;
+  tags?: string[];
+  type: PostType;
+  order?: number | null;
   readingTime: number;
   fileCreatedTime: number;
 }
@@ -57,14 +113,13 @@ export function getAllPosts(): PostListItem[] {
         const stats = fs.statSync(filePath);
         const fileCreatedTime = stats.birthtime.getTime();
 
-        // 计算阅读时间
-        const wordsPerMinute = 200;
-        const wordCount = content.split(/\s+/).length;
-        const readingTime = Math.ceil(wordCount / wordsPerMinute);
+        // 阅读时间（构建阶段已在 data/posts.json 算好；此处仅作回退）
+        const readingTime = calcReadingTime(content);
 
         return {
           slug,
           ...meta,
+          type: normalizePostType(meta.type),
           summary: meta.summary ?? "-",
           readingTime,
           fileCreatedTime,
@@ -96,8 +151,12 @@ export function getPostBySlug(slug: string): Post | null {
     // URL 解码（处理中文文件名）
     const decodedSlug = decodeURIComponent(slug);
 
-    // 先尝试直接匹配文件名
+    // 直接匹配文件名（支持 .mdx 和 .md 两种扩展名）
     let filePath = path.join(postsDir, decodedSlug + ".mdx");
+    
+    if (!fs.existsSync(filePath)) {
+      filePath = path.join(postsDir, decodedSlug + ".md");
+    }
     
     if (!fs.existsSync(filePath)) {
       // 如果直接文件名不存在，遍历所有文件查找匹配的自定义 slug
@@ -125,13 +184,14 @@ export function getPostBySlug(slug: string): Post | null {
     const raw = fs.readFileSync(filePath, "utf-8");
     const { data: meta, content } = matter(raw);
 
-    // 计算阅读时间
-    const wordsPerMinute = 200;
-    const wordCount = content.split(/\s+/).length;
-    const readingTime = Math.ceil(wordCount / wordsPerMinute);
-
     // 使用自定义 slug 或文件名
     const finalSlug = meta.slug || decodedSlug;
+
+    // 阅读时间优先取构建阶段生成的索引值，避免每次渲染重算；缺失时回退计算
+    const idxItem = getPostsIndex().find(
+      (p) => p.slug === finalSlug || p.slug === decodedSlug
+    );
+    const readingTime = idxItem?.readingTime ?? calcReadingTime(content);
 
     return {
       slug: finalSlug,
@@ -180,4 +240,40 @@ export function searchPosts(query: string): PostListItem[] {
     (post.summary && post.summary.toLowerCase().includes(lowercaseQuery)) ||
     (post.tags && post.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)))
   );
+}
+
+// 文章索引的元信息（来自 data/posts.json 的 meta 字段）
+export interface PostsIndexMeta {
+  hash: string;
+  generatedAt: string;
+  version: number;
+}
+
+// 文章分类统计（来自 data/posts.json 的 stats 字段）
+export interface PostsIndexStats {
+  total: number;
+  tech: number;
+  tinker: number;
+  essay: number;
+  news: number;
+}
+
+/**
+ * 读取文章索引的元信息与分类统计。
+ * 供首页展示「技术文章 X 篇」等统计，以及增量构建比对 hash。
+ * 若索引文件不存在或旧格式（无 meta/stats），返回 null。
+ */
+export function getPostsMeta(): { meta: PostsIndexMeta; stats: PostsIndexStats } | null {
+  try {
+    if (fs.existsSync(indexFile)) {
+      const raw = fs.readFileSync(indexFile, "utf-8");
+      const data = JSON.parse(raw);
+      if (data.meta && data.stats) {
+        return { meta: data.meta, stats: data.stats };
+      }
+    }
+  } catch (error) {
+    console.error("读取文章索引元信息失败:", error);
+  }
+  return null;
 }

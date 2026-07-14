@@ -175,7 +175,7 @@ export default function WallpaperWall() {
                           href={selectedWallpaper.sourceUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-800 underline"
+                          className="text-sky-600 hover:text-sky-800 underline"
                         >
                           {selectedWallpaper.source}
                         </a>

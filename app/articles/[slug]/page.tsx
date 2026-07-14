@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getPostBySlug, getAllPosts, type Post } from "../../../lib/posts";
 import { formatDate } from "../../../lib/formatDate";
 import MDXRenderer from "../../components/MDXRenderer";
+import ViewCounter from "../../components/ViewCounter";
 
 // 生成静态路径
 export async function generateStaticParams() {
@@ -95,24 +96,19 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             {post.title}
           </h1>
 
-          <div className="flex items-center justify-center gap-4 text-[var(--text-secondary)] mb-6">
-            <time dateTime={post.date} className="text-sm">
-              {formatDate(post.date)}
-            </time>
-               {post.author && (
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[var(--text-secondary)] mb-6">
+            {post.author && (
               <>
-                <span>•</span>
                 <span className="text-sm">{post.author}</span>
               </>
             )}
             {post.tags && post.tags.length > 0 && (
               <>
-                <span>•</span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 justify-center">
                   {post.tags.map((tag: string) => (
                     <span
                       key={tag}
-                      className="px-2 py-1 bg-[var(--tag-bg)] text-[var(--tag-text)] text-xs rounded-full"
+                      className="px-2 py-1 bg-[var(--tag-bg)] text-[var(--tag-text)] text-xs rounded-full whitespace-nowrap"
                     >
                       #{tag}
                     </span>
@@ -120,6 +116,11 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 </div>
               </>
             )}
+            <time dateTime={post.date} className="text-sm">
+              {formatDate(post.date)}
+            </time>
+            {/* 阅读量统计 - 访问详情页时 +1 */}
+            <ViewCounter slug={resolvedParams.slug} />
           </div>
 
           {post.summary && (
@@ -131,7 +132,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
       </header>
 
       {/* 文章内容 */}
-      <article className="bg-[var(--card-bg)] backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-[var(--border-color)] text-[var(--text-primary)]">
+      <article className="relative bg-[var(--card-bg)] backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-[var(--border-color)] text-[var(--text-primary)]">
         <div className="mdx-content">
           <MDXRenderer source={post.body.raw} />
         </div>
@@ -142,7 +143,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
         <div className="text-center">
           <Link
             href="/articles"
-            className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-800 transition-colors"
+            className="inline-flex items-center gap-2 text-[var(--link-color)] hover:text-[var(--link-hover)] transition-colors"
           >
             ← 返回专栏列表
           </Link>

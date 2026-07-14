@@ -47,7 +47,7 @@ export default function MyCard() {
 
             {/* 移动端：右侧文本，桌面端：左侧文本 */}
             <div className={`${isCollapsed ? 'md:block hidden' : ''} text-right md:text-left`} title="点击跳转到我的bilibili主页~">
-                <h1 className="text-lg md:text-2xl font-bold text-pink-500">
+                <h1 className="text-lg md:text-2xl font-bold text-[var(--text-primary)]">
                     你好，我是阿鲲
                 </h1>
                 <p className="text-sm md:text-base text-[var(--text-secondary)] mt-1">

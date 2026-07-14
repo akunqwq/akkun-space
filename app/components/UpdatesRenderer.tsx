@@ -37,7 +37,7 @@ const updatesComponents: MDXComponents = {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2"
+          className="text-sky-600 hover:text-sky-800 underline decoration-2 underline-offset-2"
           {...props}
         >
           {children}
@@ -48,7 +48,7 @@ const updatesComponents: MDXComponents = {
     return (
       <Link
         href={href || ''}
-        className="text-blue-600 hover:text-blue-800 underline decoration-2 underline-offset-2"
+        className="text-sky-600 hover:text-sky-800 underline decoration-2 underline-offset-2"
         {...props}
       >
         {children}
@@ -85,7 +85,7 @@ const updatesComponents: MDXComponents = {
   // 引用块 - 更简洁的样式
   blockquote: ({ children, ...props }) => (
     <blockquote
-      className="bg-[var(--blockquote-bg)] border-l-4 border-blue-400 pl-3 pr-2 py-3 my-4 text-[var(--text-primary)] rounded-r text-sm text-left overflow-x-auto whitespace-nowrap"
+      className="bg-[var(--blockquote-bg)] border-l-4 border-[var(--blockquote-border)] pl-3 pr-2 py-3 my-4 text-[var(--blockquote-text)] rounded-r text-sm text-left overflow-x-auto whitespace-nowrap"
       {...props}
     >
       {children}
