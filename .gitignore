@@ -49,3 +49,5 @@ next-env.d.ts
 
 # runtime data
 scripts/crawler/cache/
+
+.workbuddy/

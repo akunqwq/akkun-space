@@ -14,15 +14,10 @@
     "seo:submit": "node scripts/submit-urls.js",
     "seo:verify": "node scripts/verify-seo.js",
     "seo:check": "npm run dev & sleep 3 && node scripts/verify-seo.js",
-    "sync-wallpapers": "node --loader ts-node/esm scripts/sync-wallpapers.ts",
-    "fetch-news": "tsx scripts/crawler/index.ts",
     "remove-duplicates": "ts-node scripts/remove-duplicates.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.0",
-    "axios": "^1.13.2",
-    "canvas": "^3.2.0",
-    "cheerio": "^1.1.2",
     "fs-extra": "^11.3.3",
     "glob": "^13.0.0",
     "gray-matter": "^4.0.3",
@@ -31,7 +26,6 @@
     "next-mdx-remote": "^6.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "rss-parser": "^3.13.0",
     "shiki": "^3.15.0"
   },
   "devDependencies": {
