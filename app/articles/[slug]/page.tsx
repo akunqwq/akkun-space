@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // 资讯存档（type=news）为新闻搬运内容，禁止搜索引擎索引
   if (post.type === "news") {
     return {
-      title: `${post.title} - 阿鲲 の小窝`,
+      title: `${post.title}`,
       description: post.summary,
       robots: { index: false, follow: false },
     };

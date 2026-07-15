@@ -5,7 +5,7 @@ import { getAllPosts, POST_TYPE_LABELS, normalizePostType, type PostListItem, ty
 import { formatDate } from "../../lib/formatDate";
 
 export const metadata: Metadata = {
-  title: "阿鲲 の小窝 - 文章",
+  title: "文章",
   description: "阿鲲的文章",
 };
 

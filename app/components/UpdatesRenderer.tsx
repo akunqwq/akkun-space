@@ -217,6 +217,11 @@ function UpdateCard({ update }: { update: Update }) {
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--border-color)]">
         {update.emoji && <span className="text-xl">{update.emoji}</span>}
         <h3 className="text-base font-bold text-[var(--text-primary)]">{update.title}</h3>
+        {update.version && (
+          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30">
+            {update.version}
+          </span>
+        )}
         <span className="ml-auto text-xs text-[var(--text-muted)]">
           {formatDate(update.date)}
         </span>

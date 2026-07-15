@@ -1,26 +1,49 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import TagWall from "../components/TagWall";
-import UpdatesRenderer from "../components/UpdatesRenderer";
-import Live2DWidget from "../components/Live2DWidget";
 import { interests } from "@/lib/interests";
-import { getUpdates } from "@/lib/updates";
+import { techStack } from "@/lib/techStack";
 
 export const metadata: Metadata = {
-  title: "阿鲲 の小窝 - 关于",
+  title: "关于",
   description: "关于阿鲲",
 };
 
-export default function AboutPage() {
-  const updates = getUpdates();
+// 正在探索：泛主题、长期稳定，无需频繁更新
+const exploring = [
+  "Next.js 全栈开发",
+  "TypeScript 类型设计",
+  "Vue3 生态",
+  "Web 性能优化",
+];
 
+// Roadmap：稳定的项目目标，不是每周计划
+const roadmap = [
+  "Live2D 角色常驻",
+  "评论 / 留言板",
+  "多设备适配",
+  "更多博客文章",
+];
+
+// 简单 chip 列表（避免 TagWall 的漂浮云样式影响可读性）
+function ChipList({ items }: { items: string[] }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span
+          key={item}
+          className="px-3 py-1 rounded-full text-sm bg-[var(--card-bg)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export default function AboutPage() {
   return (
     <div className="flex flex-col px-4 md:px-8 pt-24 md:pt-6 pb-6 gap-6">
-      {/* 桌面端 Live2D 角色 - 固定在左下角 */}
-      <div className="hidden md:block">
-        <Live2DWidget />
-      </div>
-
       {/* 桌面端三栏布局 */}
       <div className="hidden md:flex md:flex-row gap-6 justify-center">
         {/* 左侧栏 — 个人简介 */}
@@ -37,7 +60,7 @@ export default function AboutPage() {
               />
             </div>
             <p className="text-[var(--text-secondary)] leading-relaxed text-center">
-              你好，我是阿鲲，一只正在学习 React 和 Tailwind 的鲲。
+              你好，我是阿鲲，一名计算机应用技术专业学生，喜欢 Web 开发、软件折腾和各种数码设备。
             </p>
           </div>
         </aside>
@@ -56,9 +79,9 @@ export default function AboutPage() {
           "
         >
           <h3 className="text-xl font-bold text-center mb-4 text-[var(--text-primary)]">
-            兴趣标签
+            我的兴趣
           </h3>
-          <TagWall tags={interests} />
+          <ChipList items={interests} />
         </main>
 
         {/* 右侧栏 — 挂件区 */}
@@ -108,41 +131,20 @@ export default function AboutPage() {
             />
           </div>
           <p className="text-[var(--text-secondary)] leading-relaxed text-center">
-            你好，我是阿鲲，一只正在学习 React 和 Tailwind 的鲲。
+            你好，我是阿鲲，一名计算机应用技术专业学生，喜欢 Web 开发、软件折腾和各种数码设备。
           </p>
         </div>
 
         {/* 兴趣墙 */}
         <main className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
           <h3 className="text-xl font-bold text-center mb-4 text-[var(--text-primary)]">
-            兴趣标签
+            我的兴趣
           </h3>
-          <TagWall tags={interests} />
+          <ChipList items={interests} />
         </main>
 
-        {/* 我的动态 */}
-        <div className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold text-center mb-4 text-[var(--text-primary)]">
-            我的动态
-          </h3>
-          <div className="mx-auto max-w-[720px] text-[var(--text-primary)]">
-            {updates && updates.length > 0 ? (
-              <UpdatesRenderer updates={updates} />
-            ) : (
-              <div className="text-center space-y-3">
-                <p className="text-[var(--text-muted)]">
-                  暂无动态...
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* 移动端挂件区 - Live2D 和右侧卡片水平对齐 */}
+        {/* 移动端挂件区 - 右侧卡片 */}
         <div className="flex gap-4">
-          {/* Live2D 角色 - 左边 */}
-          <Live2DWidget />
-
           {/* 右侧挂件区 - 右边 */}
           <div className="flex flex-col gap-4 justify-start ml-auto" style={{ maxWidth: '224px' }}>
             <div className="p-4 bg-[var(--card-bg)] backdrop-blur-lg rounded-3xl shadow-sm border border-[var(--border-color)]">
@@ -176,29 +178,44 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* 桌面端我的动态 */}
-      <div className="hidden md:flex md:flex-row gap-6 justify-center">
-        <div className="w-full md:w-64 shrink-0"></div> {/* 占位，与左侧栏同宽 */}
-        <div className="flex-1 max-w-[720px] mx-auto backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold text-center mb-4 text-[var(--text-primary)]">
-            我的动态
-          </h3>
-          <div className="text-[var(--text-primary)]">
-            {updates && updates.length > 0 ? (
-              <UpdatesRenderer updates={updates} />
-            ) : (
-              <div className="text-center space-y-3">
-                <p className="text-[var(--text-muted)]">
-                  暂无动态...
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="w-56 shrink-0"></div> {/* 占位，与右侧栏同宽 */}
+      {/* 静态内容区：博客介绍 / 技术栈 / 正在探索 / Roadmap（桌面 + 移动通用） */}
+      <div className="max-w-[720px] w-full mx-auto space-y-6">
+        {/* 博客介绍 */}
+        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
+          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">博客介绍</h3>
+          <p className="text-[var(--text-secondary)] leading-relaxed">
+            这是我的个人博客，用于记录学习过程、项目实践和踩坑经验。主打 ACG 风格，想到啥做啥，
+            边做边上线，随时可能翻车，但也在不断进化。
+          </p>
+        </section>
+
+        {/* 技术栈 */}
+        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
+          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">技术栈</h3>
+          <ChipList items={techStack} />
+        </section>
+
+        {/* 正在探索 */}
+        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
+          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">正在探索</h3>
+          <ChipList items={exploring} />
+        </section>
+
+        {/* Roadmap */}
+        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
+          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">Roadmap</h3>
+          <ChipList items={roadmap} />
+          <p className="text-xs text-[var(--text-muted)] mt-3">
+            稳定的项目目标，不写每周计划 ✌️
+          </p>
+        </section>
+
+        {/* 彩蛋：漂浮兴趣云（纯装饰，不参与信息展示；桌面+移动通用） */}
+        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
+          <h3 className="text-xl font-bold mb-3 text-center text-[var(--text-primary)]">✨ 彩蛋 · 兴趣云 ✨</h3>
+          <TagWall tags={interests} />
+        </section>
       </div>
-
-
     </div>
   );
 }
