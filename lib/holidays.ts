@@ -36,5 +36,5 @@ export function getCountdown() {
     return `距离 ${nextHoliday.name} 还有 ${minDays} 天`;
   }
   
-  return '暂无即将到来的节假日';
+  return '今年已经没有节假日咯！';
 }
