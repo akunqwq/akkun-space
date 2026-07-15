@@ -1,4 +1,4 @@
-English · [简体中文](README.zh-CN.md)
+English · [简体中文](README.md)
 
 # Akun's Blog (阿鲲の小窝)
 
