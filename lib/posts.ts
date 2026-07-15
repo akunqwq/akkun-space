@@ -130,10 +130,12 @@ export function getAllPosts(): PostListItem[] {
         return typeof post.order === 'number' && !isNaN(post.order);
       })
       .sort((a, b) => {
-        // 1. 按 order 降序（数字越大越新，排越前）
-        if (a.order! !== b.order!) return (b.order ?? 0) - (a.order ?? 0);
-        // 2. order 相同时按文件创建时间降序（新的在前）
-        return b.fileCreatedTime - a.fileCreatedTime;
+        // 1. 按发表日期降序（最新文章在前）
+        const dateA = a.date ? new Date(a.date).getTime() : 0;
+        const dateB = b.date ? new Date(b.date).getTime() : 0;
+        if (dateB !== dateA) return dateB - dateA;
+        // 2. 同一天按 order 降序作为次级排序
+        return (b.order ?? 0) - (a.order ?? 0);
       });
   } catch (error) {
     console.error('Error reading posts:', error);

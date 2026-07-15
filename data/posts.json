@@ -1,7 +1,7 @@
 {
   "meta": {
-    "hash": "sha256-dce1875ccbd42356",
-    "generatedAt": "2026-07-14T15:28:35.119Z",
+    "hash": "sha256-68b82ed0bb8bb783",
+    "generatedAt": "2026-07-15T16:38:39.081Z",
     "version": 2
   },
   "stats": {
@@ -38,7 +38,7 @@
       "title": "你好，这是我的第一篇博客文章",
       "date": "2025-11-26",
       "author": null,
-      "cover": "/images/cover/first-post.jpg",
+      "cover": "/images/cover/dTTcmJH0.jpeg",
       "summary": "这是我博客的第一篇内容，测试文章系统是否正常运行~",
       "tags": [
         "随笔",
