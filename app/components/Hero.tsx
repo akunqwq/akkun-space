@@ -1,6 +1,7 @@
 "use client"; 
 
-import { useState, useEffect } from "react";  
+import { useState, useEffect } from "react";
+import Image from "next/image";
 
 const images = [ 
     "/bg1.jpg",
@@ -23,9 +24,12 @@ export default function Hero() {
 
     return (
         <div className="w-full h-72 md:h-96 overflow-hidden rounded-lg shadow-md relative">
-            <img
+            <Image
             src={images[index]}
-            className="w-full h-[400px] object-cover rounder-xl fade opacity-100"
+            alt=""
+            fill
+            priority
+            className="w-full h-[400px] object-cover rounded-xl fade opacity-100"
             />
             <div className="absolute inset-0 bg-[var(--hero-overlay)]"></div>
         </div>

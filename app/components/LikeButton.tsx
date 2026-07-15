@@ -2,23 +2,16 @@
  * LikeButton.tsx - 抖音风点赞按钮（Supabase 版）
  * ================================================
  *
- * 参考FloatingThemeToggle的样式风格：
- * - 圆形半透明背景 + 毛玻璃 + 阴影
- * - 竖向排列：爱心在上，数字在下，垂直居中
- * - 未点赞：白色空心爱心 | 已点赞：粉红实心爱心
- * - localStorage 防重复点赞
+ * 圆形半透明背景 + 毛玻璃 + 阴影
+ * 竖向排列：爱心在上，数字在下，垂直居中
+ * localStorage 防重复点赞
  */
 
 'use client'
 
 import { useEffect, useState } from 'react'
 import { Heart } from 'lucide-react'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import { supabase } from '@/lib/supabase'
 
 const STORAGE_KEY = 'blog_liked_articles'
 
@@ -42,33 +35,29 @@ export default function LikeButton({ slug }: { slug: string }) {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    console.log('[LikeButton] mounted, slug:', slug)
     setMounted(true)
     setIsLiked(getLikedSlugs().has(slug))
   }, [slug])
 
   // 获取点赞数
   useEffect(() => {
-    if (!slug || !mounted) return
+    if (!slug || !mounted || !supabase) return
+    const db = supabase
 
     const fetchLikes = async () => {
       try {
-        console.log('[LikeButton] fetching likes for:', slug)
-        const { data, error } = await supabase
+        const { data, error } = await db
           .from('article_likes')
           .select('likes')
           .eq('slug', slug)
-          .single()
+          .maybeSingle()
 
         if (error || !data) {
-          console.log('[LikeButton] no data or error:', error?.message || 'no row')
           setLikes(0)
         } else {
-          console.log('[LikeButton] got likes:', data.likes)
           setLikes(data.likes)
         }
-      } catch (e) {
-        console.log('[LikeButton] exception:', e)
+      } catch {
         setLikes(0)
       }
     }
@@ -77,20 +66,15 @@ export default function LikeButton({ slug }: { slug: string }) {
   }, [slug, mounted])
 
   const handleLike = async () => {
-    if (!mounted || isLiked) return
+    if (!mounted || isLiked || !supabase) return
 
-    console.log('[LikeButton] liking:', slug)
     const { data, error } = await supabase.rpc('toggle_like', {
       target_slug: slug,
     })
 
-    if (error) {
-      console.log('[LikeButton] like failed:', error.message)
-      return
-    }
+    if (error) return
 
     if (data !== null) {
-      console.log('[LikeButton] liked, new count:', data)
       setLikes(data)
       setIsLiked(true)
       const liked = getLikedSlugs()
@@ -99,7 +83,6 @@ export default function LikeButton({ slug }: { slug: string }) {
     }
   }
 
-  // 挂载后始终显示，不再因为数据没加载完就隐藏
   if (!mounted) return null
 
   const formattedLikes = likes >= 1000 ? (likes / 1000).toFixed(1) + 'k' : String(likes)

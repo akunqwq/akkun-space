@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { getPostBySlug, getAllPosts, type Post } from "../../../lib/posts";
 import { formatDate } from "../../../lib/formatDate";
 import MDXRenderer from "../../components/MDXRenderer";
@@ -15,16 +16,25 @@ export async function generateStaticParams() {
 }
 
 // 生成静态元数据
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const resolvedParams = await params;
   const post = getPostBySlug(resolvedParams.slug);
-  
+
   if (!post) {
     return {
       title: "文章未找到",
     };
   }
-  
+
+  // 资讯存档（type=news）为新闻搬运内容，禁止搜索引擎索引
+  if (post.type === "news") {
+    return {
+      title: `${post.title} - 阿鲲 の小窝`,
+      description: post.summary,
+      robots: { index: false, follow: false },
+    };
+  }
+
   return {
     title: `${post.title} - 阿鲲 の小窝`,
     description: post.summary,
@@ -67,7 +77,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             href="/articles"
             className="inline-block px-6 py-3 bg-[var(--btn-primary)] text-white rounded-lg hover:bg-[var(--btn-primary-hover)] transition-colors"
           >
-            返回专栏列表
+            返回文章列表
           </Link>
         </div>
       </main>
@@ -145,7 +155,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             href="/articles"
             className="inline-flex items-center gap-2 text-[var(--link-color)] hover:text-[var(--link-hover)] transition-colors"
           >
-            ← 返回专栏列表
+            ← 返回文章列表
           </Link>
         </div>
       </footer>

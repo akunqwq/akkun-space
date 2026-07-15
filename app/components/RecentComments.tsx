@@ -34,11 +34,64 @@ export default function RecentComments() {
   const [error, setError] = useState<string | null>(null);
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // 从 Supabase 加载评论
+  const MAX_RETRIES = 3;
+  const RETRY_DELAYS = [1000, 2000, 4000]; // 指数退避
+
+  // 从 Supabase 加载评论（带重试）
   useEffect(() => {
-    fetchComments();
+    fetchComments(0);
   }, []);
+
+  const fetchComments = async (attempt: number) => {
+    try {
+      setError(null);
+      if (attempt === 0) setIsLoading(true);
+
+      if (!supabase) {
+        setError('数据库连接未配置，请检查环境变量');
+        setIsLoading(false);
+        return;
+      }
+
+      const { data, error: queryError } = await supabase
+        .from('comments')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (queryError) {
+        // RLS / 权限 / 表不存在等 — 区分提示
+        const msg = queryError.message || '';
+        if (msg.includes('permission') || msg.includes('policy') || msg.includes('rls')) {
+          throw new Error('数据库权限不足，请检查 RLS 策略');
+        }
+        if (msg.includes('relation') && msg.includes('does not exist')) {
+          throw new Error('comments 表不存在');
+        }
+        throw new Error(`查询失败: ${msg}`);
+      }
+
+      setComments(data || []);
+      setHasLoadedOnce(true);
+      setRetryCount(0);
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : '未知错误';
+
+      if (attempt < MAX_RETRIES) {
+        // 自动重试
+        setRetryCount(attempt + 1);
+        setTimeout(() => fetchComments(attempt + 1), RETRY_DELAYS[attempt]);
+      } else {
+        // 重试耗尽，显示错误 + 手动重试按钮
+        setError(errMsg);
+        setRetryCount(0);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // ESC键关闭弹窗
   useEffect(() => {
@@ -54,43 +107,13 @@ export default function RecentComments() {
     };
   }, [showForm]);
 
-  const fetchComments = async () => {
-    try {
-      setError(null);
-      
-      if (!supabase) {
-        setError('数据库连接未配置');
-        setIsLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('comments')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        setError('获取评论失败');
-        return;
-      }
-
-      setComments(data || []);
-      setHasLoadedOnce(true);
-    } catch (err) {
-      setError('加载评论出错');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.user_name.trim() || !newComment.text.trim()) return;
 
     setIsSubmitting(true);
     setError(null);
-    
+
     try {
       if (!supabase) {
         setError('数据库连接未配置');
@@ -104,25 +127,30 @@ export default function RecentComments() {
         date: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('comments')
         .insert([commentData])
         .select()
         .single();
 
-      if (error) {
-        setError('提交评论失败，请重试');
+      if (insertError) {
+        const msg = insertError.message || '';
+        if (msg.includes('permission') || msg.includes('policy')) {
+          setError('无写入权限，请检查 RLS 策略');
+        } else {
+          setError(`提交失败: ${msg}`);
+        }
         return;
       }
 
       // 更新本地状态
       setComments([data, ...comments]);
-      
+
       // 重置表单
       setNewComment({ user_name: '', text: '' });
       setShowForm(false);
     } catch (err) {
-      setError('提交评论出错，请重试');
+      setError(err instanceof Error ? err.message : '提交评论出错');
     } finally {
       setIsSubmitting(false);
     }
@@ -252,7 +280,20 @@ export default function RecentComments() {
         {/* 错误提示 */}
         {error && (
           <div className="mb-4 p-3 bg-[var(--error-bg)] border border-[var(--error-border)] rounded-lg text-[var(--error-text)] text-sm">
-            {error}
+            <p className="break-all">{error}</p>
+            <button
+              onClick={() => fetchComments(0)}
+              className="mt-2 px-3 py-1 text-xs rounded-md bg-[var(--error-border)] hover:opacity-80 transition-opacity"
+            >
+              重试
+            </button>
+          </div>
+        )}
+
+        {/* 重试中提示 */}
+        {retryCount > 0 && !error && (
+          <div className="mb-4 p-3 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg text-[var(--text-muted)] text-sm text-center">
+            正在重试加载... ({retryCount}/{MAX_RETRIES})
           </div>
         )}
 

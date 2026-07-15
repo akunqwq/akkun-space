@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import TagWall from "../components/TagWall";
 import UpdatesRenderer from "../components/UpdatesRenderer";
 import Live2DWidget from "../components/Live2DWidget";
@@ -26,11 +27,15 @@ export default function AboutPage() {
         <aside className="w-full md:w-64 shrink-0">
           <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-3xl shadow-sm border border-[var(--border-color)]">
             <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">关于本喵~</h2>
-            <img
-              src="/HeadIMG.jpg"
-              title="我的设定"
-              className="w-24 h-24 rounded-full mb-4 transition-transform duration-200 hover:scale-105 cursor-pointer border-2 border-white/50 object-cover mx-auto"
-            />
+            <div className="relative w-24 h-24 rounded-full mb-4 mx-auto">
+              <Image
+                src="/HeadIMG.jpg"
+                alt="阿鲲的头像"
+                title="我的设定"
+                fill
+                className="rounded-full transition-transform duration-200 hover:scale-105 cursor-pointer border-2 border-white/50 object-cover"
+              />
+            </div>
             <p className="text-[var(--text-secondary)] leading-relaxed text-center">
               你好，我是阿鲲，一只正在学习 React 和 Tailwind 的鲲。
             </p>
@@ -75,8 +80,8 @@ export default function AboutPage() {
                 rel="noopener noreferrer"
                 className="flex items-center space-x-4 block transition-transform duration-200 hover:scale-105"
               >
-                <div className="w-16 h-28 flex-shrink-0">
-                  <img src="/images/devices/mondrian.png" alt="手机" title="这是我的手机" className="w-full h-full object-cover rounded-2xl border border-white/50" />
+                <div className="relative w-16 h-28 flex-shrink-0">
+                  <Image src="/images/devices/mondrian.png" alt="手机" title="这是我的手机" fill className="w-full h-full object-cover rounded-2xl border border-white/50" />
                 </div>
                 <div className="flex-1 leading-tight">
                   <h5 className="font-semibold text-[var(--text-primary)] whitespace-nowrap">Redmi K60</h5>
@@ -93,11 +98,15 @@ export default function AboutPage() {
         {/* 个人简介 */}
         <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-3xl shadow-sm border border-[var(--border-color)]">
           <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">关于本喵~</h2>
-          <img
-            src="/HeadIMG.jpg"
-            title="我的设定"
-            className="w-24 h-24 rounded-full mb-4 transition-transform duration-200 hover:scale-105 cursor-pointer border-2 border-white/50 object-cover mx-auto"
-          />
+          <div className="relative w-24 h-24 rounded-full mb-4 mx-auto">
+            <Image
+              src="/HeadIMG.jpg"
+              alt="阿鲲的头像"
+              title="我的设定"
+              fill
+              className="rounded-full transition-transform duration-200 hover:scale-105 cursor-pointer border-2 border-white/50 object-cover"
+            />
+          </div>
           <p className="text-[var(--text-secondary)] leading-relaxed text-center">
             你好，我是阿鲲，一只正在学习 React 和 Tailwind 的鲲。
           </p>
@@ -153,9 +162,9 @@ export default function AboutPage() {
                   rel="noopener noreferrer"
                   className="flex items-center space-x-4 block transition-transform duration-200 hover:scale-105"
                 >
-                  <div className="w-16 h-28 flex-shrink-0">
-                    <img src="/images/devices/mondrian.png" alt="手机" title="这是我的手机" className="w-full h-full object-cover rounded-2xl border border-white/50" />
-                  </div>
+                <div className="relative w-16 h-28 flex-shrink-0">
+                  <Image src="/images/devices/mondrian.png" alt="手机" title="这是我的手机" fill className="w-full h-full object-cover rounded-2xl border border-white/50" />
+                </div>
                   <div className="flex-1 leading-tight">
                     <h5 className="font-semibold text-[var(--text-primary)] whitespace-nowrap">Redmi K60</h5>
                     <p className="text-sm text-[var(--text-secondary)] mt-1 text-center">16+256GB</p>

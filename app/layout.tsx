@@ -11,7 +11,6 @@ import FloatingThemeToggle from "./components/FloatingThemeToggle";
 import FloatingActions from "./components/FloatingActions";
 import FloatingEmojis from "./components/FloatingEmojis";
 import Script from "next/script";
-import { getAllPosts, getPostBySlug } from "../lib/posts";
 
 const geistSans = localFont({
   src: [
@@ -29,21 +28,8 @@ const geistMono = localFont({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const allPosts = getAllPosts();
-  let dynamicDescription = "阿鲲の小窝 - 一个边做边上线的个人博客，随时可能翻车，但也在不断进化 ✨";
-
-  if (allPosts.length > 0) {
-    const latestPost = allPosts[0];
-    const postWithContent = getPostBySlug(latestPost.slug);
-    const postSummary = postWithContent?.summary || 
-      (postWithContent?.bodyRaw ? postWithContent.bodyRaw.substring(0, 60) + "..." : "");
-    
-    dynamicDescription = `${dynamicDescription} 《${latestPost.title}》${postSummary ? " - " + postSummary : ""}`;
-  }
-
-  const finalDescription = dynamicDescription.length > 160 
-    ? dynamicDescription.substring(0, 157) + "..."
-    : dynamicDescription;
+  // 固定描述，避免新闻搬运内容污染搜索引擎摘要
+  const finalDescription = "阿鲲的个人博客，记录前端开发、技术探索、游戏与生活点滴。";
 
   return {
     title: {
@@ -90,7 +76,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       title: "阿鲲 の小窝",
-      description: "一个专注于 游戏、ACG、技术的个人博客",
+      description: finalDescription,
       url: '/',
       siteName: "阿鲲 の小窝",
       images: [
@@ -107,7 +93,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: "阿鲲 の小窝",
-      description: "一个专注于 游戏、ACG、技术的个人博客",
+      description: finalDescription,
       images: ['/HeadIMG.jpg'],
     },
     robots: {
@@ -142,9 +128,6 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `(function(){
               try {
-                // 先隐藏页面
-                document.documentElement.style.visibility = 'hidden';
-
                 var key = 'theme';
                 var saved = localStorage.getItem(key);
                 if (saved === 'dark') { document.documentElement.classList.add('dark'); }
@@ -153,11 +136,6 @@ export default function RootLayout({
                   var mql = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
                   if (mql && mql.matches) document.documentElement.classList.add('dark');
                 }
-
-                // 等一帧确保 CSS 加载完成，然后显示页面
-                requestAnimationFrame(function() {
-                  document.documentElement.style.visibility = 'visible';
-                });
               } catch (e) { /* ignore */ }
             })();`,
           }}

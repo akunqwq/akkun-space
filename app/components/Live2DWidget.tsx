@@ -29,9 +29,8 @@ export default function Live2DWidget() {
     drawPlaceholder(mobileCanvasRef.current);
 
     // TODO: 后续添加鼠标追踪功能
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (_e: MouseEvent) => {
       // 鼠标追踪逻辑将在这里实现
-      console.log('Mouse position:', e.clientX, e.clientY);
     };
 
     window.addEventListener('mousemove', handleMouseMove);

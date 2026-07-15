@@ -8,7 +8,8 @@ const baseUrl = new URL(
 )
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const posts = getAllPosts()
+  // 过滤资讯存档（type=news），不纳入 sitemap，配合详情页 noindex 双重防止索引
+  const posts = getAllPosts().filter((p) => p.type !== "news")
 
   // 基础页面
   const staticPages: MetadataRoute.Sitemap = [

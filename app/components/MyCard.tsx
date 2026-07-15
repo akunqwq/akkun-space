@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 export default function MyCard() {
     const [isCollapsed, setIsCollapsed] = useState(true);
@@ -56,10 +57,12 @@ export default function MyCard() {
             </div>
 
             {/* 移动端：左侧头像，桌面端：右侧头像 */}
-            <img
+            <Image
                 src="/avatar.jpg"
                 alt="头像"
                 title="干嘛！看什么看！"
+                width={80}
+                height={80}
                 className="
       w-16 h-16 md:w-20 md:h-20 rounded-full
       border-2 border-[var(--border-color)]

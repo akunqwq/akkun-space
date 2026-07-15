@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { getAllPosts, POST_TYPE_LABELS, normalizePostType, type PostListItem, type PostType } from "../../lib/posts";
 import { formatDate } from "../../lib/formatDate";
 
 export const metadata: Metadata = {
-  title: "阿鲲 の小窝 - 专栏",
-  description: "阿鲲的专栏",
+  title: "阿鲲 の小窝 - 文章",
+  description: "阿鲲的文章",
 };
 
 // 筛选标签：全部 + 各类型
@@ -38,7 +39,7 @@ export default async function ArticlesPage({
   return (
     <main className="max-w-5xl mx-auto px-6 pt-24 md:pt-12 pb-12">
       <h1 className="text-4xl font-bold mb-6 tracking-tight text-[var(--text-primary)]">
-        专栏列表
+        文章列表
       </h1>
 
       {/* 类型筛选标签栏 */}
@@ -80,11 +81,12 @@ export default async function ArticlesPage({
       "
           >
             {/* 顶部封面 */}
-            <div className="h-40 w-full overflow-hidden bg-[var(--border-color)]">
+            <div className="relative h-40 w-full overflow-hidden bg-[var(--border-color)]">
               {a.cover ? (
-                <img
+                <Image
                   src={a.cover}
                   alt={a.title}
+                  fill
                   className="
               w-full h-full object-cover
               group-hover:scale-105

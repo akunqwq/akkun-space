@@ -1,5 +1,5 @@
 import Hero from "./components/Hero";
-import { getPostsIndex, getPostsMeta } from "../lib/posts";
+import { getPostsIndex, getPostsMeta, type PostsIndexStats } from "../lib/posts";
 import PostCard from "./components/PostCard";
 import Pagination from "./components/Pagination";
 
@@ -17,11 +17,11 @@ export default async function Home({
 
   // 分类统计：优先用构建时生成的 meta，旧格式则实时从索引计算
   const meta = getPostsMeta();
-  const stats =
+  const stats: PostsIndexStats =
     meta?.stats ?? (() => {
-      const s: Record<string, number> = { total: allPosts.length };
-      for (const p of allPosts) s[p.type] = (s[p.type] ?? 0) + 1;
-      return s as any;
+      const s: PostsIndexStats = { total: allPosts.length, tech: 0, tinker: 0, essay: 0, news: 0 };
+      for (const p of allPosts) s[p.type] += 1;
+      return s;
     })();
 
   // 内容分层：首页主信息流只展示「个人创作」（技术/折腾/随笔），
@@ -91,17 +91,56 @@ export default async function Home({
           {/* 右侧固定卡片 */}
           <div className="hidden md:block md:col-span-3 sticky top-1/4 h-fit">
             <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-2xl shadow-sm border border-[var(--border-color)] hover:shadow-md transition">
-              <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)]">💖 关注我</h2>
-              <p className="text-[var(--text-secondary)]">你可以在这里找到我：</p>
-              <ul className="mt-2 text-[var(--link-color)] space-y-1">
-                <li><a href="https://space.bilibili.com/286757068" target="_blank" title="点击跳转到我的bilibili主页~">- Bilibili:是阿鲲酱鸭</a></li>
-              </ul>
-              <ul className="mt-2 text-black space-y-1">
-                <li><a href="https://github.com/akunqwq" target="_blank" title="这是我的GitHub主页~">- GiHub:akunqwq</a></li>
-              </ul>
-              <ul className="mt-2 text-sky-500 space-y-1">
-                <li title="这是我的QQ号">- QQ:2633640385</li>
-              </ul>
+              <h2 className="text-xl font-bold mb-4 text-[var(--text-primary)] flex items-center gap-2">
+                <span>💖</span> 关注我
+              </h2>
+              <p className="text-[var(--text-secondary)] mb-4">你可以在这里找到我：</p>
+
+              <div className="space-y-3">
+                {/* Bilibili */}
+                <a
+                  href="https://space.bilibili.com/286757068"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="点击跳转到我的bilibili主页~"
+                  className="group flex items-center gap-3 p-3 rounded-xl border border-[var(--border-color)] hover:border-pink-400/50 hover:bg-pink-500/5 transition-all duration-200"
+                >
+                  <span className="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg bg-pink-500/15 text-pink-500 text-lg">📺</span>
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-pink-500 transition-colors">Bilibili</span>
+                    <span className="text-xs text-[var(--text-muted)] truncate">是阿鲲酱鸭</span>
+                  </span>
+                  <span className="ml-auto text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform">↗</span>
+                </a>
+
+                {/* GitHub */}
+                <a
+                  href="https://github.com/akunqwq"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="这是我的GitHub主页~"
+                  className="group flex items-center gap-3 p-3 rounded-xl border border-[var(--border-color)] hover:border-gray-400/50 hover:bg-gray-500/5 transition-all duration-200"
+                >
+                  <span className="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg bg-gray-500/15 text-gray-700 dark:text-gray-200 text-lg">🐙</span>
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors">GitHub</span>
+                    <span className="text-xs text-[var(--text-muted)] truncate">akunqwq</span>
+                  </span>
+                  <span className="ml-auto text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform">↗</span>
+                </a>
+
+                {/* QQ */}
+                <div
+                  title="这是我的QQ号"
+                  className="group flex items-center gap-3 p-3 rounded-xl border border-[var(--border-color)] hover:border-sky-400/50 hover:bg-sky-500/5 transition-all duration-200"
+                >
+                  <span className="flex items-center justify-center w-10 h-10 shrink-0 rounded-lg bg-sky-500/15 text-sky-500 text-lg">💬</span>
+                  <span className="flex flex-col min-w-0">
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">QQ</span>
+                    <span className="text-xs text-[var(--text-muted)] truncate">2633640385</span>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

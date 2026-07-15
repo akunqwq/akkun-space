@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { getCountdown } from "@/lib/holidays";
 
 // 获取当前时间格式化字符串（包含秒数）
@@ -120,11 +121,10 @@ export default function Header() {
         <div className="flex-1 flex justify-end">
           {/* 桌面端导航 */}
           <nav className="hidden md:flex gap-6 text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">
-            <a href="/" className="hover:text-violet-500">首页</a>
-            <a href="/wallpapers" className="hover:text-violet-500">壁纸</a>
-            <a href="/articles" className="hover:text-violet-500">专栏</a>
+            <Link href="/" className="hover:text-violet-500">首页</Link>
+            <Link href="/articles" className="hover:text-violet-500">文章</Link>
 
-            <a href="/about" className="hover:text-violet-500">关于本喵</a>
+            <Link href="/about" className="hover:text-violet-500">关于本喵</Link>
           </nav>
 
           {/* 移动端汉堡菜单 */}
@@ -148,36 +148,29 @@ export default function Header() {
         <div className="md:hidden bg-[var(--header-bg)] backdrop-blur-xl border-t border-[var(--header-border)]">
           <nav className="flex flex-col py-4 px-8 space-y-3">
 
-            <a
+            <Link
               href="/"
               className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               首页
-            </a>
-            <a
-              href="/wallpapers"
-              className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              壁纸
-            </a>
-            <a
+            </Link>
+            <Link
               href="/articles"
               className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              专栏
-            </a>
+              文章
+            </Link>
 
 
-            <a
+            <Link
               href="/about"
               className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               关于本喵
-            </a>
+            </Link>
           </nav>
         </div>
       )}

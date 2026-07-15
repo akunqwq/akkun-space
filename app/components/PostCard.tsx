@@ -8,6 +8,7 @@
  */
 
 import Link from "next/link";
+import Image from "next/image";
 import { formatDate } from "../../lib/formatDate";
 import { POST_TYPE_LABELS, type PostIndexItem, type PostType } from "../../lib/posts";
 
@@ -34,10 +35,11 @@ export default function PostCard({ post }: { post: PostIndexItem }) {
     >
       {/* 封面 */}
       {post.cover && (
-        <div className="h-36 w-full overflow-hidden bg-[var(--border-color)]">
-          <img
+        <div className="relative h-36 w-full overflow-hidden bg-[var(--border-color)]">
+          <Image
             src={post.cover}
             alt={post.title}
+            fill
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
         </div>
