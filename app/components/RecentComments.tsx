@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useState, useEffect } from "react";
-import { supabase } from '@/lib/supabase';
 
 interface Comment {
   id: number;
@@ -49,43 +48,49 @@ export default function RecentComments() {
       setError(null);
       if (attempt === 0) setIsLoading(true);
 
-      if (!supabase) {
-        setError('数据库连接未配置，请检查环境变量');
-        setIsLoading(false);
-        return;
+      // 8s 超时保护，避免请求挂死
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+
+      const res = await fetch('/api/guestbook', {
+        cache: 'no-store',
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timeout));
+
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try {
+          const body = await res.json();
+          if (body?.error) msg = body.error;
+        } catch {
+          /* 忽略解析失败，沿用默认 msg */
+        }
+        throw new Error(msg);
       }
 
-      const { data, error: queryError } = await supabase
-        .from('comments')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (queryError) {
-        // RLS / 权限 / 表不存在等 — 区分提示
-        const msg = queryError.message || '';
-        if (msg.includes('permission') || msg.includes('policy') || msg.includes('rls')) {
-          throw new Error('数据库权限不足，请检查 RLS 策略');
-        }
-        if (msg.includes('relation') && msg.includes('does not exist')) {
-          throw new Error('comments 表不存在');
-        }
-        throw new Error(`查询失败: ${msg}`);
-      }
-
-      setComments(data || []);
+      const json = await res.json();
+      setComments(json.comments || []);
       setHasLoadedOnce(true);
       setRetryCount(0);
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : '未知错误';
+      const rawMsg = err instanceof Error ? err.message : '未知错误';
+      // 网络层错误（浏览器 → 同源 Next 服务）一律可重试
+      const isNetworkErr =
+        err instanceof TypeError ||
+        (err instanceof Error && err.name === 'AbortError') ||
+        /Failed to fetch|abort|network|HTTP 5/i.test(rawMsg);
 
       if (attempt < MAX_RETRIES) {
-        // 自动重试
+        // 自动重试（指数退避）
         setRetryCount(attempt + 1);
         setTimeout(() => fetchComments(attempt + 1), RETRY_DELAYS[attempt]);
       } else {
-        // 重试耗尽，显示错误 + 手动重试按钮
-        setError(errMsg);
+        // 重试耗尽：网络类给友好提示，业务类透传服务端报错
+        setError(
+          isNetworkErr
+            ? '网络异常，请检查连接后点击重试'
+            : rawMsg
+        );
         setRetryCount(0);
       }
     } finally {
@@ -115,36 +120,32 @@ export default function RecentComments() {
     setError(null);
 
     try {
-      if (!supabase) {
-        setError('数据库连接未配置');
-        return;
-      }
+      const res = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_name: newComment.user_name.trim(),
+          text: newComment.text.trim(),
+        }),
+      });
 
-      const commentData = {
-        user_name: newComment.user_name.trim(),
-        avatar: "",
-        text: newComment.text.trim(),
-        date: new Date().toISOString(),
-      };
-
-      const { data, error: insertError } = await supabase
-        .from('comments')
-        .insert([commentData])
-        .select()
-        .single();
-
-      if (insertError) {
-        const msg = insertError.message || '';
-        if (msg.includes('permission') || msg.includes('policy')) {
-          setError('无写入权限，请检查 RLS 策略');
-        } else {
-          setError(`提交失败: ${msg}`);
+      if (!res.ok) {
+        let msg = `提交失败 (${res.status})`;
+        try {
+          const body = await res.json();
+          if (body?.error) msg = body.error;
+        } catch {
+          /* 忽略解析失败 */
         }
-        return;
+        throw new Error(msg);
       }
 
-      // 更新本地状态
-      setComments([data, ...comments]);
+      const json = await res.json();
+      const newItem = json.comment;
+      if (newItem) {
+        // 更新本地状态：新留言置顶
+        setComments([newItem, ...comments]);
+      }
 
       // 重置表单
       setNewComment({ user_name: '', text: '' });
@@ -185,7 +186,7 @@ export default function RecentComments() {
                 placeholder="你的昵称"
                 value={newComment.user_name}
                 onChange={(e) => setNewComment({...newComment, user_name: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-violet-500"
+                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-accent/50 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-accent"
                 required
                 title="你的昵称"
               />
@@ -193,7 +194,7 @@ export default function RecentComments() {
                 placeholder="写下你的留言..."
                 value={newComment.text}
                 onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-violet-300 h-32 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-violet-500"
+                className="w-full px-4 py-3 border rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-accent/50 h-32 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:ring-accent"
                 required
                 title="留下你宝贵的意见~"
               />
@@ -241,7 +242,7 @@ export default function RecentComments() {
           <h2 className="text-base md:text-lg font-bold text-center text-[var(--text-primary)]">留言板</h2>
           <button
             onClick={() => setShowForm(!showForm)}
-            className={`${isCollapsed ? 'md:inline hidden' : ''} text-[var(--link-color)] hover:text-[var(--link-hover)] text-xs md:text-sm font-medium`}
+            className={`${isCollapsed ? 'md:inline hidden' : ''} text-accent hover:text-[var(--accent-hover)] text-xs md:text-sm font-medium`}
           >
             {showForm ? '取消' : '写留言'}
           </button>
@@ -255,7 +256,7 @@ export default function RecentComments() {
               placeholder="你的昵称"
               value={newComment.user_name}
               onChange={(e) => setNewComment({...newComment, user_name: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               required
               title="你的昵称"
             />
@@ -263,7 +264,7 @@ export default function RecentComments() {
               placeholder="写下你的留言..."
               value={newComment.text}
               onChange={(e) => setNewComment({...newComment, text: e.target.value})}
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-violet-300 h-20 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
+              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-accent/50 h-20 resize-none bg-[var(--input-bg)] border-[var(--input-border)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)]"
               required
               title="留下你宝贵的意见~"
             />

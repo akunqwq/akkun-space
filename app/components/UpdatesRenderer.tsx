@@ -218,7 +218,7 @@ function UpdateCard({ update }: { update: Update }) {
         {update.emoji && <span className="text-xl">{update.emoji}</span>}
         <h3 className="text-base font-bold text-[var(--text-primary)]">{update.title}</h3>
         {update.version && (
-          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/30">
+          <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
             {update.version}
           </span>
         )}

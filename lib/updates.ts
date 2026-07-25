@@ -12,6 +12,7 @@ export interface UpdateMeta {
   date: string;
   emoji?: string;
   category?: string;
+  version?: string;
   [key: string]: any;
 }
 
@@ -56,10 +57,4 @@ export function getUpdates(): Update[] {
     console.error('Error reading updates:', error);
     return [];
   }
-}
-
-// 获取单个动态（保留用于兼容）
-export function getUpdate(): Update | null {
-  const updates = getUpdates();
-  return updates.length > 0 ? updates[0] : null;
 }

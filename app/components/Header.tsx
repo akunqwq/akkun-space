@@ -37,6 +37,7 @@ export default function Header() {
   const [titleText, setTitleText] = useState("");
   const [isTitleTyping, setIsTitleTyping] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const clockIntervalRef = useRef<number | null>(null);
   const greetingIndexRef = useRef(0);
@@ -119,10 +120,28 @@ export default function Header() {
     };
   }, []);
 
+  // 沉浸式 Header：所有路由都有全屏 GlobalHero，故顶部一律透明浮于 Hero 上，
+  // 滚过 Hero（约 85vh）后变实底；资讯存档等无 Hero 的边界场景仍保持可读。
+  const transparent = !scrolled;
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > window.innerHeight * 0.85);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [pathname]);
+
   return (
     <header className="fixed top-0 left-0 w-full z-50">
-      {/* 背景层：backdrop-filter 隔离，不污染内容层 */}
-      <div className="absolute inset-0 backdrop-blur-xl bg-[var(--header-bg)] shadow-lg border-b border-[var(--header-border)]" />
+      {/* 背景层：顶部透明（沉浸 Hero），滚过后实底；transition 平滑切换 */}
+      <div
+        className={`absolute inset-0 transition-all duration-300 ${
+          transparent
+            ? "bg-gradient-to-b from-black/40 via-black/15 to-transparent"
+            : "bg-[var(--header-bg)] shadow-lg border-b border-[var(--header-border)] backdrop-blur-xl"
+        }`}
+      />
 
       {/* 内容层：CSS Grid 三栏 [auto_1fr_auto]，无 absolute 子元素，不裁切不重叠 */}
       <div className="relative grid grid-cols-[auto_1fr_auto] items-center w-full px-4 sm:px-8 py-4 gap-2 sm:gap-6">
@@ -130,18 +149,20 @@ export default function Header() {
         {/* 左：时间 + 节日倒计时（常驻，类似系统托盘时钟） */}
         <div
           suppressHydrationWarning
-          className="text-left text-xs sm:text-sm leading-tight shrink-0"
+          className={`text-left text-xs sm:text-sm leading-tight shrink-0 ${
+            transparent ? "text-white/90" : "text-[var(--text-primary)]"
+          }`}
         >
-          <div className="font-mono text-pink-400 dark:text-violet-400">{timeText}</div>
-          <div className="text-[var(--text-secondary)]">{countdownText}</div>
+          <div className="font-mono text-[var(--text-primary)]">{timeText}</div>
+          <div className="text-[var(--accent)]">{countdownText}</div>
         </div>
 
         {/* 中：品牌问候 — Grid 1fr 列，overflow-visible 不裁切文本；pointer-events-none 不挡导航 */}
         <div className="min-w-0 text-center overflow-visible pointer-events-none">
-          <div className="text-base sm:text-lg md:text-2xl font-bold text-pink-400 dark:text-violet-400 tracking-wide whitespace-nowrap">
+          <div className="text-base sm:text-lg md:text-2xl font-bold text-[var(--accent)] tracking-wide whitespace-nowrap">
             {titleText}
             {isTitleTyping && (
-              <span className="animate-pulse text-[var(--text-primary)]">|</span>
+              <span className="animate-pulse text-[var(--accent)] opacity-70">|</span>
             )}
           </div>
         </div>
@@ -149,17 +170,24 @@ export default function Header() {
         {/* 右：导航 */}
         <div className="flex justify-end shrink-0">
           {/* 桌面端导航 */}
-          <nav className="hidden md:flex gap-6 text-[var(--text-secondary)] dark:text-[var(--text-secondary)]">
-            <Link href="/" className="hover:text-violet-500">首页</Link>
-            <Link href="/articles" className="hover:text-violet-500">文章</Link>
-            <Link href="/games" className="hover:text-violet-500">游戏</Link>
-            <Link href="/changelog" className="hover:text-violet-500">更新日志</Link>
-            <Link href="/about" className="hover:text-violet-500">关于本喵</Link>
+          <nav
+            className={`hidden md:flex gap-6 ${
+              transparent ? "text-white/90" : "text-[var(--text-primary)]"
+            }`}
+          >
+            <Link href="/" className="hover:text-[var(--accent)]">首页</Link>
+            <Link href="/articles" className="hover:text-[var(--accent)]">文章</Link>
+            <Link href="/media/music" className="hover:text-[var(--accent)]">音乐</Link>
+            <Link href="/games" className="hover:text-[var(--accent)]">游戏</Link>
+            <Link href="/changelog" className="hover:text-[var(--accent)]">更新日志</Link>
+            <Link href="/about" className="hover:text-[var(--accent)]">关于本喵</Link>
           </nav>
 
           {/* 移动端汉堡菜单 */}
           <button
-            className="md:hidden text-[var(--text-secondary)] dark:text-[var(--text-secondary)] focus:outline-none"
+            className={`md:hidden focus:outline-none ${
+              transparent ? "text-white" : "text-[var(--text-primary)]"
+            }`}
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="菜单"
           >
@@ -178,35 +206,42 @@ export default function Header() {
           <nav className="flex flex-col py-4 px-8 space-y-3">
             <Link
               href="/"
-              className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
+              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               首页
             </Link>
             <Link
               href="/articles"
-              className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
+              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               文章
             </Link>
             <Link
+              href="/media/music"
+              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              音乐
+            </Link>
+            <Link
               href="/games"
-              className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
+              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               游戏
             </Link>
             <Link
               href="/changelog"
-              className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
+              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               更新日志
             </Link>
             <Link
               href="/about"
-              className="text-[var(--text-secondary)] dark:text-[var(--text-secondary)] hover:text-violet-500 py-2"
+              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               关于本喵

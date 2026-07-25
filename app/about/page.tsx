@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { Github, Globe, Tv, Sparkles, Rocket, Compass, Code2 } from "lucide-react";
 import TagWall from "../components/TagWall";
+import GlassPage from "../components/GlassPage";
 import { interests } from "@/lib/interests";
 import { techStack } from "@/lib/techStack";
 
 export const metadata: Metadata = {
   title: "关于",
-  description: "关于阿鲲",
+  description: "关于阿鲲与阿鲲の小窝",
 };
 
 // 正在探索：泛主题、长期稳定，无需频繁更新
@@ -20,9 +22,15 @@ const exploring = [
 // Roadmap：稳定的项目目标，不是每周计划
 const roadmap = [
   "Live2D 角色常驻",
-  "评论 / 留言板",
-  "多设备适配",
+  "评论 / 留言板优化",
+  "媒体中心（音乐 / 视频）",
   "更多博客文章",
+];
+
+const socials = [
+  { label: "Bilibili", href: "https://space.bilibili.com/286757068", icon: Tv },
+  { label: "GitHub", href: "https://github.com/akunqwq", icon: Github },
+  { label: "博客", href: "https://www.akkun.online", icon: Globe },
 ];
 
 // 简单 chip 列表（避免 TagWall 的漂浮云样式影响可读性）
@@ -32,7 +40,7 @@ function ChipList({ items }: { items: string[] }) {
       {items.map((item) => (
         <span
           key={item}
-          className="px-3 py-1 rounded-full text-sm bg-[var(--card-bg)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          className="px-3 py-1 rounded-full text-sm bg-[var(--card-bg)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent)] transition-colors"
         >
           {item}
         </span>
@@ -41,181 +49,120 @@ function ChipList({ items }: { items: string[] }) {
   );
 }
 
+function Section({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="card">
+      <h2 className="flex items-center gap-2 text-lg font-bold text-[var(--text-primary)] mb-3">
+        <Icon className="w-5 h-5 text-[var(--accent)]" />
+        {title}
+      </h2>
+      <div className="text-[var(--text-secondary)]">{children}</div>
+    </section>
+  );
+}
+
 export default function AboutPage() {
   return (
-    <div className="flex flex-col px-4 md:px-8 pt-24 md:pt-6 pb-6 gap-6">
-      {/* 桌面端三栏布局 */}
-      <div className="hidden md:flex md:flex-row gap-6 justify-center">
-        {/* 左侧栏 — 个人简介 */}
-        <aside className="w-full md:w-64 shrink-0">
-          <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-3xl shadow-sm border border-[var(--border-color)]">
-            <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">关于本喵~</h2>
-            <div className="relative w-24 h-24 rounded-full mb-4 mx-auto">
-              <Image
-                src="/HeadIMG.jpg"
-                alt="阿鲲的头像"
-                title="我的设定"
-                fill
-                className="rounded-full transition-transform duration-200 hover:scale-105 cursor-pointer border-2 border-white/50 object-cover"
-              />
-            </div>
-            <p className="text-[var(--text-secondary)] leading-relaxed text-center">
-              你好，我是阿鲲，一名计算机应用技术专业学生，喜欢 Web 开发、软件折腾和各种数码设备。
-            </p>
-          </div>
-        </aside>
-
-        {/* 中间主内容 - 兴趣墙 */}
-        <main
-          className="
-            flex-1
-            max-w-[720px]
-            mx-auto
-            backdrop-blur-xl
-            rounded-2xl
-            shadow-[0_4px_20px_rgba(0,0,0,0.05)]
-            border border-[var(--border-color)]
-            p-6
-          "
-        >
-          <h3 className="text-xl font-bold text-center mb-4 text-[var(--text-primary)]">
-            我的兴趣
-          </h3>
-          <ChipList items={interests} />
-        </main>
-
-        {/* 右侧栏 — 挂件区 */}
-        <aside className="w-56 shrink-0 flex flex-col gap-4 justify-start">
-          <div className="p-4 bg-[var(--card-bg)] backdrop-blur-lg rounded-3xl shadow-sm border border-[var(--border-color)]">
-            <h4 className="font-semibold text-[var(--text-primary)] mb-2">个人名片</h4>
-            <p className="text-[var(--text-secondary)]">这里可以放成就、签名、社交链接等</p>
-          </div>
-
-          <div className="p-6 bg-[var(--card-bg)] backdrop-blur-lg rounded-3xl shadow-sm border border-[var(--border-color)]">
-            <h4 className="font-semibold text-[var(--text-primary)] mb-4">我的装备:</h4>
-
-            {/* 设备列表布局 */}
-            <div className="space-y-4">
-              {/* 设备卡片 */}
+    <GlassPage maxWidth="max-w-5xl">
+      <div className="space-y-6">
+      {/* 个人卡片 */}
+      <section className="card flex flex-col sm:flex-row items-center sm:items-start gap-5 p-6">
+        <Image
+          src="/avatar.jpg"
+          alt="阿鲲的头像"
+          width={96}
+          height={96}
+          className="w-24 h-24 rounded-2xl border-2 border-[var(--border-color)] object-cover shrink-0"
+          title="干嘛！看什么看！"
+        />
+        <div className="text-center sm:text-left min-w-0">
+          <h1 className="text-2xl font-bold text-[var(--accent)]">阿鲲</h1>
+          <p className="mt-1 text-[var(--text-secondary)]">
+            计算机应用技术 · Web 开发方向 · ACG 爱好者
+          </p>
+          <p className="mt-2 text-sm text-[var(--text-muted)] leading-relaxed">
+            折腾代码、数码、音乐与游戏；在这里记录前端开发、技术探索与生活点滴。
+          </p>
+          <div className="mt-3 flex flex-wrap justify-center sm:justify-start gap-2">
+            {socials.map(({ label, href, icon: Icon }) => (
               <a
-                href="https://baike.baidu.com/item/%E7%BA%A2%E7%B1%B3K60/62490114"
+                key={label}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center space-x-4 block transition-transform duration-200 hover:scale-105"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--accent)] hover:border-[var(--accent)] transition-colors"
               >
-                <div className="relative w-16 h-28 flex-shrink-0">
-                  <Image src="/images/devices/mondrian.png" alt="手机" title="这是我的手机" fill className="w-full h-full object-cover rounded-2xl border border-white/50" />
-                </div>
-                <div className="flex-1 leading-tight">
-                  <h5 className="font-semibold text-[var(--text-primary)] whitespace-nowrap">Redmi K60</h5>
-                  <p className="text-sm text-[var(--text-secondary)] mt-1 text-center">16+256GB</p>
-                </div>
+                <Icon className="w-4 h-4" />
+                {label}
               </a>
-            </div>
+            ))}
           </div>
-        </aside>
-      </div>
-
-      {/* 移动端布局 */}
-      <div className="md:hidden space-y-6">
-        {/* 个人简介 */}
-        <div className="bg-[var(--card-bg)] backdrop-blur-lg p-6 rounded-3xl shadow-sm border border-[var(--border-color)]">
-          <h2 className="text-xl font-semibold mb-4 text-center text-[var(--text-primary)]">关于本喵~</h2>
-          <div className="relative w-24 h-24 rounded-full mb-4 mx-auto">
-            <Image
-              src="/HeadIMG.jpg"
-              alt="阿鲲的头像"
-              title="我的设定"
-              fill
-              className="rounded-full transition-transform duration-200 hover:scale-105 cursor-pointer border-2 border-white/50 object-cover"
-            />
-          </div>
-          <p className="text-[var(--text-secondary)] leading-relaxed text-center">
-            你好，我是阿鲲，一名计算机应用技术专业学生，喜欢 Web 开发、软件折腾和各种数码设备。
-          </p>
         </div>
+      </section>
 
-        {/* 兴趣墙 */}
-        <main className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold text-center mb-4 text-[var(--text-primary)]">
-            我的兴趣
-          </h3>
+      {/* 兴趣 + 快速链接 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Section title="我的兴趣" icon={Sparkles}>
           <ChipList items={interests} />
-        </main>
-
-        {/* 移动端挂件区 - 右侧卡片 */}
-        <div className="flex gap-4">
-          {/* 右侧挂件区 - 右边 */}
-          <div className="flex flex-col gap-4 justify-start ml-auto" style={{ maxWidth: '224px' }}>
-            <div className="p-4 bg-[var(--card-bg)] backdrop-blur-lg rounded-3xl shadow-sm border border-[var(--border-color)]">
-              <h4 className="font-semibold text-[var(--text-primary)] mb-2">个人名片</h4>
-              <p className="text-[var(--text-secondary)]">这里可以放成就、签名、社交链接等</p>
-            </div>
-
-            <div className="p-6 bg-[var(--card-bg)] backdrop-blur-lg rounded-3xl shadow-sm border border-[var(--border-color)]">
-              <h4 className="font-semibold text-[var(--text-primary)] mb-4">我的装备:</h4>
-
-              {/* 设备列表布局 */}
-              <div className="space-y-4">
-                {/* 设备卡片 */}
-                <a
-                  href="https://baike.baidu.com/item/%E7%BA%A2%E7%B1%B3K60/62490114"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center space-x-4 block transition-transform duration-200 hover:scale-105"
-                >
-                <div className="relative w-16 h-28 flex-shrink-0">
-                  <Image src="/images/devices/mondrian.png" alt="手机" title="这是我的手机" fill className="w-full h-full object-cover rounded-2xl border border-white/50" />
-                </div>
-                  <div className="flex-1 leading-tight">
-                    <h5 className="font-semibold text-[var(--text-primary)] whitespace-nowrap">Redmi K60</h5>
-                    <p className="text-sm text-[var(--text-secondary)] mt-1 text-center">16+256GB</p>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        </Section>
+        <Section title="关于本站" icon={Globe}>
+          <p className="leading-relaxed">
+            <span className="text-[var(--text-primary)] font-medium">阿鲲の小窝</span>{" "}
+            是我的个人博客，基于 Next.js 16 + React 19 + TypeScript + Tailwind v4 构建。
+            MDX 管理内容，Supabase 存留言与互动数据，Vercel 部署。
+            允许一点「花活」，但信息要可扫读。
+          </p>
+        </Section>
       </div>
 
-      {/* 静态内容区：博客介绍 / 技术栈 / 正在探索 / Roadmap（桌面 + 移动通用） */}
-      <div className="max-w-[720px] w-full mx-auto space-y-6">
-        {/* 博客介绍 */}
-        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">博客介绍</h3>
-          <p className="text-[var(--text-secondary)] leading-relaxed">
-            这是我的个人博客，用于记录学习过程、项目实践和踩坑经验。主打 ACG 风格，想到啥做啥，
-            边做边上线，随时可能翻车，但也在不断进化。
-          </p>
-        </section>
-
-        {/* 技术栈 */}
-        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">技术栈</h3>
+      {/* 技术栈 + 正在探索 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Section title="技术栈" icon={Code2}>
           <ChipList items={techStack} />
-        </section>
-
-        {/* 正在探索 */}
-        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">正在探索</h3>
+        </Section>
+        <Section title="正在探索" icon={Compass}>
           <ChipList items={exploring} />
-        </section>
-
-        {/* Roadmap */}
-        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold mb-3 text-[var(--text-primary)]">Roadmap</h3>
-          <ChipList items={roadmap} />
-          <p className="text-xs text-[var(--text-muted)] mt-3">
-            稳定的项目目标，不写每周计划 ✌️
-          </p>
-        </section>
-
-        {/* 彩蛋：漂浮兴趣云（纯装饰，不参与信息展示；桌面+移动通用） */}
-        <section className="backdrop-blur-xl rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-[var(--border-color)] p-6">
-          <h3 className="text-xl font-bold mb-3 text-center text-[var(--text-primary)]">✨ 彩蛋 · 兴趣云 ✨</h3>
-          <TagWall tags={interests} />
-        </section>
+        </Section>
       </div>
-    </div>
+
+      {/* Roadmap */}
+      <Section title="Roadmap" icon={Rocket}>
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {roadmap.map((item, i) => (
+            <li
+              key={item}
+              className="flex items-center gap-2 text-[var(--text-secondary)]"
+            >
+              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-[var(--accent)]/15 text-[var(--accent)] text-xs font-mono shrink-0">
+                {i + 1}
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </Section>
+
+      {/* 彩蛋 · 兴趣云 */}
+      <section className="card">
+        <h2 className="text-center text-lg font-bold text-[var(--text-primary)] mb-2">
+          ✨ 彩蛋 · 兴趣云 ✨
+        </h2>
+        <p className="text-center text-sm text-[var(--text-muted)] mb-4">
+          漂浮的兴趣标签，重新刷新会洗牌
+        </p>
+        <div className="min-h-[280px]">
+          <TagWall tags={interests} />
+        </div>
+      </section>
+      </div>
+    </GlassPage>
   );
 }

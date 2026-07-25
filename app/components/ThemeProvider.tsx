@@ -30,20 +30,24 @@ const STORAGE_KEY = "theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // 在客户端渲染前（组件实例化阶段）同步读取 localStorage / matchMedia
+  // 优先级：1) localStorage 手动选择  2) 系统/浏览器偏好  3) 保底默认 dark
   const [theme, setThemeState] = useState<Theme>(() => {
     try {
       // 尝试读取 localStorage（同步执行）
       const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
       if (saved === "dark" || saved === "light") return saved as Theme;
 
-      // 否则读系统首选（若可访问）
+      // 否则读系统首选（若可访问）；区分「系统明确要 light」与「无偏好」
       if (typeof window !== "undefined" && window.matchMedia) {
-        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        if (prefersLight) return "light";
+        if (prefersDark) return "dark";
       }
     } catch (e) {
       // ignore
     }
-    return "light";
+    return "dark"; // 保底默认 dark
   });
 
   const [mounted, setMounted] = useState(false);
@@ -74,9 +78,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
       const mql = window.matchMedia("(prefers-color-scheme: dark)");
       const handler = (e: MediaQueryListEvent) => {
-        const sys: Theme = e.matches ? "dark" : "light";
+        const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
+        const sys: Theme = e.matches ? "dark" : prefersLight ? "light" : "dark";
         setThemeState(sys);
-        applyToDocument(e.matches);
+        applyToDocument(sys === "dark");
       };
       mql.addEventListener("change", handler);
       return () => mql.removeEventListener("change", handler);

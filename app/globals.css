@@ -9,9 +9,13 @@
   --background: #f8fafc;
   --foreground: #0b1020;
 
-  /* 卡片背景 */
-  --card-bg: #ffffff;
-  --card-bg-hover: #ffffff;
+  /* 卡片/玻璃背景：半透明 rgba，配合 backdrop-blur 实现毛玻璃，随主题变化 */
+  --card-bg: rgba(255, 255, 255, 0.65);
+  --card-bg-hover: rgba(255, 255, 255, 0.78);
+  /* 嵌套次级玻璃（侧栏/子卡片，更透） */
+  --card-bg-subtle: rgba(255, 255, 255, 0.45);
+  /* 玻璃描边：亮色用白、暗色用极淡白 */
+  --card-border: rgba(255, 255, 255, 0.8);
 
   /* 代码块相关 */
   --code-header-bg: #f1f5f9;
@@ -31,17 +35,24 @@
   --input-bg: #ffffff;
   --input-border: #e2e8f0;
 
-  /* 文本颜色 */
-  --text-primary: #0b1020;
+  /* 文本颜色（Slate 色阶） */
+  --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
 
   /* 边框颜色 */
   --border-color: #e2e8f0;
 
-  /* 按钮主色 */
-  --btn-primary: #8b5cf6;
-  --btn-primary-hover: #7c3aed;
+  /* 按钮主色（= 品牌色 Catkun Pink 🌸） */
+  --btn-primary: var(--accent);
+  --btn-primary-hover: var(--accent-hover);
+
+  /* 品牌强调色 Catkun Pink 🌸 */
+  --accent: #ec4899;
+  --accent-hover: #db2777;
+
+  /* 媒体播放器表面（淡蓝调） */
+  --player-bg: #eff6ff;
 
   /* 主题切换按钮 */
   --theme-toggle-bg: #e2e8f0;
@@ -62,7 +73,7 @@
   --error-text: #dc2626;
 
   /* 轮播图遮罩 */
-  --hero-overlay: transparent;
+  --hero-overlay: rgba(255, 255, 255, 0.2);
 
   /* 链接颜色 */
   --link-color: #3b82f6;
@@ -71,71 +82,83 @@
   --link-underline-hover: rgba(37, 99, 235, 0.8);
 }
 
-/* class-based dark —— 蓝紫科技 + 少量粉 */
+/* class-based dark —— AMOLED 纯黑：OLED 省电 + 程序员夜间风
+   仅替换中性色为纯黑灰系，强调色（紫按钮/蓝链接）保留，架构不变 */
 html.dark {
-  --background: #0b1020;
-  --foreground: #e5e7eb;
+  --background: #000000;
+  --foreground: #ffffff;
 
-  /* 卡片背景 */
-  --card-bg: #151b2d;
-  --card-bg-hover: #1b2236;
+  /* 卡片/玻璃背景：半透明 rgba，配合 backdrop-blur 实现毛玻璃，随主题变化 */
+  --card-bg: rgba(18, 18, 22, 0.75);
+  --card-bg-hover: rgba(26, 26, 34, 0.88);
+  /* 嵌套次级玻璃（侧栏/子卡片，更透） */
+  --card-bg-subtle: rgba(18, 18, 22, 0.55);
+  /* 玻璃描边：亮色用白、暗色用极淡白 */
+  --card-border: rgba(255, 255, 255, 0.08);
 
   /* 代码块相关 - dark模式下的值 */
-  --code-header-bg: #111827;
-  --code-header-border: #26304a;
-  --code-header-text: #9ca3af;
+  --code-header-bg: #0a0a0a;
+  --code-header-border: #272727;
+  --code-header-text: #a3a3a3;
 
   /* Header相关 - dark模式下的值 */
-  --header-bg: rgba(30, 41, 59, 0.75);
-  --header-border: rgba(38, 48, 74, 1);
+  --header-bg: rgba(0, 0, 0, 0.82);
+  --header-border: rgba(39, 39, 39, 1);
 
   /* Footer相关 - dark模式下的值 */
-  --footer-bg: rgba(30, 41, 59, 0.75);
-  --footer-border: rgba(38, 48, 74, 1);
-  --footer-text: #9ca3af;
+  --footer-bg: rgba(0, 0, 0, 0.82);
+  --footer-border: rgba(39, 39, 39, 1);
+  --footer-text: #a3a3a3;
 
   /* 输入框背景 */
-  --input-bg: #1f2937;
-  --input-border: #26304a;
+  --input-bg: #121212;
+  --input-border: #272727;
 
-  /* 文本颜色 */
-  --text-primary: #e5e7eb;
+  /* 文本颜色（Slate 色阶：主白 + 次灰 + muted，层级与对比度兼顾） */
+  --text-primary: #f8fafcd5;
   --text-secondary: #cbd5e1;
   --text-muted: #94a3b8;
 
   /* 边框颜色 */
-  --border-color: #26304a;
+  --border-color: #272727;
 
-  /* 按钮主色 */
-  --btn-primary: #8b5cf6;
-  --btn-primary-hover: #a78bfa;
+  /* 按钮主色（= 品牌色 Catkun Pink 🌸） */
+  --btn-primary: var(--accent);
+  --btn-primary-hover: var(--accent-hover);
+
+  /* 品牌强调色 Catkun Pink 🌸（暗色提亮） */
+  --accent: #f472b6;
+  --accent-hover: #ec4899;
+
+  /* 媒体播放器表面（淡蓝调） */
+  --player-bg: #0b1220;
 
   /* 主题切换按钮 */
-  --theme-toggle-bg: #1f2937;
-  --theme-toggle-hover: #374151;
+  --theme-toggle-bg: #121212;
+  --theme-toggle-hover: #1f1f1f;
 
   /* 引用块 */
-  --blockquote-bg: #172554;
-  --blockquote-border: #3b82f6;
-  --blockquote-text: #bfdbfe;
+  --blockquote-bg: #0d0d0d;
+  --blockquote-border: #60a5fa;
+  --blockquote-text: #cbd5e1;
 
   /* 标签背景 */
-  --tag-bg: #1e3a5f;
+  --tag-bg: #121212;
   --tag-text: #93c5fd;
 
   /* 错误提示 */
-  --error-bg: #450a0a;
+  --error-bg: #1a0505;
   --error-border: #7f1d1d;
   --error-text: #fca5a5;
 
   /* 轮播图遮罩 */
-  --hero-overlay: rgba(0, 0, 0, 0.5);
+  --hero-overlay: rgba(0, 0, 0, 0.4);
 
   /* 链接颜色 */
-  --link-color: #38bdf8;
-  --link-hover: #818cf8;
-  --link-underline: rgba(56, 189, 248, 0.4);
-  --link-underline-hover: rgba(129, 140, 248, 0.9);
+  --link-color: #60a5fa;
+  --link-hover: #93c5fd;
+  --link-underline: rgba(96, 165, 250, 0.4);
+  --link-underline-hover: rgba(147, 197, 253, 0.9);
 }
 
 @theme inline {
@@ -146,6 +169,8 @@ html.dark {
   /* 卡片主题色 */
   --color-card-bg: var(--card-bg);
   --color-card-bg-hover: var(--card-bg-hover);
+  --color-card-bg-subtle: var(--card-bg-subtle);
+  --color-card-border: var(--card-border);
   /* 代码块主题色 */
   --color-code-header-bg: var(--code-header-bg);
   --color-code-header-border: var(--code-header-border);
@@ -169,6 +194,11 @@ html.dark {
   /* 按钮主题色 */
   --color-btn-primary: var(--btn-primary);
   --color-btn-primary-hover: var(--btn-primary-hover);
+  /* 品牌强调色 */
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  /* 媒体播放器表面 */
+  --color-player-bg: var(--player-bg);
   /* 主题切换按钮 */
   --color-theme-toggle-bg: var(--theme-toggle-bg);
   --color-theme-toggle-hover: var(--theme-toggle-hover);
@@ -181,8 +211,11 @@ body {
   visibility: visible;
 }
 
-.fade {
-  transition: opacity 1s ease-in-out;
+/* 锚点平滑滚动（尊重 reduced-motion 偏好） */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 .rainbow-text {
@@ -244,6 +277,17 @@ body {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
 
+/* 玻璃卡片霓虹微边框：1px 渐变描边（品牌粉 → 白 → 透明），
+   让卡片浮在沉浸氛围背景上；作为外层 wrapper 的 p-[1px] 背景使用 */
+.glass-glow {
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in oklab, var(--accent) 55%, transparent),
+    rgba(255, 255, 255, 0.12),
+    transparent
+  );
+}
+
 /* 输入框通用样式 */
 .input {
   background: var(--input-bg);
@@ -269,6 +313,14 @@ body {
   animation: fadeIn .15s ease-out;
 }
 
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
 @keyframes fall {
   0% {
     transform: translateY(-50px) rotate(0deg);
@@ -281,4 +333,187 @@ body {
 }
 .animate-fall {
   animation: fall linear infinite;
+}
+
+/* ===== Splash 屏 — 极简微光 & 呼吸弹跳 ===== */
+.splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background);
+  opacity: 1;
+  transition: opacity 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* 退出：背景淡出 */
+.splash-overlay.splash-exiting {
+  opacity: 0;
+}
+
+/* inline script 同步隐藏：非首页 zero-flicker */
+html.splash-done .splash-overlay {
+  display: none;
+}
+
+.splash-content {
+  text-align: center;
+  transition:
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 300ms ease-in;
+  will-change: transform, opacity;
+}
+
+/* 退出：内容向上轻跃 + 微缩淡出 */
+.splash-overlay.splash-exiting .splash-content {
+  transform: translateY(-16px) scale(0.96);
+  opacity: 0;
+}
+
+/* 轻量入场（回访硬刷新 + SPA 切回首页） */
+.splash-content.splash-light {
+  animation: splashEnter 0.5s ease-out backwards;
+}
+
+/* 高光入场（首访硬刷新）：blur 缓清晰 + scale 放大归位 */
+.splash-content.splash-reveal {
+  animation: splashReveal 1.1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes splashEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splashReveal {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: scale(0.8);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+}
+
+.splash-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  /* 呼吸缩放：微妙 pulse */
+  animation: splashPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes splashPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(1.03);
+    opacity: 1;
+  }
+}
+
+.splash-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+  letter-spacing: 0.02em;
+}
+
+/* 极细隐蔽 Loading 条 — 流光 */
+.splash-loading-bar {
+  width: 120px;
+  height: 2px;
+  margin: 0 auto;
+  background: var(--border, rgba(128, 128, 128, 0.15));
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.splash-loading-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: var(--accent);
+  border-radius: 999px;
+  animation: loadingSlide 1.2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes loadingSlide {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(300%);
+    opacity: 0;
+  }
+}
+
+/* 尊重 reduced-motion 偏好：跳过 splash */
+@media (prefers-reduced-motion: reduce) {
+  .splash-overlay {
+    display: none !important;
+  }
+}
+
+/* ===== Lobby Hero 频道切换动画 ===== */
+@keyframes heroTitleIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes heroFeatIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* 用 key 强制重挂载，使每次切换频道都重放进入动画 */
+.hero-title-anim {
+  animation: heroTitleIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hero-feat-anim {
+  animation: heroFeatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-title-anim,
+  .hero-feat-anim {
+    animation: none;
+  }
 }

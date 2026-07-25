@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getAllPosts, POST_TYPE_LABELS, normalizePostType, type PostListItem, type PostType } from "../../lib/posts";
 import { formatDate } from "../../lib/formatDate";
+import GlassPage from "../components/GlassPage";
 
 export const metadata: Metadata = {
   title: "文章",
@@ -37,7 +38,7 @@ export default async function ArticlesPage({
   const articles = activeType ? all.filter((a) => a.type === activeType) : all;
 
   return (
-    <main className="max-w-5xl mx-auto px-6 pt-24 md:pt-12 pb-12">
+    <GlassPage maxWidth="max-w-5xl">
       <h1 className="text-4xl font-bold mb-6 tracking-tight text-[var(--text-primary)]">
         文章列表
       </h1>
@@ -56,8 +57,8 @@ export default async function ArticlesPage({
               href={f.key === "all" ? "/articles" : `/articles?type=${f.key}`}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                 isActive
-                  ? "bg-violet-500 text-white border-violet-500"
-                  : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border-color)] hover:text-violet-500"
+                  ? "bg-accent text-white border-accent"
+                  : "bg-[var(--card-bg)] text-[var(--text-secondary)] border-[var(--border-color)] hover:text-accent"
               }`}
             >
               {f.label}
@@ -110,10 +111,10 @@ export default async function ArticlesPage({
               </div>
 
               <div className="flex items-baseline justify-between gap-3 mb-3">
-                <h2 className="text-xl font-semibold leading-snug text-[var(--text-primary)] group-hover:text-violet-500 transition-colors">
+                <h2 className="text-xl font-semibold leading-snug text-[var(--text-primary)] group-hover:text-accent transition-colors">
                   {a.title}
                 </h2>
-                <span className="text-xs text-[var(--text-muted)] shrink-0 bg-[var(--border-color)] px-2 py-1 rounded-full">
+                <span className="text-xs text-accent shrink-0 bg-[var(--border-color)] px-2 py-1 rounded-full">
                   {formatDate(a.date)}
                 </span>
               </div>
@@ -129,6 +130,6 @@ export default async function ArticlesPage({
       {articles.length === 0 && (
         <p className="text-[var(--text-secondary)] mt-8">该分类下暂无文章。</p>
       )}
-    </main>
+    </GlassPage>
   );
 }

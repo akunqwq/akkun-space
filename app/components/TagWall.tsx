@@ -116,7 +116,6 @@ export default function TagWall({ tags, className }: TagWallProps) {
 
     return () => clearTimeout(timer);
     // seed 稳定，仅 tags 变化时重排；resize 不触发
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tags, seed]);
 
   return (

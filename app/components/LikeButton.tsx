@@ -108,13 +108,13 @@ export default function LikeButton({ slug }: { slug: string }) {
       <Heart
         className={`w-5 h-5 transition-colors duration-200 ${
           isLiked
-            ? 'fill-violet-500 text-violet-500'
-            : 'fill-none text-[var(--text-secondary)] group-hover:text-violet-400'
+            ? 'fill-accent text-accent'
+            : 'fill-none text-[var(--text-secondary)] group-hover:text-accent'
         }`}
       />
       <span
         className={`text-xs font-medium tabular-nums leading-none transition-colors duration-200 ${
-          isLiked ? 'text-violet-500' : 'text-[var(--text-secondary)]'
+          isLiked ? 'text-accent' : 'text-[var(--text-secondary)]'
         }`}
       >
         {formattedLikes}

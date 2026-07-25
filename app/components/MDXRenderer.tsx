@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import ClientCodeBlock from './ClientCodeBlock';
 import Underline from './mdx/Underline';
+import rehypeSlug from 'rehype-slug';
 
 // 自定义 MDX 组件映射
 const mdxComponents: MDXComponents = {
@@ -108,7 +109,7 @@ code: ({ children, className, ...props }) => {
 
   h2: ({ children, ...props }) => (
     <h2
-      className="text-2xl font-semibold mt-6 mb-3 text-[var(--text-primary)] text-center"
+      className="text-2xl font-semibold mt-6 mb-3 text-[var(--text-primary)] text-center scroll-mt-24"
       {...props}
     >
       {children}
@@ -117,7 +118,7 @@ code: ({ children, className, ...props }) => {
 
   h3: ({ children, ...props }) => (
     <h3
-      className="text-xl font-semibold mt-4 mb-2 text-[var(--text-primary)]"
+      className="text-xl font-semibold mt-4 mb-2 text-[var(--text-primary)] scroll-mt-24"
       {...props}
     >
       {children}
@@ -214,6 +215,10 @@ interface MDXRendererProps {
 
 export default function MDXRenderer({ source }: MDXRendererProps) {
   return (
-    <MDXRemote source={source} components={mdxComponents} />
+    <MDXRemote
+      source={source}
+      components={mdxComponents}
+      options={{ mdxOptions: { rehypePlugins: [rehypeSlug] } }}
+    />
   );
 }

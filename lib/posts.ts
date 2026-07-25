@@ -92,8 +92,12 @@ export interface Post extends PostMeta {
   bodyRaw: string;
 }
 
+// 模块级缓存：仅生产环境缓存（构建期/运行时复用）；dev 每次重算保证编辑 MDX 后列表即时刷新
+let _allPostsCache: PostListItem[] | null = null;
+
 // 获取所有文章（按日期降序排列）
 export function getAllPosts(): PostListItem[] {
+  if (_allPostsCache && process.env.NODE_ENV === "production") return _allPostsCache;
   try {
     if (!fs.existsSync(postsDir)) {
       return [];
@@ -102,7 +106,7 @@ export function getAllPosts(): PostListItem[] {
     const files = fs.readdirSync(postsDir);
     const mdxFiles = files.filter(file => /\.mdx?$/.test(file));
 
-    return mdxFiles
+    const result = mdxFiles
       .map((file) => {
         const slug = file.replace(/\.mdx?$/, "");
         const filePath = path.join(postsDir, file);
@@ -137,6 +141,9 @@ export function getAllPosts(): PostListItem[] {
         // 2. 同一天按 order 降序作为次级排序
         return (b.order ?? 0) - (a.order ?? 0);
       });
+
+    _allPostsCache = result;
+    return result;
   } catch (error) {
     console.error('Error reading posts:', error);
     return [];
@@ -209,39 +216,6 @@ export function getPostBySlug(slug: string): Post | null {
     console.error(`Error reading post ${slug}:`, error);
     return null;
   }
-}
-
-// 获取文章总数
-export function getPostsCount(): number {
-  return getAllPosts().length;
-}
-
-// 根据标签获取文章
-export function getPostsByTag(tag: string): PostListItem[] {
-  return getAllPosts().filter((post) =>
-    post.tags && post.tags.includes(tag)
-  );
-}
-
-// 获取所有标签
-export function getAllTags(): string[] {
-  const tags = new Set<string>();
-  getAllPosts().forEach((post) => {
-    if (post.tags) {
-      post.tags.forEach((tag) => tags.add(tag));
-    }
-  });
-  return Array.from(tags).sort();
-}
-
-// 搜索文章
-export function searchPosts(query: string): PostListItem[] {
-  const lowercaseQuery = query.toLowerCase();
-  return getAllPosts().filter((post) =>
-    post.title.toLowerCase().includes(lowercaseQuery) ||
-    (post.summary && post.summary.toLowerCase().includes(lowercaseQuery)) ||
-    (post.tags && post.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)))
-  );
 }
 
 // 文章索引的元信息（来自 data/posts.json 的 meta 字段）

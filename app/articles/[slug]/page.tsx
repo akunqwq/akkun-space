@@ -5,6 +5,9 @@ import { getPostBySlug, getAllPosts, type Post } from "../../../lib/posts";
 import { formatDate } from "../../../lib/formatDate";
 import MDXRenderer from "../../components/MDXRenderer";
 import ViewCounter from "../../components/ViewCounter";
+import { extractToc } from "../../../lib/toc";
+import TableOfContents from "../../components/TableOfContents";
+import GlassPage from "../../components/GlassPage";
 
 // 生成静态路径
 export async function generateStaticParams() {
@@ -49,7 +52,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
   // 确保 params.slug 存在
   if (!resolvedParams?.slug) {
     return (
-      <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-12 pb-12">
+      <GlassPage maxWidth="max-w-4xl">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4 text-[var(--text-primary)]">无效的文章链接</h1>
           <p className="text-[var(--text-secondary)] mb-8">文章链接格式不正确。</p>
@@ -60,15 +63,15 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             返回文章列表
           </Link>
         </div>
-      </main>
-    );
-  }
+    </GlassPage>
+  );
+}
 
-  const post: Post | null = getPostBySlug(resolvedParams.slug);
+const post: Post | null = getPostBySlug(resolvedParams.slug);
 
   if (!post) {
     return (
-      <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-12 pb-12">
+      <GlassPage maxWidth="max-w-4xl">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4 text-[var(--text-primary)]">文章未找到</h1>
           <p className="text-[var(--text-secondary)] mb-8">抱歉，您查找的文章不存在。</p>
@@ -80,12 +83,14 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             返回文章列表
           </Link>
         </div>
-      </main>
+      </GlassPage>
     );
   }
 
+  const headings = extractToc(post.body.raw);
+
   return (
-    <main className="max-w-4xl mx-auto px-6 pt-24 md:pt-12 pb-12">
+    <GlassPage maxWidth="max-w-4xl">
       {/* 文章头部 */}
       <header className="mb-12">
         <div className="mb-8">
@@ -126,7 +131,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
                 </div>
               </>
             )}
-            <time dateTime={post.date} className="text-sm">
+            <time dateTime={post.date} className="text-sm text-accent">
               {formatDate(post.date)}
             </time>
             {/* 阅读量统计 - 访问详情页时 +1 */}
@@ -140,6 +145,9 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           )}
         </div>
       </header>
+
+      {/* 目录 */}
+      <TableOfContents headings={headings} />
 
       {/* 文章内容 */}
       <article className="relative bg-[var(--card-bg)] backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-[var(--border-color)] text-[var(--text-primary)]">
@@ -159,6 +167,6 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
           </Link>
         </div>
       </footer>
-    </main>
+    </GlassPage>
   );
 }

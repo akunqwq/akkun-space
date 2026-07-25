@@ -25,8 +25,8 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
   const baseBtn =
     "inline-flex items-center justify-center min-w-9 h-9 px-3 rounded-lg text-sm border border-[var(--border-color)] transition-colors";
   const inactive =
-    "bg-[var(--card-bg)] text-[var(--text-secondary)] hover:text-violet-500 hover:border-violet-400";
-  const active = "bg-violet-500 text-white border-violet-500 font-semibold";
+    "bg-[var(--card-bg)] text-[var(--text-secondary)] hover:text-accent hover:border-accent";
+  const active = "bg-accent text-white border-accent font-semibold";
   const disabled =
     "opacity-40 pointer-events-none bg-[var(--card-bg)] text-[var(--text-muted)]";
 

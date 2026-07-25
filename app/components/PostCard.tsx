@@ -56,13 +56,13 @@ export default function PostCard({ post }: { post: PostIndexItem }) {
         </div>
 
         {/* 标题 */}
-        <h2 className="text-2xl font-bold leading-snug text-[var(--text-primary)] group-hover:text-violet-500 transition-colors mb-3">
+        <h2 className="text-2xl font-bold leading-snug text-[var(--text-primary)] group-hover:text-accent transition-colors mb-3">
           {post.title}
         </h2>
 
         {/* 元信息：日期 / 作者 / 阅读时间 */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--text-secondary)] mb-3">
-          <time dateTime={post.date} className="text-[var(--link-color)]">{formatDate(post.date)}</time>
+          <time dateTime={post.date} className="text-accent">{formatDate(post.date)}</time>
           {post.author && <span>{post.author}</span>}
           <span>{post.readingTime >= 60 ? '约 60+ 分钟阅读' : `约 ${post.readingTime} 分钟阅读`}</span>
         </div>

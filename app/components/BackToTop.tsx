@@ -27,7 +27,7 @@ export default function BackToTop() {
         focus:outline-none
       "
     >
-      <ArrowUp className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-violet-400 transition-colors duration-200" />
+      <ArrowUp className="w-5 h-5 text-[var(--text-secondary)] group-hover:text-accent transition-colors duration-200" />
     </button>
   )
 }
