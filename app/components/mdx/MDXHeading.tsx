@@ -21,7 +21,7 @@ export default function MDXHeading({ children, level = 2, ...props }: MDXHeading
 
   const className = `${baseClass} ${styles[level] || styles[2]}`;
 
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+  const Tag = `h${level}` as keyof React.JSX.IntrinsicElements;
 
   return (
     <Tag className={className} {...props}>
