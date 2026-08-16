@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Search, Menu, X } from "lucide-react";
 import { getCountdown } from "@/lib/holidays";
 import { GREETINGS, GREETING_DWELL } from "@/lib/greetings";
+import { headerNav } from "@/lib/nav";
+import { SearchModal } from "./SearchModal";
 
 // 获取当前时间格式化字符串（包含秒数）
 function getCurrentTime() {
@@ -38,6 +41,8 @@ export default function Header() {
   const [isTitleTyping, setIsTitleTyping] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const clockIntervalRef = useRef<number | null>(null);
   const greetingIndexRef = useRef(0);
@@ -120,6 +125,29 @@ export default function Header() {
     };
   }, []);
 
+  // 全局搜索快捷键：Cmd+K / Ctrl+K 打开搜索，ESC 关闭
+  const handleToggleSearch = useCallback(() => {
+    setIsSearchOpen((prev) => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd+K 或 Ctrl+K 打开/关闭搜索
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        handleToggleSearch();
+      }
+      // ESC 关闭搜索
+      if (e.key === 'Escape' && isSearchOpen) {
+        e.preventDefault();
+        setIsSearchOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleToggleSearch, isSearchOpen]);
+
   // 沉浸式 Header：所有路由都有全屏 GlobalHero，故顶部一律透明浮于 Hero 上，
   // 滚过 Hero（约 85vh）后变实底；资讯存档等无 Hero 的边界场景仍保持可读。
   const transparent = !scrolled;
@@ -130,6 +158,48 @@ export default function Header() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, [pathname]);
+
+  // 阅读进度条（仅文章详情页 /articles/<slug>）：进度仅基于 <article> 内容，
+  // 不含 Header / Footer / 评论区。0% → 滚到文章顶；100% → 文章底到达视口底。
+  useEffect(() => {
+    const isArticle = pathname?.startsWith("/articles/") ?? false;
+    if (!isArticle) {
+      setReadingProgress(0);
+      return;
+    }
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const article = document.querySelector("article");
+      if (!article) {
+        setReadingProgress(0);
+        return;
+      }
+      const rect = article.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = rect.height - vh;
+      if (total <= 0) {
+        // 文章不足一屏：顶部到达视口顶即视为读完
+        setReadingProgress(rect.top <= 0 ? 1 : 0);
+      } else {
+        const scrolled = Math.min(Math.max(-rect.top, 0), total);
+        setReadingProgress(Math.round((scrolled / total) * 1000) / 1000);
+      }
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(compute);
+    };
+    compute();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    window.addEventListener("load", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("load", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, [pathname]);
 
   return (
@@ -153,7 +223,8 @@ export default function Header() {
             transparent ? "text-white/90" : "text-[var(--text-primary)]"
           }`}
         >
-          <div className="font-mono text-[var(--text-primary)]">{timeText}</div>
+          {/* 日期：浮于 Hero 上时白色与图片融合（light/dark 一致），滚动后回主题色保证可读 */}
+          <div className={`font-mono ${transparent ? "text-white" : "text-[var(--text-primary)]"}`}>{timeText}</div>
           <div className="text-[var(--accent)]">{countdownText}</div>
         </div>
 
@@ -171,16 +242,28 @@ export default function Header() {
         <div className="flex justify-end shrink-0">
           {/* 桌面端导航 */}
           <nav
-            className={`hidden md:flex gap-6 ${
+            className={`hidden md:flex items-center gap-6 ${
               transparent ? "text-white/90" : "text-[var(--text-primary)]"
             }`}
           >
-            <Link href="/" className="hover:text-[var(--accent)]">首页</Link>
-            <Link href="/articles" className="hover:text-[var(--accent)]">文章</Link>
-            <Link href="/media/music" className="hover:text-[var(--accent)]">音乐</Link>
-            <Link href="/games" className="hover:text-[var(--accent)]">游戏</Link>
-            <Link href="/changelog" className="hover:text-[var(--accent)]">更新日志</Link>
-            <Link href="/about" className="hover:text-[var(--accent)]">关于本喵</Link>
+            {headerNav.map((item) => (
+              <Link key={item.href} href={item.href} className="hover:text-[var(--accent)]">
+                {item.label}
+              </Link>
+            ))}
+            {/* 搜索按钮 */}
+            <button
+              onClick={handleToggleSearch}
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-all ${
+                transparent
+                  ? 'text-white/70 hover:text-white hover:bg-white/10'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/5'
+              }`}
+              aria-label="搜索文章"
+            >
+              <Search className="h-4 w-4" />
+              <span className="hidden lg:inline">搜索</span>
+            </button>
           </nav>
 
           {/* 移动端汉堡菜单 */}
@@ -204,51 +287,39 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden relative z-50 bg-[var(--header-bg)] backdrop-blur-xl border-t border-[var(--header-border)]">
           <nav className="flex flex-col py-4 px-8 space-y-3">
-            <Link
-              href="/"
-              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
+            {headerNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ))}
+            {/* 移动端搜索入口 */}
+            <button
+              onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
+              className="flex items-center gap-2 text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
             >
-              首页
-            </Link>
-            <Link
-              href="/articles"
-              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              文章
-            </Link>
-            <Link
-              href="/media/music"
-              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              音乐
-            </Link>
-            <Link
-              href="/games"
-              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              游戏
-            </Link>
-            <Link
-              href="/changelog"
-              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              更新日志
-            </Link>
-            <Link
-              href="/about"
-              className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              关于本喵
-            </Link>
+              <Search className="h-4 w-4" />
+              搜索文章
+            </button>
           </nav>
         </div>
       )}
+
+      {/* 阅读进度条：仅文章详情页显示，贴 Header 底边，2px 高，Pink Accent，平滑过渡 */}
+      {pathname?.startsWith("/articles/") && (
+        <div
+          className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent transition-[width] duration-150 ease-out z-[1]"
+          style={{ width: `${readingProgress * 100}%` }}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* 全局搜索弹窗 */}
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </header>
   );
 }

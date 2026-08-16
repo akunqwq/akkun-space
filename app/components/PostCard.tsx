@@ -10,15 +10,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatDate } from "../../lib/formatDate";
-import { POST_TYPE_LABELS, type PostIndexItem, type PostType } from "../../lib/posts";
-
-// 各类型对应的徽章配色（暗/亮主题通用）
-const TYPE_BADGE_STYLES: Record<PostType, string> = {
-  tech: "bg-sky-500/15 text-sky-600 dark:text-sky-300",
-  tinker: "bg-purple-500/15 text-purple-600 dark:text-purple-300",
-  essay: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300",
-  news: "bg-gray-500/15 text-gray-600 dark:text-gray-300",
-};
+import { type PostIndexItem } from "../../lib/posts";
+// 类型标签与徽章配色：单一数据源 data/content/post-types.json（经 lib/postTypes 派生）
+import { POST_TYPE_LABELS, TYPE_BADGE_STYLES } from "../../lib/postTypes";
 
 export default function PostCard({ post }: { post: PostIndexItem }) {
   const type = post.type ?? "essay";
@@ -26,10 +20,10 @@ export default function PostCard({ post }: { post: PostIndexItem }) {
     <Link
       href={`/articles/${post.slug}`}
       className="
-        group block overflow-hidden
+        group block overflow-hidden relative
         rounded-2xl bg-[var(--card-bg)] backdrop-blur-md
-        border border-[var(--border-color)] shadow-sm
-        hover:shadow-xl hover:-translate-y-1
+        border border-[var(--border-color)] shadow-[var(--panel-shadow-sm)]
+        hover:shadow-[var(--panel-shadow)] hover:-translate-y-1
         transition-all duration-300
       "
     >

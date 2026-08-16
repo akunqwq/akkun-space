@@ -50,12 +50,16 @@ app/                 # App Router
   sitemap.ts          # Sitemap
   articles/           # post list / detail
   about/              # about page
-  changelog/          # changelog page
+  update-record/      # update record page
   components/         # components (Header / Footer / Hero / TagWall / ...)
 content/
   posts/              # blog posts (.mdx)
-  updates/            # changelog entries (.mdx, with version)
-lib/                  # business logic (posts / updates / supabase / interests / techStack / ...)
+  update-record/      # update record entries (.mdx, with version)
+lib/                  # business logic & typed data loaders (posts / updateRecord / supabase / ...)
+data/
+  posts.json          # build-time post index (do not edit by hand)
+  site/               # site config data (nav / socials / hero / greetings / holidays / quotes / seo / decor)
+  content/            # content data (music / games / interests / tech-stack / post-types / about)
 scripts/              # build scripts (generate-posts-index / fetch-meta / seo / ...)
 public/               # static assets
 ```
@@ -93,9 +97,9 @@ Body (MDX / syntax highlighting supported)...
 
 > The home feed only shows `tech / tinker / essay`; `news` goes to the bottom "News Archive" and stays out of the prime homepage real estate.
 
-### Write a changelog entry
+### Write an update record entry
 
-Create a new `.mdx` under `content/updates/` — **one entry = one version milestone** (not a dev diary):
+Create a new `.mdx` under `content/update-record/` — **one entry = one version milestone** (not a dev diary):
 
 ```mdx
 ---
@@ -112,10 +116,26 @@ version: "v0.3.0"
 
 Version granularity: `v0.2.1` patch (git commit only) · `v0.3.0` feature growth (write a log) · `v1.0.0` architecture overhaul.
 
-### Edit interests / tech stack
+### Edit site data (all JSON)
 
-- Interest tags: `lib/interests.ts`
-- Tech stack: `lib/techStack.ts`
+All hardcoded data lives in `data/` — edit data without touching code:
+
+| Data | File |
+|------|------|
+| Nav / sitemap routes | `data/site/nav.json` |
+| Social accounts | `data/site/socials.json` |
+| Home channels / per-route hero copy | `data/site/hero.json` |
+| Header greetings | `data/site/greetings.json` |
+| Holiday countdown | `data/site/holidays.json` |
+| Footer quotes | `data/site/quotes.json` |
+| SEO keywords | `data/site/seo.json` |
+| Floating emojis | `data/site/decor.json` |
+| Interest tags | `data/content/interests.json` |
+| Tech stack | `data/content/tech-stack.json` |
+| Music library | `data/content/music.json` |
+| Game library | `data/content/games.json` |
+| Post types (label + badge) | `data/content/post-types.json` |
+| Exploring / Roadmap | `data/content/about.json` |
 
 ## Deployment
 

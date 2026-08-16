@@ -1,0 +1,90 @@
+{
+  "channels": {
+    "posts": {
+      "key": "posts",
+      "prefix": "/articles",
+      "href": "/articles",
+      "image": "/bg1.jpg",
+      "home": {
+        "label": "专栏",
+        "eyebrow": "文字与思考",
+        "title": "记录每一次探索",
+        "desc": "技术实践、折腾记录、生活随笔与资讯归档。"
+      },
+      "page": {
+        "eyebrow": "文字与思考",
+        "title": "专栏",
+        "desc": "技术实践、折腾记录、生活随笔与资讯归档。"
+      }
+    },
+    "music": {
+      "key": "music",
+      "prefix": "/music",
+      "href": "/music",
+      "image": "/bg2.jpg",
+      "home": {
+        "label": "音乐库",
+        "eyebrow": "音乐与律动",
+        "title": "本地音乐曲目",
+        "desc": "ACG、纯音乐与 Galgame OST 歌单收藏。"
+      },
+      "page": {
+        "eyebrow": "音乐与律动",
+        "title": "音乐库",
+        "desc": "ACG、纯音乐与 Galgame OST 歌单收藏。"
+      }
+    },
+    "games": {
+      "key": "games",
+      "prefix": "/games",
+      "href": "/games",
+      "image": "/images/games/genshin.webp",
+      "home": {
+        "label": "游戏库",
+        "eyebrow": "游戏收藏",
+        "title": "我的游戏世界",
+        "desc": "记录我玩过、正在游玩与喜爱的游戏，也为未来的 Web 游戏项目预留一席之地。"
+      },
+      "page": {
+        "eyebrow": "游戏收藏",
+        "title": "我的游戏世界",
+        "desc": "记录我玩过、正在游玩与喜爱的游戏，也为未来的 Web 游戏项目预留一席之地。"
+      }
+    },
+    "updateRecord": {
+      "key": "updateRecord",
+      "prefix": "/update-record",
+      "href": "/update-record",
+      "image": "/bg3.jpg",
+      "home": {
+        "label": "更新日志",
+        "eyebrow": "更新记录",
+        "title": "我最近更新了什么",
+        "desc": "站点功能与版本演进记录。"
+      },
+      "page": {
+        "eyebrow": "更新记录",
+        "title": "更新日志",
+        "desc": "站点功能与版本演进记录。"
+      }
+    },
+    "about": {
+      "key": "about",
+      "prefix": "/about",
+      "href": "/about",
+      "image": "/bg1.jpg",
+      "page": {
+        "eyebrow": "关于本喵",
+        "title": "关于阿鲲",
+        "desc": "计算机应用技术 · Web 开发 · ACG 爱好者。"
+      }
+    }
+  },
+  "fallback": {
+    "eyebrow": "阿鲲の小窝",
+    "title": "欢迎来到我的小窝",
+    "desc": "记录前端开发、技术探索、游戏与生活点滴。",
+    "href": "/",
+    "image": "/bg1.jpg"
+  }
+}

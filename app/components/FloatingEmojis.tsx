@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import decor from '@/data/site/decor.json';
 
-const EMOJIS = ['🌸', '💖', '✨',  '❄',  '⭐'];
+const EMOJIS: string[] = decor.floatingEmojis;
 
 export default function FloatingEmojis() {
   const [emojis, setEmojis] = useState<Array<{

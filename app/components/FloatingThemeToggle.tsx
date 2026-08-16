@@ -45,7 +45,7 @@ export default function FloatingThemeToggle() {
       aria-pressed={isDark}
       title={isDark ? '切换到浅色模式' : '切换到深色模式'}
       className={`
-        fixed bottom-6 right-6
+        fixed bottom-4 right-4
         p-3 rounded-full
         bg-[var(--theme-toggle-bg)]/80
         hover:bg-[var(--theme-toggle-hover)]

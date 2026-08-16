@@ -1,4 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
 /node_modules
@@ -51,4 +50,10 @@ next-env.d.ts
 scripts/crawler/cache/
 /data/posts.json
 
+# 保留兜底资源
+public/music/*.mp3
+public/music/cover/
+
 .workbuddy/
+
+scripts/

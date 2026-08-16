@@ -2,12 +2,13 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import type { MDXComponents } from 'mdx/types';
 import Image from 'next/image';
 import Link from 'next/link';
+import remarkGfm from 'remark-gfm';
 import ClientCodeBlock from './ClientCodeBlock';
-import type { Update } from '@/lib/updates';
+import type { UpdateRecord } from '@/lib/updateRecord';
 import { formatDate } from '@/lib/formatDate';
 
-// 专门为动态内容设计的 MDX 组件映射
-const updatesComponents: MDXComponents = {
+// 专门为更新记录内容设计的 MDX 组件映射
+const updateRecordComponents: MDXComponents = {
   // 自定义图片组件 - 更紧凑的样式
   img: ({ src, alt, ...props }) => {
     if (!src) return null;
@@ -204,53 +205,46 @@ const updatesComponents: MDXComponents = {
   ),
 };
 
-interface UpdatesRendererProps {
-  source?: string;
-  updates?: Update[];
+interface UpdateRecordRendererProps {
+  records?: UpdateRecord[];
 }
 
-// 单个动态卡片组件
-function UpdateCard({ update }: { update: Update }) {
+// 单条更新记录卡片组件
+function UpdateCard({ record }: { record: UpdateRecord }) {
   return (
-    <div className="updates-card bg-[var(--card-bg)] backdrop-blur-sm border border-[var(--border-color)] rounded-xl p-4 mb-3">
-      {/* 动态标题栏 */}
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--border-color)]">
-        {update.emoji && <span className="text-xl">{update.emoji}</span>}
-        <h3 className="text-base font-bold text-[var(--text-primary)]">{update.title}</h3>
-        {update.version && (
+    <div className="bg-[var(--card-bg-inset)] backdrop-blur-[6px] border border-[var(--card-border-inset)] rounded-xl p-4 mb-3">
+      {/* 记录标题栏 */}
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--card-border-inset)]">
+        {record.emoji && <span className="text-xl">{record.emoji}</span>}
+        <h3 className="text-base font-bold text-[var(--text-primary)]">{record.title}</h3>
+        {record.version && (
           <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/30">
-            {update.version}
+            {record.version}
           </span>
         )}
         <span className="ml-auto text-xs text-[var(--text-muted)]">
-          {formatDate(update.date)}
+          {formatDate(record.date)}
         </span>
       </div>
 
-      {/* 动态内容 */}
-      <div className="updates-content">
-        <MDXRemote source={update.bodyRaw} components={updatesComponents} />
+      {/* 记录内容 */}
+      <div>
+        <MDXRemote
+          source={record.bodyRaw}
+          components={updateRecordComponents}
+          options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+        />
       </div>
     </div>
   );
 }
 
-export default function UpdatesRenderer({ source, updates }: UpdatesRendererProps) {
-  // 如果传入单个 source，保持向后兼容
-  if (source) {
-    return (
-      <div className="updates-content space-y-2">
-        <MDXRemote source={source} components={updatesComponents} />
-      </div>
-    );
-  }
-
-  // 如果传入 updates 数组，渲染多个动态卡片
-  if (updates && updates.length > 0) {
+export default function UpdateRecordRenderer({ records }: UpdateRecordRendererProps) {
+  if (records && records.length > 0) {
     return (
       <div className="space-y-3">
-        {updates.map((update) => (
-          <UpdateCard key={update.slug} update={update} />
+        {records.map((record) => (
+          <UpdateCard key={record.slug} record={record} />
         ))}
       </div>
     );

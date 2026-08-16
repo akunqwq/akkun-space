@@ -1,18 +1,4 @@
-export const interests = [
-  "音乐发烧友",
-  "纯音乐",
-  "原神",
-  "折腾怪",
-  "ACG",
-  "MMD学习中",
-  "喵星人",
-  "React",
-  "崩坏·星穹铁道",
-  "明日方舟",
-  "宅",
-  "二次元",
-  "Blue Archive",
-  "蔚蓝档案",
-  "敲代码",
-  "个人自媒体"
-];
+// About兴趣标签数据源：data/content/interests.json（本文件只做类型化导出）
+import interestsData from "@/data/content/interests.json";
+
+export const interests: string[] = interestsData;

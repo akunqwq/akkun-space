@@ -1,0 +1,20 @@
+[
+  {
+    "id": "genshin-impact",
+    "title": "原神",
+    "cover": "/images/games/genshin.webp",
+    "platform": "PC · 移动端",
+    "source": "HoYoverse",
+    "genres": ["开放世界", "RPG", "二次元"],
+    "status": "playing"
+  },
+  {
+    "id": "arknights",
+    "title": "明日方舟",
+    "cover": "/images/games/mrfz.jpg",
+    "platform": "PC · 移动端",
+    "source": "鹰角网络",
+    "genres": ["塔防", "策略", "二次元"],
+    "status": "playing"
+  }
+]

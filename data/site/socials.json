@@ -1,0 +1,40 @@
+[
+  {
+    "key": "blog",
+    "label": "在线项目",
+    "href": "https://www.akkun.online",
+    "emoji": "🌐",
+    "title": "本项目在线访问"
+  },
+  {
+    "key": "github",
+    "label": "GitHub 主页",
+    "href": "https://github.com/akunqwq",
+    "handle": "akunqwq",
+    "desc": "查看我的开源贡献与代码库",
+    "emoji": "🐙",
+    "title": "GitHub 个人主页 · 查看我的开源贡献与代码库"
+  },
+  {
+    "key": "bilibili",
+    "label": "Bilibili",
+    "href": "https://space.bilibili.com/286757068",
+    "handle": "是阿鲲酱鸭",
+    "emoji": "📺",
+    "title": "bilibili主页"
+  },
+  {
+    "key": "qq",
+    "label": "QQ",
+    "handle": "2633640385",
+    "emoji": "💬",
+    "title": "公开社交平台"
+  },
+  {
+    "key": "repo",
+    "label": "本站源码",
+    "href": "https://github.com/akunqwq/akkun-space",
+    "emoji": "📦",
+    "title": "本项目已在 GitHub 开源"
+  }
+]

@@ -56,12 +56,16 @@ app/                 # App Router
   sitemap.ts          # Sitemap
   articles/           # 文章列表 / 详情
   about/              # 关于页
-  changelog/          # 更新日志页
+  update-record/      # 更新记录页
   components/         # 组件（Header / Footer / Hero / TagWall / ...）
 content/
   posts/              # 博客文章（.mdx）
-  updates/            # 更新日志（.mdx，带 version）
-lib/                  # 业务逻辑（posts / updates / supabase / interests / techStack / ...）
+  update-record/      # 更新记录（.mdx，带 version）
+lib/                  # 业务逻辑与数据读取层（posts / updateRecord / supabase / ...）
+data/
+  posts.json          # 构建期生成的文章索引（勿手改）
+  site/               # 站点配置数据（nav / socials / hero / greetings / holidays / quotes / seo / decor）
+  content/            # 内容数据（music / games / interests / tech-stack / post-types / about）
 scripts/              # 构建脚本（generate-posts-index / remove-duplicates）
 public/               # 静态资源
 ```
@@ -96,9 +100,9 @@ cover: "/images/cover/xxx.jpg"
 
 > 首页信息流只展示 `tech / tinker / essay`；`news` 进入底部「资讯存档」，不抢占首屏。
 
-### 写更新日志
+### 写更新记录
 
-在 `content/updates/` 新建 `.mdx`，**一条 = 一个版本里程碑**（非开发流水账）：
+在 `content/update-record/` 新建 `.mdx`，**一条 = 一个版本里程碑**（非开发流水账）：
 
 ```mdx
 ---
@@ -115,10 +119,26 @@ version: "v0.3.0"
 
 版本粒度：`v0.2.1` 小修（只留 git commit）· `v0.3.0` 功能成长（写日志）· `v1.0.0` 架构大改。
 
-### 改兴趣 / 技术栈
+### 改站点数据（全部 JSON 化）
 
-- 兴趣标签：`lib/interests.ts`
-- 技术栈：`lib/techStack.ts`
+所有硬编码数据已抽离到 `data/`，改数据不用碰代码：
+
+| 数据 | 文件 |
+|------|------|
+| 导航 / sitemap 路由 | `data/site/nav.json` |
+| 社交账号（B站/GitHub/QQ） | `data/site/socials.json` |
+| 首页频道 / 各页 Hero 文案 | `data/site/hero.json` |
+| Header 问候语 | `data/site/greetings.json` |
+| 节日倒计时 | `data/site/holidays.json` |
+| 页脚名言 | `data/site/quotes.json` |
+| SEO 关键词 | `data/site/seo.json` |
+| 漂浮 emoji | `data/site/decor.json` |
+| 兴趣标签 | `data/content/interests.json` |
+| 技术栈 | `data/content/tech-stack.json` |
+| 音乐库 | `data/content/music.json` |
+| 游戏库 | `data/content/games.json` |
+| 文章类型（标签+徽章色） | `data/content/post-types.json` |
+| 正在探索 / Roadmap | `data/content/about.json` |
 
 ## 部署
 

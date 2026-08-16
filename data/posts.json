@@ -1,7 +1,7 @@
 {
   "meta": {
-    "hash": "sha256-68b82ed0bb8bb783",
-    "generatedAt": "2026-07-25T09:10:02.166Z",
+    "hash": "sha256-1bdee88997febb3c",
+    "generatedAt": "2026-07-29T07:49:51.096Z",
     "version": 2
   },
   "stats": {
@@ -39,7 +39,7 @@
       "date": "2025-11-26",
       "author": null,
       "cover": "/images/cover/dTTcmJH0.jpeg",
-      "summary": "这是我博客的第一篇内容，测试文章系统是否正常运行~",
+      "summary": "你好，这是我的第一篇博客文章",
       "tags": [
         "随笔",
         "博客搭建",
@@ -65,7 +65,7 @@
       ],
       "type": "tech",
       "order": 2,
-      "readingTime": 4,
+      "readingTime": 2,
       "fileCreatedTime": 1764318322257
     },
     {

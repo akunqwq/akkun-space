@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { getRouteHero } from "@/lib/hero";
 
 export interface FeaturedItem {
   title: string;
@@ -37,6 +38,7 @@ interface RouteHero {
 // 根据 pathname 解析 Hero 配置：
 //   /            → Lobby 轮播（首页大堂）
 //   其余路由      → 单页静态 Hero（背景大图 + 文案 + CTA）
+// 文案数据源：data/site/hero.json（channels 按 prefix 匹配 page + fallback 兜底）。
 // 这样 GlobalHero 在 layout 中只挂载一次，跨路由切换时由 HeroBackground 做平滑交叉淡变。
 function resolveHero(
   pathname: string,
@@ -45,77 +47,7 @@ function resolveHero(
   if (pathname === "/") {
     return { kind: "lobby", channels: homeChannels };
   }
-  if (pathname.startsWith("/articles")) {
-    return {
-      kind: "single",
-      hero: {
-        eyebrow: "文字与思考",
-        title: "我的文章库",
-        desc: "技术、折腾与生活随笔，记录每一次探索与踩坑。",
-        href: "/articles",
-        image: "/bg1.jpg",
-      },
-    };
-  }
-  if (pathname.startsWith("/media")) {
-    return {
-      kind: "single",
-      hero: {
-        eyebrow: "音乐与律动",
-        title: "正在播放",
-        desc: "ACG / 纯音乐 / Galgame OST，切页不中断。",
-        href: "/media/music",
-        image: "/bg2.jpg",
-      },
-    };
-  }
-  if (pathname.startsWith("/games")) {
-    return {
-      kind: "single",
-      hero: {
-        eyebrow: "游戏与ACG",
-        title: "游戏记录与存档",
-        desc: "原神、崩铁与二次元同好的快乐时光。",
-        href: "/games",
-        image: "/images/genshin/gs_2026-01-22_000132_233.jpg",
-      },
-    };
-  }
-  if (pathname.startsWith("/changelog")) {
-    return {
-      kind: "single",
-      hero: {
-        eyebrow: "更新日志",
-        title: "看看我在折腾什么",
-        desc: "站点功能与版本演进记录。",
-        href: "/changelog",
-        image: "/bg3.jpg",
-      },
-    };
-  }
-  if (pathname.startsWith("/about")) {
-    return {
-      kind: "single",
-      hero: {
-        eyebrow: "关于本喵",
-        title: "关于阿鲲",
-        desc: "计算机应用技术 · Web 开发 · ACG 爱好者。",
-        href: "/about",
-        image: "/bg1.jpg",
-      },
-    };
-  }
-  // 兜底：未知路由也给一个干净的全屏 Hero
-  return {
-    kind: "single",
-    hero: {
-      eyebrow: "阿鲲の小窝",
-      title: "欢迎来到我的小窝",
-      desc: "记录前端开发、技术探索、游戏与生活点滴。",
-      href: "/",
-      image: "/bg1.jpg",
-    },
-  };
+  return { kind: "single", hero: getRouteHero(pathname) };
 }
 
 // 跨路由 / 跨轮播的平滑交叉淡变背景：
@@ -174,37 +106,10 @@ function HeroBackground({ image }: { image: string }) {
   );
 }
 
-// 平滑下滚锚点：点击平滑滚动到内容面板（z-30 浮于玻璃面板之上）
-function SmoothScrollButton() {
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollTo({
-          top: window.innerHeight - 100,
-          behavior: reduce ? "auto" : "smooth",
-        });
-      }}
-      aria-label="向下滚动查看内容"
-      className="absolute bottom-28 md:bottom-40 left-1/2 -translate-x-1/2 z-30 p-2 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-all animate-bounce motion-reduce:animate-none cursor-pointer"
-    >
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M19 14l-7 7m0 0l-7-7m7 7V3"
-        />
-      </svg>
-    </button>
-  );
-}
-
 function FeaturedList({ items }: { items: FeaturedItem[] }) {
   return (
     <div className="hero-feat-anim mt-8 max-w-md">
-      <p className="text-white/50 text-[11px] font-medium tracking-[0.25em] uppercase mb-3">
+      <p className="text-[var(--hero-text-muted)] text-[11px] font-medium tracking-[0.25em] uppercase mb-3">
         精选推荐
       </p>
       <ul className="space-y-1.5">
@@ -212,7 +117,7 @@ function FeaturedList({ items }: { items: FeaturedItem[] }) {
           <li key={f.href + f.title}>
             <Link
               href={f.href}
-              className="group/i flex items-center gap-3 rounded-xl px-2 py-1.5 -mx-2 hover:bg-white/10 transition-colors"
+              className="group/i flex items-center gap-3 rounded-xl px-2 py-1.5 -mx-2 hover:bg-[var(--hero-item-hover)] transition-colors"
             >
               {f.cover ? (
                 // 小缩略图用原生 img：封面可能是本地路径或远程(picsum) URL，避免 next/image 远程域名配置
@@ -223,15 +128,15 @@ function FeaturedList({ items }: { items: FeaturedItem[] }) {
                   className="w-9 h-9 rounded-md object-cover shrink-0"
                 />
               ) : (
-                <span className="flex items-center justify-center w-9 h-9 rounded-md bg-white/15 text-white/80 text-sm shrink-0">
+                <span className="flex items-center justify-center w-9 h-9 rounded-md bg-[var(--hero-badge-bg)] text-[var(--hero-badge-text)] text-sm shrink-0">
                   {f.emoji ?? "·"}
                 </span>
               )}
-              <span className="flex-1 min-w-0 truncate text-sm text-white/90 group-hover/i:text-white">
+              <span className="flex-1 min-w-0 truncate text-sm text-[var(--hero-text-secondary)] group-hover/i:text-[var(--hero-text-primary)]">
                 {f.title}
               </span>
               {f.meta && (
-                <span className="text-xs text-white/45 shrink-0">{f.meta}</span>
+                <span className="text-xs text-[var(--hero-text-weak)] shrink-0">{f.meta}</span>
               )}
             </Link>
           </li>
@@ -268,14 +173,15 @@ function LobbyHero({ channels }: { channels: LobbyChannel[] }) {
       {/* 背景交叉淡变：由 HeroBackground 统一处理（轮播切换也平滑） */}
       <HeroBackground image={active.image} />
 
-      {/* 可读性遮罩：底部 + 左侧渐变，保证文字在任何背景图上清晰 */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/10 to-transparent" />
+      {/* 可读性遮罩：底部 + 左侧渐变（dark 模式由 --hero-overlay-* 提供黑色渐变保证文字可读；
+          light 模式变量为 transparent，原图直出） */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--hero-overlay-bottom)] via-[var(--hero-overlay-mid)] to-[var(--hero-overlay-top)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[var(--hero-overlay-side)] via-[var(--hero-overlay-top)] to-transparent" />
 
-      {/* 内容区（左对齐，垂直居中） */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full max-w-7xl mx-auto px-6 pb-28 sm:pb-24">
-          {/* 频道大标题块 —— key 触发切换动画 */}
+      {/* 内容区（左对齐，垂直居中；顶部预留 --hero-safe-top 避让悬浮 Header） */}
+      <div className="absolute inset-0 flex items-center pt-[var(--hero-safe-top)]">
+        <div className="relative w-full max-w-[1400px] mx-auto px-8 pb-28 sm:pb-24">
+          {/* 频道大标题块 —— key 触发切换动画；整块可点击跳转 */}
           <Link href={active.href} className="group/cta block max-w-2xl">
             <p
               key={active.key + "-e"}
@@ -285,17 +191,18 @@ function LobbyHero({ channels }: { channels: LobbyChannel[] }) {
             </p>
             <h1
               key={active.key + "-t"}
-              className="hero-title-anim text-white text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-xl"
+              className="hero-title-anim text-[var(--hero-text-primary)] text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-xl"
             >
               {active.title}
             </h1>
             <p
               key={active.key + "-d"}
-              className="hero-title-anim text-white/80 mt-3 text-base md:text-lg max-w-xl"
+              className="hero-title-anim text-[var(--hero-text-secondary)] mt-3 text-base md:text-lg max-w-xl"
             >
               {active.desc}
             </p>
-            <span className="hero-title-anim mt-5 inline-flex items-center gap-1.5 text-white font-semibold text-sm md:text-base group-hover/cta:gap-2.5 transition-all">
+            {/* 首页保留「进入频道」CTA；子页面（SingleHero）按需移除不显示 */}
+            <span className="hero-title-anim mt-5 inline-flex items-center gap-1.5 text-[var(--hero-text-primary)] font-semibold text-sm md:text-base group-hover/cta:gap-2.5 transition-all">
               进入频道
               <span aria-hidden className="text-lg">
                 →
@@ -305,6 +212,25 @@ function LobbyHero({ channels }: { channels: LobbyChannel[] }) {
 
           {/* 精选推荐 —— 随频道动态切换 */}
           <FeaturedList key={active.key + "-f"} items={active.featured} />
+
+          {/* Apple 式分页胶囊：依附于 Hero「内容块」定位（随内容走），而非外层 h-svh 容器；滚动离开 Hero 即随内容一起消失 */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-30 max-w-[calc(100vw-1.5rem)] flex gap-1 overflow-x-auto rounded-full bg-[var(--hero-pill-bg)] backdrop-blur-md p-1 border border-[var(--hero-pill-border)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {channels.map((c, i) => (
+              <button
+                key={c.key}
+                type="button"
+                aria-current={i === index}
+                onClick={() => setIndex(i)}
+                className={`shrink-0 whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-medium transition-colors sm:px-4 sm:py-1.5 sm:text-sm ${
+                  i === index
+                    ? "bg-[var(--accent)] text-white shadow"
+                    : "text-[var(--hero-text-secondary)] hover:text-[var(--hero-text-primary)]"
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -313,7 +239,7 @@ function LobbyHero({ channels }: { channels: LobbyChannel[] }) {
         type="button"
         aria-label="上一个频道"
         onClick={() => go(-1)}
-        className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition hover:bg-black/50"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-[var(--hero-arrow-bg)] text-[var(--hero-text-primary)] backdrop-blur-sm opacity-0 group-hover:opacity-100 transition hover:bg-[var(--hero-arrow-hover)]"
       >
         <span className="text-2xl leading-none">‹</span>
       </button>
@@ -321,62 +247,36 @@ function LobbyHero({ channels }: { channels: LobbyChannel[] }) {
         type="button"
         aria-label="下一个频道"
         onClick={() => go(1)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition hover:bg-black/50"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-30 flex items-center justify-center w-10 h-10 rounded-full bg-[var(--hero-arrow-bg)] text-[var(--hero-text-primary)] backdrop-blur-sm opacity-0 group-hover:opacity-100 transition hover:bg-[var(--hero-arrow-hover)]"
       >
         <span className="text-2xl leading-none">›</span>
       </button>
-
-      {/* 文字 Tab 指示器（替换原 dots）：点击直接切换频道 */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex gap-1 rounded-full bg-black/30 backdrop-blur-md p-1 border border-white/10">
-        {channels.map((c, i) => (
-          <button
-            key={c.key}
-            type="button"
-            aria-current={i === index}
-            onClick={() => setIndex(i)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              i === index
-                ? "bg-[var(--accent)] text-white shadow"
-                : "text-white/80 hover:text-white"
-            }`}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-
-      <SmoothScrollButton />
     </>
   );
 }
 
-// 子页面 / 兜底：单页静态 Hero（背景大图 + 文案 + CTA）
+// 子页面 / 兜底：单页静态 Hero（背景大图 + 文案；不显示「进入」CTA，仅整块可点击跳转）
 function SingleHero({ hero }: { hero: RouteHero }) {
   return (
     <>
       <HeroBackground image={hero.image} />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/10" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/10 to-transparent" />
+      {/* 可读性遮罩：同首页（dark 保留黑色渐变，light 透明原图直出） */}
+      <div className="absolute inset-0 bg-gradient-to-t from-[var(--hero-overlay-bottom)] via-[var(--hero-overlay-mid)] to-[var(--hero-overlay-top)]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[var(--hero-overlay-side)] via-[var(--hero-overlay-top)] to-transparent" />
 
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full max-w-7xl mx-auto px-6 pb-28 sm:pb-24">
-          <Link href={hero.href} className="group/cta block max-w-2xl">
+      <div className="absolute inset-0 flex items-center pt-[var(--hero-safe-top)]">
+        <div className="w-full max-w-[1400px] mx-auto px-8 pb-28 sm:pb-24">
+          <Link href={hero.href} className="block max-w-2xl">
             <p className="hero-title-anim text-[var(--accent)] text-sm md:text-base font-semibold tracking-[0.2em] uppercase mb-3">
               {hero.eyebrow}
             </p>
-            <h1 className="hero-title-anim text-white text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-xl">
+            <h1 className="hero-title-anim text-[var(--hero-text-primary)] text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.1] drop-shadow-xl">
               {hero.title}
             </h1>
-            <p className="hero-title-anim text-white/80 mt-3 text-base md:text-lg max-w-xl">
+            <p className="hero-title-anim text-[var(--hero-text-secondary)] mt-3 text-base md:text-lg max-w-xl">
               {hero.desc}
             </p>
-            <span className="hero-title-anim mt-5 inline-flex items-center gap-1.5 text-white font-semibold text-sm md:text-base group-hover/cta:gap-2.5 transition-all">
-              进入{hero.eyebrow}
-              <span aria-hidden className="text-lg">
-                →
-              </span>
-            </span>
           </Link>
 
           {hero.featured && hero.featured.length > 0 && (
@@ -384,8 +284,6 @@ function SingleHero({ hero }: { hero: RouteHero }) {
           )}
         </div>
       </div>
-
-      <SmoothScrollButton />
     </>
   );
 }
@@ -395,12 +293,14 @@ export default function GlobalHero({ homeChannels }: { homeChannels: LobbyChanne
   const resolved = resolveHero(pathname, homeChannels);
 
   return (
-    <div className="group relative w-full h-svh overflow-hidden -mt-16">
+    <div className="group relative w-full min-h-[85svh] overflow-hidden -mt-16">
       {resolved.kind === "lobby" ? (
         <LobbyHero channels={resolved.channels} />
       ) : (
         <SingleHero hero={resolved.hero} />
       )}
+      {/* 底部渐隐：Hero 图融入页面背景，让上浮的玻璃内容自然融合（消除硬切边） */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[var(--background)] via-[var(--background)]/60 to-transparent z-[5]" />
     </div>
   );
 }

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "song1",
+    "title": "好想玩原神（云原神之歌）",
+    "artist": "dj玩少",
+    "album": "本地曲库",
+    "src": "test/audio/song1.mp3",
+    "cover": "test/cover/covermusic1.jpg",
+    "tags": ["ACG", "原神"],
+    "description": "本地曲目"
+  },
+  {
+    "id": "song2",
+    "title": "飞鼠进行曲 The Parade of Flying Squirrels",
+    "artist": "HOYO-MiX",
+    "album": "本地曲库",
+    "src": "test/audio/song2.mp3",
+    "cover": "test/cover/covermusic2.jpg",
+    "tags": ["游戏原声", "崩坏/原神"],
+    "description": "本地曲目"
+  },
+  {
+    "id": "song3",
+    "title": "超越一切皆有可能",
+    "artist": "Pruatay",
+    "album": "本地曲库",
+    "src": "test/audio/song3.mp3",
+    "cover": "test/cover/covermusic3.jpg",
+    "tags": ["翻唱", "ACG"],
+    "description": "本地曲目"
+  },
+  {
+    "id": "song4",
+    "title": "你最近过的还好吗（动感版）",
+    "artist": "DJ橙汁",
+    "album": "给同班女生表白该怎么穿",
+    "src": "test/audio/song4.mp3",
+    "cover": "test/cover/covermusic4.jpg",
+    "tags": ["DJ", "动感"],
+    "description": "本地曲目"
+  }
+]

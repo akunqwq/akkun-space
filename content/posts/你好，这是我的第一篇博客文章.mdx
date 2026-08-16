@@ -3,7 +3,7 @@ title: 你好，这是我的第一篇博客文章
 date: 2025-11-26T00:00:00.000Z
 cover: /images/cover/dTTcmJH0.jpeg
 order: 0
-summary: 这是我博客的第一篇内容，测试文章系统是否正常运行~
+summary: 你好，这是我的第一篇博客文章
 tags:
   - 随笔
   - 博客搭建
@@ -12,19 +12,58 @@ slug: hello-world
 type: essay
 ---
 
-# 你好
+## 你好，我是阿鲲！
+## 代码示例
+```js 
+// 粒子运动模拟：物理模型
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.vx = Math.random() * 4 - 2;
+    this.vy = Math.random() * 4 - 2;
+    this.life = 100;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life--;
+  }
+  draw(ctx) {
+    ctx.globalAlpha = this.life / 100;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
-你好，我是阿鲲！
+// 康威生命游戏
+function nextGeneration(grid){
+  return grid.map((row,y)=>
+   row.map((cell,x)=>{
+     let neighbors=countNeighbors(grid,x,y);
+    if (cell && (neighbors === 2 || neighbors === 3)) return 1; // 保持活着
+    if (!cell && neighbors === 3) return 1;                    // 繁衍新生
+    return 0;                                                  // 其他情况全部死亡
+   })
+ );
+}
 
-这是我的第一篇文章
-未来我会在这里分享我喜欢的ACG壁纸、Android刷机与Root以及现代前端技术前沿内容。
+//斐波那契数列
+function countRabbits(months) {
+  let young = 1; // 小兔子
+  let adult = 0; // 大兔子
 
-## 二级标题
+  for (let month = 1; month <= months; month++) {
+    const baby = adult;       // 1. 每只大兔子生一只小兔子
+    adult = adult + young;    // 2. 原来的小兔子长成了大兔子
+    young = baby;             // 3. 刚出生的小兔子进入幼兔池
+  }
 
-可以写代码：
-
-```js
-console.log("Hello, 阿鲲!");
+  return young + adult;
+}
+  console.log(`10 个月后共有 ${countRabbits(10)} 只兔子`);
+  
 ```
 
 ## 壁纸分享

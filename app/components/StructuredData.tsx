@@ -1,3 +1,6 @@
+import { socialUrls } from '@/lib/socials'
+import seoData from '@/data/site/seo.json'
+
 interface StructuredDataProps {
   type: 'website' | 'blog' | 'person'
   data?: any
@@ -51,18 +54,8 @@ export default function StructuredData({ type, data }: StructuredDataProps) {
           name: '阿鲲',
           url: `${baseUrl}/about`,
           description: '前端开发者，ACG爱好者，专注于 React、Next.js 等技术',
-          sameAs: [
-            'https://space.bilibili.com/286757068',
-            'https://github.com/akunqwq'
-          ],
-          knowsAbout: [
-            '前端开发',
-            'React',
-            'Next.js',
-            'TypeScript',
-            'ACG',
-            '二次元文化'
-          ]
+          sameAs: socialUrls,
+          knowsAbout: seoData.knowsAbout
         }
 
       default:

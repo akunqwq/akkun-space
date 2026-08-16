@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import quotes from "@/lib/quotes.json";
+import quotes from "@/data/site/quotes.json";
 
 function cleanText(str: string) {
   return str

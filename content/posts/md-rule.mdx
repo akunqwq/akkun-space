@@ -12,35 +12,60 @@ tags:
 type: tech
 ---
 
-### <div className="text-center">Markdown 语法对照表</div>
-<div className="overflow-x-auto my-6">
-<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-  <thead>
-    <tr>
-      <th className="px-6 py-3 text-left text-xs font-semibold  uppercase tracking-wider">样式效果</th>
-      <th className="px-6 py-3 text-center text-xs font-semibold  uppercase tracking-wider">Markdown 语法</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td className="px-6 py-4">标题</td><td className="px-6 py-4"> <strong>&#35;</strong> + <strong>空格</strong>（数量代表级别） </td></tr>
-    <tr><td className="px-6 py-4">加粗</td><td className="px-6 py-4"> <strong>&ast;&ast;文本&ast;&ast;</strong> 或 <strong>&lowbar;&lowbar;文本&lowbar;&lowbar;</strong> </td></tr>
-    <tr><td className="px-6 py-4">斜体</td><td className="px-6 py-4"> <strong>&ast;文本&ast;</strong> 或 <strong>&lowbar;文本&lowbar;</strong> </td></tr>
-    <tr><td className="px-6 py-4">高亮</td><td className="px-6 py-4"> <strong>==文本==</strong> </td></tr>
-    <tr><td className="px-6 py-4">下划线</td><td className="px-6 py-4"> <strong>&#126;文本&#126;</strong> </td></tr>
-    <tr><td className="px-6 py-4">删除线</td><td className="px-6 py-4"> <strong>~~文本~~</strong> </td></tr>
-    <tr><td className="px-6 py-4">无序列表</td><td className="px-6 py-4"> <strong>-</strong> + <strong>空格</strong> 或 <strong>*</strong> + <strong>空格</strong> 或 <strong>+</strong> + <strong>空格</strong> </td></tr>
-    <tr><td className="px-6 py-4">有序列表</td><td className="px-6 py-4"> <strong>1.</strong> + <strong>空格</strong> </td></tr>
-    <tr><td className="px-6 py-4">任务列表</td><td className="px-6 py-4"> <strong>- [ ]</strong> 或 <strong>- [x]</strong> </td></tr>
-    <tr><td className="px-6 py-4">行内代码</td><td className="px-6 py-4"> <strong>&grave;代码&grave;</strong> </td></tr>
-    <tr><td className="px-6 py-4">代码块</td><td className="px-6 py-4"> <strong>&grave;&grave;&grave;语言</strong>\n<strong>代码</strong>\n<strong>&grave;&grave;&grave;</strong> </td></tr>
-    <tr><td className="px-6 py-4">数学公式</td><td className="px-6 py-4"> <strong>$公式$</strong> 或 <strong>$$公式$$</strong> </td></tr>
-    <tr><td className="px-6 py-4">引用文字</td><td className="px-6 py-4"> <strong>&gt; 引用内容</strong> </td></tr>
-  </tbody>
-</table>
-</div>
+Markdown 初衷就六个字：**易读、易写、纯文本**。
+
+你写下的几乎就是读者最后看到的样子——也就是完全不需要[<u>富文本编辑器</u>](https://baike.baidu.com/item/富文本编辑器)。
+
+## 一、常用语法速查
+
+把这张表当成字典，用到时查一眼就行：
+
+| 效果 | Markdown 写法 |
+| --- | --- |
+| 标题 | `# 一级` ～ `###### 六级`（`#` 个数 = 级别） |
+| 加粗 | `**文字**` 或 `__文字__` |
+| 斜体 | `*文字*` 或 `_文字_` |
+| 删除线 | `~~文字~~` |
+| 无序列表 | `- 项目` / `* 项目` / `+ 项目` |
+| 有序列表 | `1. 项目`（序号自动递增） |
+| 任务列表 | `- [ ] 待办` / `- [x] 已完成` |
+| 行内代码 | `` `code` `` |
+| 引用 | `> 引用内容`（可多层嵌套） |
+| 链接 | `[百度](https://www.baidu.com)` |
+| 图片 | `![图片说明](图片地址)` |
+| 分隔线 | `---`（三个或以上短横线） |
+
+## 二、动手试一试
+
+把下面这段直接粘进任意支持 Markdown 的文本编辑器（VS code 、笔记软件），就能看到实时渲染效果：
+
+```markdown
+# 你好，Markdown
+
+这是一段**加粗**、*斜体*，还有 `行内代码` 的文字。
+
+> 引用一句话：今天吃什么
+
+- 第一项
+- 第二项
+  - 嵌套的子项
+
+1. 第一步
+2. 第二步
+
+- [x] 已经学会标题
+- [ ] 还没学会列表
+```
+
+## 三、两个常被误传的"语法"
+
+很多教程会把下面两个当成标准 Markdown 来教，其实它们都是**错的**，别被带偏：
+
+- **下划线**：标准 Markdown 里根本**没有**下划线语法。网上常见的 `~文字~` 是不对的——`~` 在标准里没有任何特殊含义（双波浪 `~~` 是删除线）。真要下划线，只能借助内联 HTML：`<ins>下划线</ins>`（多数解析器支持）。
+- **高亮**（`==文字==`）：它属于**扩展语法**（如 Markdown Extra），并非所有平台都支持，别当成通用写法。
+
+把上面的速查表吃透，你就已经掌握了 99% 场景需要的 Markdown。它简单、通用、永远不会踩坑。
+
 ---
-* 注意: \n 表示换行。
-希望对你的学习有帮助！
 
-如需深入掌握md：[https://www.tomarkdown.org/zh/guides/markdown-table](https://www.tomarkdown.org/zh/guides/markdown-table)
-
+想看最权威的规范，看这里：[Markdown 官方语法说明](https://daringfireball.net/projects/markdown/syntax)

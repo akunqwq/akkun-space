@@ -9,11 +9,18 @@
   --background: #f8fafc;
   --foreground: #0b1020;
 
+  /* 移动端安全区域（刘海/底条），供 JS 读取做边界避让 */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+
   /* 卡片/玻璃背景：半透明 rgba，配合 backdrop-blur 实现毛玻璃，随主题变化 */
   --card-bg: rgba(255, 255, 255, 0.65);
   --card-bg-hover: rgba(255, 255, 255, 0.78);
   /* 嵌套次级玻璃（侧栏/子卡片，更透） */
   --card-bg-subtle: rgba(255, 255, 255, 0.45);
+  /* 内嵌卡片（玻璃卡内的子卡，极轻，融入外层不喧宾夺主） */
+  --card-bg-inset: rgba(255, 255, 255, 0.35);
+  --card-border-inset: rgba(0, 0, 0, 0.05);
   /* 玻璃描边：亮色用白、暗色用极淡白 */
   --card-border: rgba(255, 255, 255, 0.8);
 
@@ -25,6 +32,10 @@
   /* Header相关 */
   --header-bg: rgba(255, 255, 255, 0.7);
   --header-border: rgba(226, 232, 240, 0.8);
+  /* 悬浮 Header 高度（随断点变化）；Hero 据此预留安全区，避免移动端 Header 变高后内容碰撞 */
+  --header-height: 72px;
+  /* Hero 内容顶部安全区 = Header 高度 + 24px 余量（var 惰性求值，自动跟随上面的 --header-height） */
+  --hero-safe-top: calc(var(--header-height) + 24px);
 
   /* Footer相关 */
   --footer-bg: rgba(255, 255, 255, 0.7);
@@ -75,11 +86,48 @@
   /* 轮播图遮罩 */
   --hero-overlay: rgba(255, 255, 255, 0.2);
 
+  /* Hero 轮播文字与遮罩（light 模式：白色文字 + 原图直出，不叠加深色渐变） */
+  --hero-text-primary: #ffffff;
+  --hero-text-secondary: rgba(255, 255, 255, 0.8);
+  --hero-text-muted: rgba(255, 255, 255, 0.5);
+  --hero-text-weak: rgba(255, 255, 255, 0.45);
+  /* light 模式取消 Hero 底部/左侧渐变遮罩，原图直接显示；dark 模式再叠加黑色渐变保证白色文字可读 */
+  --hero-overlay-bottom: transparent;
+  --hero-overlay-mid: transparent;
+  --hero-overlay-top: transparent;
+  --hero-overlay-side: transparent;
+  /* 指示器胶囊：light 模式用白玻璃 */
+  --hero-pill-bg: rgba(255, 255, 255, 0.2);
+  --hero-pill-border: rgba(255, 255, 255, 0.25);
+  --hero-arrow-bg: rgba(255, 255, 255, 0.15);
+  --hero-arrow-hover: rgba(255, 255, 255, 0.28);
+  --hero-item-hover: rgba(255, 255, 255, 0.12);
+  --hero-badge-bg: rgba(255, 255, 255, 0.18);
+  --hero-badge-text: rgba(255, 255, 255, 0.85);
+
   /* 链接颜色 */
   --link-color: #3b82f6;
   --link-hover: #2563eb;
   --link-underline: rgba(59, 130, 246, 0.3);
   --link-underline-hover: rgba(37, 99, 235, 0.8);
+
+  /* 玻璃主面板阴影（Light 模式）：用清透的蓝灰 + 品牌粉氛围，替代纯黑 */
+  --panel-shadow: 0 24px 80px -16px rgba(15, 23, 42, 0.10), 0 8px 24px -12px rgba(236, 72, 153, 0.12);
+  --panel-shadow-sm: 0 8px 24px -8px rgba(15, 23, 42, 0.08), 0 2px 8px -4px rgba(236, 72, 153, 0.10);
+  /* 玻璃边缘高光：Light 模式下用强白边制造通透感 */
+  --panel-ring: rgba(255, 255, 255, 0.55);
+  /* 顶部高光遮罩强度（Light 模式更强，模拟阳光照射玻璃） */
+  --panel-shine-opacity: 0.85;
+  /* 面板内嵌子卡片边框：Light 模式下更明显的白边 */
+  --panel-inner-ring: rgba(255, 255, 255, 0.45);
+}
+
+/* 移动端（< md / 768px）悬浮 Header 更高：时间、倒计时、品牌问候易换行，
+   Hero 安全区同步增大，内容始终自动避让 Header */
+@media (max-width: 767.98px) {
+  :root {
+    --header-height: 96px;
+  }
 }
 
 /* class-based dark —— AMOLED 纯黑：OLED 省电 + 程序员夜间风
@@ -93,6 +141,9 @@ html.dark {
   --card-bg-hover: rgba(26, 26, 34, 0.88);
   /* 嵌套次级玻璃（侧栏/子卡片，更透） */
   --card-bg-subtle: rgba(18, 18, 22, 0.55);
+  /* 内嵌卡片（极轻，透出外层玻璃，Dark 模式下不再闷） */
+  --card-bg-inset: rgba(255, 255, 255, 0.03);
+  --card-border-inset: rgba(255, 255, 255, 0.05);
   /* 玻璃描边：亮色用白、暗色用极淡白 */
   --card-border: rgba(255, 255, 255, 0.08);
 
@@ -154,11 +205,38 @@ html.dark {
   /* 轮播图遮罩 */
   --hero-overlay: rgba(0, 0, 0, 0.4);
 
+  /* Hero 轮播文字与遮罩（dark 模式：保持原有白色文字 + 黑色渐变遮罩） */
+  --hero-text-primary: #ffffff;
+  --hero-text-secondary: rgba(255, 255, 255, 0.8);
+  --hero-text-muted: rgba(255, 255, 255, 0.5);
+  --hero-text-weak: rgba(255, 255, 255, 0.45);
+  --hero-overlay-bottom: rgba(0, 0, 0, 0.8);
+  --hero-overlay-mid: rgba(0, 0, 0, 0.35);
+  --hero-overlay-top: rgba(0, 0, 0, 0.1);
+  --hero-overlay-side: rgba(0, 0, 0, 0.6);
+  --hero-pill-bg: rgba(0, 0, 0, 0.3);
+  --hero-pill-border: rgba(255, 255, 255, 0.1);
+  --hero-arrow-bg: rgba(0, 0, 0, 0.3);
+  --hero-arrow-hover: rgba(0, 0, 0, 0.5);
+  --hero-item-hover: rgba(255, 255, 255, 0.1);
+  --hero-badge-bg: rgba(255, 255, 255, 0.15);
+  --hero-badge-text: rgba(255, 255, 255, 0.8);
+
   /* 链接颜色 */
   --link-color: #60a5fa;
   --link-hover: #93c5fd;
   --link-underline: rgba(96, 165, 250, 0.4);
   --link-underline-hover: rgba(147, 197, 253, 0.9);
+
+  /* 玻璃主面板阴影（Dark 模式）：保持沉稳黑色 */
+  --panel-shadow: 0 24px 80px -16px rgba(0, 0, 0, 0.35), 0 8px 24px -12px rgba(0, 0, 0, 0.22);
+  --panel-shadow-sm: 0 8px 24px -8px rgba(0, 0, 0, 0.25), 0 2px 8px -4px rgba(0, 0, 0, 0.15);
+  /* 玻璃边缘高光：Dark 模式用极淡白边 */
+  --panel-ring: rgba(255, 255, 255, 0.10);
+  /* 顶部高光遮罩强度（Dark 模式很弱） */
+  --panel-shine-opacity: 0.12;
+  /* 面板内嵌子卡片边框 */
+  --panel-inner-ring: rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
@@ -170,7 +248,9 @@ html.dark {
   --color-card-bg: var(--card-bg);
   --color-card-bg-hover: var(--card-bg-hover);
   --color-card-bg-subtle: var(--card-bg-subtle);
+  --color-card-bg-inset: var(--card-bg-inset);
   --color-card-border: var(--card-border);
+  --color-card-border-inset: var(--card-border-inset);
   /* 代码块主题色 */
   --color-code-header-bg: var(--code-header-bg);
   --color-code-header-border: var(--code-header-border);
@@ -274,7 +354,7 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 0.75rem;
   padding: 1rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--panel-shadow-sm);
 }
 
 /* 玻璃卡片霓虹微边框：1px 渐变描边（品牌粉 → 白 → 透明），
@@ -283,9 +363,53 @@ body {
   background-image: linear-gradient(
     to bottom,
     color-mix(in oklab, var(--accent) 55%, transparent),
-    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.16),
     transparent
   );
+}
+
+/* 全站统一的毛玻璃主面板：自动适配 Light/Dark 阴影、边框与高光 */
+.glass-panel {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  border-radius: 23px;
+  border: 1px solid var(--card-border);
+  /* 白色高光边 + 主阴影：Light 模式边缘通透，暗色沉稳 */
+  box-shadow:
+    inset 0 1px 0 0 var(--panel-ring),
+    var(--panel-shadow);
+}
+
+/* 玻璃顶部高光反射：模拟光线从上方照射玻璃 */
+.glass-shine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, var(--panel-shine-opacity)) 0%,
+    rgba(255, 255, 255, calc(var(--panel-shine-opacity) * 0.35)) 18%,
+    transparent 45%
+  );
+  mix-blend-mode: overlay;
+}
+
+/* 玻璃容器内的子卡片：统一背景、边框、小阴影 */
+.glass-card {
+  background: color-mix(in oklab, var(--card-bg-subtle), transparent 40%);
+  backdrop-filter: blur(12px);
+  border: 1px solid color-mix(in oklab, var(--panel-inner-ring), transparent 60%);
+  border-radius: 1rem;
+  box-shadow: var(--panel-shadow-sm);
+}
+
+/* 内容区顶部渐变遮罩：用于主内容区从玻璃面板顶部柔和切入 */
+.mask-fade-top {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%);
 }
 
 /* 输入框通用样式 */

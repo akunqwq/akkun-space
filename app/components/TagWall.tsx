@@ -2,9 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 
+type TagWallTag = string | { label: string; href?: string };
+
 interface TagWallProps {
-  tags: string[];
+  tags: TagWallTag[];
   className?: string;
+}
+
+// 兼容「纯字符串」与「带链接对象」两种输入
+function normalizeTag(tag: TagWallTag): { text: string; href?: string } {
+  return typeof tag === "string" ? { text: tag } : { text: tag.label, href: tag.href };
 }
 
 // 确定性伪随机（mulberry32），可顺序抽取多个值
@@ -76,6 +83,7 @@ function generateLayout(tags: string[], seed: number): { x: number; y: number }[
 
 interface TagItem {
   text: string;
+  href?: string;
   color: string;
   size: string;
   pos: { top: string; left: string };
@@ -90,13 +98,16 @@ export default function TagWall({ tags, className }: TagWallProps) {
   const seed = seedRef.current;
 
   useEffect(() => {
-    const layout = generateLayout(tags, seed);
+    const normalized = tags.map(normalizeTag);
+    const layout = generateLayout(normalized.map((t) => t.text), seed);
     const target: TagItem[] = layout.map((p, i) => {
-      const r = estimateRadius(tags[i]);
+      const text = normalized[i].text;
+      const r = estimateRadius(text);
       const size = r > 14 ? "text-sm" : r > 9 ? "text-base" : "text-lg";
       return {
-        text: tags[i],
-        color: tagHue(i, tags.length),
+        text,
+        href: normalized[i].href,
+        color: tagHue(i, normalized.length),
         size,
         pos: { left: `${p.x}%`, top: `${p.y}%` },
       };
@@ -119,26 +130,35 @@ export default function TagWall({ tags, className }: TagWallProps) {
   }, [tags, seed]);
 
   return (
-    <div
-      aria-hidden="true"
-      className={`relative w-full h-64 overflow-hidden ${className || ""}`}
-    >
+    <div className={`relative w-full h-64 overflow-hidden ${className || ""}`}>
       {items.map((t, i) => (
         <div
           key={i}
-          className="absolute transition-[top,left] duration-700 ease-out hover:scale-110"
+          className="absolute transition-[top,left] duration-700 ease-out"
           style={{
             top: t.pos.top,
             left: t.pos.left,
             transform: "translate(-50%, 0)",
           }}
         >
-          <span
-            className={`${t.size} whitespace-nowrap font-medium`}
-            style={{ color: t.color }}
-          >
-            {t.text}
-          </span>
+          {t.href ? (
+            <a
+              href={t.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${t.size} inline-block whitespace-nowrap font-medium hover:scale-110 transition-transform`}
+              style={{ color: t.color }}
+            >
+              {t.text}
+            </a>
+          ) : (
+            <span
+              className={`${t.size} whitespace-nowrap font-medium`}
+              style={{ color: t.color }}
+            >
+              {t.text}
+            </span>
+          )}
         </div>
       ))}
     </div>

@@ -1,45 +1,41 @@
-// 游戏与 ACG 数据层 —— 供首页 Lobby 与 /games 页面使用。
-// covers 当前为占位图（public/images/genshin/*），部署时可替换为正式素材。
-// postSlug 指向 content/posts 中对应的游戏相关文章，使卡片可跳转到真实内容。
+// 游戏收藏数据层 数据源：data/content/games.json（本文件保留类型定义与状态映射）
+// covers 当前为占位图（public/images/genshin/*），部署时替换为正式海报。
+
+import gamesData from "@/data/content/games.json";
+
+// 游玩状态枚举
+export type GameStatus =
+  | "playing"
+  | "completed"
+  | "backlog"
+  | "wishlist"
+  | "favorite"
+  | "abandoned";
 
 export interface GameItem {
-  slug: string;
-  name: string;
-  cover?: string;
-  note?: string;
-  status?: string; // 在玩 / 关注 / 坑
-  postSlug?: string; // 关联博客文章 slug（存在时卡片跳转该文章）
+  id: string;
+  title: string;
+  cover?: string; // 竖版海报路径
+  platform: string; // 平台：PC · 移动端 / Steam / Epic / Android / Web
+  source?: string; // 厂商：HoYoverse / 鹰角网络 ...
+  genres: string[]; // 标签：开放世界 / RPG / ACT ...
+  status?: GameStatus; // 游玩状态
+  // 后续可扩展字段
+  favorite?: boolean;
+  completed?: boolean;
+  rating?: number;
+  playTime?: string;
+  links?: { label: string; url: string }[];
 }
 
-export const gameItems: GameItem[] = [
-  {
-    slug: "genshin",
-    name: "原神",
-    cover: "/images/genshin/gs_2026-01-22_000132_233.jpg",
-    note: "提瓦特大陆 · 开放世界",
-    status: "在玩",
-    postSlug: "genshin-columbina-running",
-  },
-  {
-    slug: "hsr",
-    name: "崩坏：星穹铁道",
-    cover: "/images/genshin/test-map1.jpg",
-    note: "星穹列车 · 回合制 RPG",
-    status: "在玩",
-  },
-  {
-    slug: "arknights-endfield",
-    name: "明日方舟：终末地",
-    cover: "/images/genshin/test-map2.jpg",
-    note: "全球公测现已开启",
-    status: "关注",
-    postSlug: "《明日方舟：终末地》全球公测现已开启！",
-  },
-  {
-    slug: "mmd",
-    name: "MMD / 同人",
-    cover: "/images/genshin/talent.jpg",
-    note: "折腾建模、渲染与二创",
-    status: "坑",
-  },
-];
+// 状态枚举 → 中文展示标签（首页精选 meta / 卡片角标共用）
+export const STATUS_LABELS: Record<GameStatus, string> = {
+  playing: "在玩",
+  completed: "已通关",
+  backlog: "待玩",
+  wishlist: "想玩",
+  favorite: "最爱",
+  abandoned: "弃坑",
+};
+
+export const gameItems: GameItem[] = gamesData as GameItem[];

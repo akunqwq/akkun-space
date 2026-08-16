@@ -1,0 +1,8 @@
+[
+  { "label": "首页", "href": "/", "inNav": true, "sitemap": { "changeFrequency": "daily", "priority": 1.0 } },
+  { "label": "专栏", "href": "/articles", "inNav": true, "sitemap": { "changeFrequency": "daily", "priority": 0.9 } },
+  { "label": "音乐库", "href": "/music", "inNav": true, "sitemap": { "changeFrequency": "monthly", "priority": 0.5 } },
+  { "label": "游戏库", "href": "/games", "inNav": true, "sitemap": { "changeFrequency": "monthly", "priority": 0.6 } },
+  { "label": "更新日志", "href": "/update-record", "inNav": true, "sitemap": { "changeFrequency": "weekly", "priority": 0.6 } },
+  { "label": "关于我", "href": "/about", "inNav": true, "sitemap": { "changeFrequency": "monthly", "priority": 0.8 } }
+]

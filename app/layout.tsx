@@ -2,21 +2,23 @@ import type { Metadata } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
 import Header from "./components/Header";
-import MyCard from "./components/MyCard";
 import Footer from "./components/Footer";
 import RecentComments from "./components/RecentComments";
+import GuestbookNotifier from "./components/GuestbookNotifier";
 import StructuredData from "./components/StructuredData";
 import SplashScreen from "./components/SplashScreen";
 import { ThemeProvider } from "./components/ThemeProvider";
-import { MediaProvider } from "./components/media/MediaProvider";
+import { MusicProvider } from "./components/music/MusicProvider";
 import FloatingThemeToggle from "./components/FloatingThemeToggle";
 import FloatingActions from "./components/FloatingActions";
 import FloatingEmojis from "./components/FloatingEmojis";
-import GlobalHero, { type LobbyChannel } from "./components/GlobalHero";
+import GlobalHero, { type FeaturedItem, type LobbyChannel } from "./components/GlobalHero";
 import { getPostsIndex } from "../lib/posts";
-import { getUpdates } from "../lib/updates";
-import { mediaItems } from "../lib/media";
-import { gameItems } from "../lib/games";
+import { getUpdateRecords } from "../lib/updateRecord";
+import { musicItems, DEFAULT_COVER } from "../lib/music";
+import { gameItems, STATUS_LABELS } from "../lib/games";
+import { heroChannels } from "../lib/hero";
+import seoData from "../data/site/seo.json";
 
 const geistSans = localFont({
   src: [
@@ -39,8 +41,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      default: "阿鲲 の小窝",
-      template: "%s | 阿鲲 の小窝"
+      default: "阿鲲の小窝 - 主页",
+      template: "阿鲲の小窝 - %s"
     },
     icons: {
       icon: [
@@ -51,19 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
       apple: '/favicon.png',
     },
     description: finalDescription,
-    keywords: [
-      "阿鲲",
-      "个人博客",
-      "ACG",
-      "二次元",
-      "前端开发",
-      "React",
-      "Next.js",
-      "TypeScript",
-      "MMD",
-      "原神",
-      "是阿鲲酱鸭"
-    ],
+    keywords: seoData.keywords,
     authors: [{ name: "阿鲲" }],
     creator: "阿鲲",
     publisher: "阿鲲",
@@ -81,10 +71,10 @@ export async function generateMetadata(): Promise<Metadata> {
       }
     },
     openGraph: {
-      title: "阿鲲 の小窝",
+      title: "阿鲲の小窝",
       description: finalDescription,
       url: '/',
-      siteName: "阿鲲 の小窝",
+      siteName: "阿鲲の小窝",
       images: [
         {
           url: '/HeadIMG.jpg',
@@ -98,7 +88,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: "阿鲲 の小窝",
+      title: "阿鲲の小窝",
       description: finalDescription,
       images: ['/HeadIMG.jpg'],
     },
@@ -124,75 +114,46 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // 首页大堂的 Lobby 频道数据（与 GlobalHero 的 route-aware 配置共用）；
-  // 在 server layout 中只算一次，传给 GlobalHero 作为 "/" 路由的轮播内容。
+  // 首页大堂的 Lobby 频道：静态文案来自 data/site/hero.json（经 lib/hero.ts），
+  // featured 精选列表在 server layout 运行时动态组装（posts / media / games / update-record），
+  // 按频道 key 合并后传给 GlobalHero 作为 "/" 路由的轮播内容。
   const allPosts = getPostsIndex();
   const featuredPosts = allPosts.filter((p) => p.type !== "news");
-  const homeChannels: LobbyChannel[] = [
-    {
-      key: "posts",
-      label: "文章",
-      eyebrow: "技术与随笔",
-      title: "探索知识库",
-      desc: "记录折腾、技术与生活的所思所想。",
-      href: "/articles",
-      image: "/bg1.jpg",
-      featured: featuredPosts.slice(0, 3).map((p) => ({
-        title: p.title,
-        href: `/articles/${encodeURIComponent(p.slug)}`,
-        meta: p.date,
-        cover: p.cover,
-      })),
-    },
-    {
-      key: "music",
-      label: "音乐",
-      eyebrow: "音乐与律动",
-      title: "听听我在听什么",
-      desc: "ACG、纯音乐与 Galgame OST 歌单。",
-      href: "/media/music",
-      image: "/bg2.jpg",
-      featured: mediaItems.slice(0, 3).map((m) => ({
-        title: m.title,
-        href: "/media/music",
-        meta: m.artist,
-        cover: m.cover,
-      })),
-    },
-    {
-      key: "games",
-      label: "游戏",
-      eyebrow: "游戏与ACG",
-      title: "记录游戏时光",
-      desc: "原神、崩铁与二次元同好的快乐。",
+  const featuredByKey: Record<string, FeaturedItem[]> = {
+    posts: featuredPosts.slice(0, 3).map((p) => ({
+      title: p.title,
+      href: `/articles/${encodeURIComponent(p.slug)}`,
+      meta: p.date,
+      cover: p.cover,
+    })),
+    music: musicItems.slice(0, 3).map((m) => ({
+      title: m.title,
+      href: "/music",
+      meta: m.artist,
+      // Hero 预览缩略图用本地静态封面（public/music/cover/），避免直接暴露私有桶路径；
+      // 实际播放时封面仍走 lib/music-url 的签名 URL（见 CoverImage）。无封面回退默认图。
+      cover: m.cover ? `/music/cover/${m.cover.split("/").pop()}` : DEFAULT_COVER,
+    })),
+    games: gameItems.slice(0, 3).map((g) => ({
+      title: g.title,
       href: "/games",
-      image: "/images/genshin/gs_2026-01-22_000132_233.jpg",
-      featured: gameItems.slice(0, 3).map((g) => ({
-        title: g.name,
-        href: g.postSlug ? `/articles/${encodeURIComponent(g.postSlug)}` : "/games",
-        meta: g.status,
-        cover: g.cover,
-        emoji: "🎮",
+      meta: g.status ? STATUS_LABELS[g.status] : undefined,
+      cover: g.cover,
+      emoji: "🎮",
+    })),
+    updateRecord: getUpdateRecords()
+      .slice(0, 3)
+      .map((u) => ({
+        title: u.title,
+        href: `/update-record#${u.slug}`,
+        meta: u.date,
+        emoji: u.emoji,
       })),
-    },
-    {
-      key: "changelog",
-      label: "日志",
-      eyebrow: "更新日志",
-      title: "看看我在折腾什么",
-      desc: "站点功能与版本演进记录。",
-      href: "/changelog",
-      image: "/bg3.jpg",
-      featured: getUpdates()
-        .slice(0, 3)
-        .map((u) => ({
-          title: u.title,
-          href: `/changelog#${u.slug}`,
-          meta: u.date,
-          emoji: u.emoji,
-        })),
-    },
-  ];
+  };
+  const homeChannels: LobbyChannel[] = heroChannels.map((c) => ({
+    ...c,
+    featured: featuredByKey[c.key] ?? [],
+  }));
 
   return (
     <html lang="zh" suppressHydrationWarning>
@@ -251,7 +212,7 @@ export default function RootLayout({
 
         <ThemeProvider>
           <SplashScreen />
-          <MediaProvider>
+          <MusicProvider>
             <FloatingEmojis />
             <Header />
             <main className="pt-16 pb-16">
@@ -261,11 +222,11 @@ export default function RootLayout({
             </main>
 
             <Footer />
-            <MyCard />
+            <GuestbookNotifier />
             <RecentComments />
             <FloatingThemeToggle />
             <FloatingActions />
-          </MediaProvider>
+          </MusicProvider>
         </ThemeProvider>
       </body>
     </html>

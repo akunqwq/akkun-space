@@ -1,75 +1,105 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
-import { gameItems } from "../../lib/games";
+import {
+  gameItems,
+  STATUS_LABELS,
+  type GameItem,
+  type GameStatus,
+} from "../../lib/games";
 import GlassPage from "../components/GlassPage";
 
 export const metadata: Metadata = {
-  title: "游戏与ACG · 阿鲲の小窝",
-  description: "记录我的游戏时光：原神、崩铁与二次元同好。",
+  title: "游戏库",
+  description:
+    "记录我玩过、正在游玩与喜爱的游戏，也为未来的 Web 游戏项目预留一席之地。",
 };
+
+// 游戏状态角标样式
+const STATUS_BADGE = "absolute top-2 left-2 px-2 py-0.5 rounded-full text-[11px] font-medium bg-black/55 text-white backdrop-blur-sm";
 
 export default function GamesPage() {
   return (
-    <GlassPage maxWidth="max-w-7xl">
-      <header className="mb-8">
-        <p className="text-[var(--accent)] text-sm font-semibold tracking-[0.2em] uppercase">
-          游戏与ACG
-        </p>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] mt-2">
-          记录游戏时光
-        </h1>
-        <p className="text-[var(--text-secondary)] mt-3 max-w-2xl leading-relaxed">
-          提瓦特的风、星穹列车的旅程，以及和同好们一起的快乐。这里收录我正在玩 / 关注的作品，
-          以及折腾建模、渲染与二创的碎片。
-        </p>
-      </header>
+    <GlassPage maxWidth="max-w-[1400px]">
+      <section>
+        <div className="flex items-baseline justify-center gap-3 mb-6">
+          <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
+            我现在玩的游戏
+          </h2>
+          <span className="text-sm text-[var(--text-muted)]">
+            {gameItems.length} 款
+          </span>
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {gameItems.map((g) => {
-          const href = g.postSlug
-            ? `/articles/${encodeURIComponent(g.postSlug)}`
-            : "/games";
-          return (
-            <Link
-              key={g.slug}
-              href={href}
-              className="group block rounded-2xl overflow-hidden bg-[var(--card-bg)] border border-white/10 hover:border-accent/50 transition-colors"
-            >
-              <div className="relative aspect-[4/3] bg-black/20">
-                {g.cover ? (
-                  <Image
-                    src={g.cover}
-                    alt={g.name}
-                    fill
-                    sizes="(max-width:640px) 50vw, 25vw"
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                    🎮
-                  </div>
-                )}
-                {g.status && (
-                  <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/50 text-white text-xs backdrop-blur-sm">
-                    {g.status}
-                  </span>
-                )}
-              </div>
-              <div className="p-3">
-                <h2 className="font-semibold text-[var(--text-primary)] truncate">
-                  {g.name}
-                </h2>
-                {g.note && (
-                  <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
-                    {g.note}
-                  </p>
-                )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-6">
+          {gameItems.map((g) => (
+            <GamePoster key={g.id} game={g} />
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-14">
+        <div className="flex items-center justify-center gap-3 mb-5">
+          <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)]">
+            我的游戏项目
+          </h2>
+          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--accent)]/15 text-[var(--accent)]">
+            Coming Soon
+          </span>
+        </div>
+        <div className="rounded-2xl border border-dashed border-[var(--card-border)] bg-[var(--card-bg-subtle)] px-6 py-12 text-center">
+          <p className="text-[var(--text-secondary)]">敬请期待...</p>
+        </div>
+      </section>
     </GlassPage>
+  );
+}
+
+
+function GamePoster({ game }: { game: GameItem }) {
+  const status = game.status as GameStatus | undefined;
+  return (
+    <article className="group relative rounded-xl overflow-hidden bg-[var(--card-bg)] border border-[var(--card-border)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:border-[var(--accent)]/50">
+      <div className="relative aspect-[616/353] bg-black/20 overflow-hidden">
+        {game.cover ? (
+          <Image
+            src={game.cover}
+            alt={game.title}
+            fill
+            sizes="(max-width:640px) 90vw, 260px"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-5xl">
+            🎮
+          </div>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        {status && (
+          <span className={STATUS_BADGE}>{STATUS_LABELS[status]}</span>
+        )}
+      </div>
+
+      {/* 信息区 */}
+      <div className="p-3">
+        <h3 className="font-semibold text-[var(--text-primary)] truncate">
+          {game.title}
+        </h3>
+        <p className="text-xs text-[var(--text-muted)] mt-0.5 truncate">
+          {game.platform}
+          {game.source ? ` · ${game.source}` : ""}
+        </p>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {game.genres.map((genre) => (
+            <span
+              key={genre}
+              className="px-2 py-0.5 rounded-md text-[11px] bg-[var(--card-bg-subtle)] text-[var(--text-secondary)] border border-[var(--card-border-inset)]"
+            >
+              {genre}
+            </span>
+          ))}
+        </div>
+      </div>
+    </article>
   );
 }

@@ -8,41 +8,29 @@ const indexFile = path.join(process.cwd(), "data/posts.json");
 
 /**
  * 读取构建时生成的文章索引（data/posts.json）。
- * 若索引文件不存在（例如首次运行 / 开发时未生成），
- * 自动回退到实时读取文件系统，保证始终可用。
+ * 开发期未生成索引时，回退到实时读取文件系统，保证首页/sitemap 始终可用。
  */
 export function getPostsIndex(): PostIndexItem[] {
-  try {
-    if (fs.existsSync(indexFile)) {
-      const raw = fs.readFileSync(indexFile, "utf-8");
-      const data = JSON.parse(raw);
-      // 兼容新旧格式：新格式带 posts 字段，旧格式直接是数组
-      return (data.posts ?? data) as PostIndexItem[];
-    }
-  } catch (error) {
-    console.error("读取文章索引失败，回退到文件系统:", error);
+  if (!fs.existsSync(indexFile)) {
+    return getAllPosts() as unknown as PostIndexItem[];
   }
-  // 回退：实时从文件系统读取（返回结构兼容 PostIndexItem）
-  return getAllPosts() as unknown as PostIndexItem[];
+  const raw = fs.readFileSync(indexFile, "utf-8");
+  const data = JSON.parse(raw);
+  // 兼容新旧格式：新格式带 posts 字段，旧格式直接是数组
+  return (data.posts ?? data) as PostIndexItem[];
 }
 
-// 文章类型：用于内容分层（技术 / 折腾 / 随笔 / 资讯存档）
-// tech=技术  tinker=折腾  essay=随笔  news=资讯存档（新闻搬运）
-export type PostType = 'tech' | 'tinker' | 'essay' | 'news';
-
-export const POST_TYPE_LABELS: Record<PostType, string> = {
-  tech: '技术',
-  tinker: '折腾',
-  essay: '随笔',
-  news: '资讯',
-};
-
-const VALID_TYPES: PostType[] = ['tech', 'tinker', 'essay', 'news'];
-
-// 归一化 type：非法/缺失时默认归为 essay（个人随笔，避免被误隐藏）
-export function normalizePostType(type: unknown): PostType {
-  return VALID_TYPES.includes(type as PostType) ? (type as PostType) : 'essay';
-}
+// 文章类型 taxonomy 统一由 lib/postTypes.ts（数据源 data/content/post-types.json）提供，
+// 此处 re-export 保持旧 import 路径兼容。
+export {
+  POST_TYPE_LABELS,
+  TYPE_BADGE_STYLES,
+  POST_TYPES,
+  VALID_TYPES,
+  normalizePostType,
+  type PostType,
+} from './postTypes';
+import { normalizePostType, type PostType } from './postTypes';
 
 // 文章元数据类型
 export interface PostMeta {
@@ -92,18 +80,13 @@ export interface Post extends PostMeta {
   bodyRaw: string;
 }
 
-// 模块级缓存：仅生产环境缓存（构建期/运行时复用）；dev 每次重算保证编辑 MDX 后列表即时刷新
-let _allPostsCache: PostListItem[] | null = null;
-
 // 获取所有文章（按日期降序排列）
 export function getAllPosts(): PostListItem[] {
-  if (_allPostsCache && process.env.NODE_ENV === "production") return _allPostsCache;
-  try {
-    if (!fs.existsSync(postsDir)) {
-      return [];
-    }
+  if (!fs.existsSync(postsDir)) {
+    return [];
+  }
 
-    const files = fs.readdirSync(postsDir);
+  const files = fs.readdirSync(postsDir);
     const mdxFiles = files.filter(file => /\.mdx?$/.test(file));
 
     const result = mdxFiles
@@ -142,12 +125,7 @@ export function getAllPosts(): PostListItem[] {
         return (b.order ?? 0) - (a.order ?? 0);
       });
 
-    _allPostsCache = result;
     return result;
-  } catch (error) {
-    console.error('Error reading posts:', error);
-    return [];
-  }
 }
 
 // 根据 slug 获取单篇文章
@@ -196,11 +174,8 @@ export function getPostBySlug(slug: string): Post | null {
     // 使用自定义 slug 或文件名
     const finalSlug = meta.slug || decodedSlug;
 
-    // 阅读时间优先取构建阶段生成的索引值，避免每次渲染重算；缺失时回退计算
-    const idxItem = getPostsIndex().find(
-      (p) => p.slug === finalSlug || p.slug === decodedSlug
-    );
-    const readingTime = idxItem?.readingTime ?? calcReadingTime(content);
+    // 阅读时间直接由正文计算（与构建期索引使用同一函数，无需再解析整份索引）
+    const readingTime = calcReadingTime(content);
 
     return {
       slug: finalSlug,
@@ -212,8 +187,7 @@ export function getPostBySlug(slug: string): Post | null {
       bodyRaw: content,
       readingTime,
     } as Post;
-  } catch (error) {
-    console.error(`Error reading post ${slug}:`, error);
+  } catch {
     return null;
   }
 }
@@ -234,22 +208,23 @@ export interface PostsIndexStats {
   news: number;
 }
 
-/**
- * 读取文章索引的元信息与分类统计。
- * 供首页展示「技术文章 X 篇」等统计，以及增量构建比对 hash。
- * 若索引文件不存在或旧格式（无 meta/stats），返回 null。
+/*
+ * 获取文章索引元信息（仅构建期使用）
  */
-export function getPostsMeta(): { meta: PostsIndexMeta; stats: PostsIndexStats } | null {
-  try {
-    if (fs.existsSync(indexFile)) {
-      const raw = fs.readFileSync(indexFile, "utf-8");
-      const data = JSON.parse(raw);
-      if (data.meta && data.stats) {
-        return { meta: data.meta, stats: data.stats };
-      }
-    }
-  } catch (error) {
-    console.error("读取文章索引元信息失败:", error);
+export function getPostsMeta() {
+  if (!fs.existsSync(indexFile)) {
+    return null;
   }
-  return null;
+
+  const raw = fs.readFileSync(indexFile, "utf-8");
+  const data = JSON.parse(raw);
+
+  if (!data.meta || !data.stats) {
+    return null;
+  }
+
+  return {
+    meta: data.meta,
+    stats: data.stats,
+  };
 }

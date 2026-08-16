@@ -6,16 +6,7 @@ export interface TocItem {
   level: number; // 仅返回 2 / 3
 }
 
-/**
- * 从 MDX 原文提取 h2/h3 作为目录。
- *
- * 关键点：rehype-slug 会对【所有级别的标题】按文档顺序用 github-slugger
- * 生成 id 并自动去重。为了让 TOC 锚点 id 与渲染出的标题 id 完全一致，
- * 这里也按文档顺序遍历 h1-h6 喂给同一个 slugger 实例（保持去重计数同步），
- * 但只把 h2/h3 收进结果。
- *
- * 同时跳过围栏代码块内的 "##"，避免误识别。
- */
+/*从 MDX 原文提取 h2/h3 作为目录。*/
 export function extractToc(rawMdx: string): TocItem[] {
   const slugger = new GithubSlugger();
   const lines = rawMdx.split("\n");
