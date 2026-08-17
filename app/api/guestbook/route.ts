@@ -10,6 +10,10 @@ const MAX_TEXT_LENGTH = 1000
 // GET /api/guestbook —— 读取最新留言
 // GET /api/guestbook?since=ISO_TIMESTAMP —— 获取该时间之后的新增留言数
 export async function GET(req: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: '数据库未配置' }, { status: 503 })
+  }
+
   const { searchParams } = new URL(req.url);
   const since = searchParams.get('since');
 
@@ -48,6 +52,10 @@ export async function GET(req: NextRequest) {
 
 // POST /api/guestbook —— 提交新留言
 export async function POST(req: NextRequest) {
+  if (!supabase) {
+    return NextResponse.json({ error: '数据库未配置' }, { status: 503 })
+  }
+
   // 解析请求体
   let body: Record<string, unknown>
   try {
