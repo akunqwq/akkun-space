@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-storage'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,7 +10,7 @@ const MAX_TEXT_LENGTH = 1000
 // GET /api/guestbook —— 读取最新留言
 // GET /api/guestbook?since=ISO_TIMESTAMP —— 获取该时间之后的新增留言数
 export async function GET(req: NextRequest) {
-  if (!supabase) {
+  if (!supabaseAdmin) {
     return NextResponse.json({ error: '数据库未配置' }, { status: 503 })
   }
 
@@ -24,7 +24,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: '无效的时间戳格式' }, { status: 400 });
     }
 
-    const { count, error } = await supabase
+    const { count, error } = await supabaseAdmin
       .from('comments')
       .select('*', { count: 'exact', head: true })
       .gt('created_at', sinceDate.toISOString());
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   }
 
   // 常规列表查询（原有逻辑）
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('comments')
     .select('*')
     .order('created_at', { ascending: false })
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/guestbook —— 提交新留言
 export async function POST(req: NextRequest) {
-  if (!supabase) {
+  if (!supabaseAdmin) {
     return NextResponse.json({ error: '数据库未配置' }, { status: 503 })
   }
 
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
   // 写入数据库
   // 注意：无需 XSS 过滤——React 的 {} 渲染会自动 escape 文本内容。
   // 只有使用 dangerouslySetInnerHTML 时才需要额外清理。
-  const { data, error } = await supabase
+  const { data, error } = await supabaseAdmin
     .from('comments')
     .insert([{ user_name, avatar: '', text, date: new Date().toISOString() }])
     .select()
