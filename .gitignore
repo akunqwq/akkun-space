@@ -50,9 +50,8 @@ next-env.d.ts
 scripts/crawler/cache/
 /data/posts.json
 
-# 保留兜底资源
+# 保留本地 mp3 兜底资源（封面已改走私有桶签名 URL，不再本地化）
 public/music/*.mp3
-public/music/cover/
 
 .workbuddy/
 
