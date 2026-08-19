@@ -80,7 +80,7 @@ export default async function Home({
           {/* 三栏：左信息(停靠底部) | 中(滚动主体) | 右信息(停靠底部) */}
           <div className="flex flex-col md:flex-row md:items-start md:gap-8">
             {/* 左：我的兴趣 / 统计（md+ 停靠中心左下方，随中心滚动常驻两侧底部） */}
-            <aside className="order-2 md:order-1 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
+            <aside className="order-1 md:order-1 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
               <div className="glass-card p-5">
                 <h2 className="text-base font-semibold mb-3 text-[var(--text-secondary)]">🌸 我的兴趣</h2>
                 <p className="text-sm text-[var(--text-muted)] leading-relaxed">
@@ -101,10 +101,13 @@ export default async function Home({
             </aside>
 
             {/* 中：最近创作（视觉重心，滚动主体） */}
-            <main className="order-1 md:order-2 flex-1 min-w-0 space-y-10">
+            <main className="order-3 md:order-2 flex-1 min-w-0 space-y-10">
               <div className="flex items-baseline justify-between pb-3 border-b border-[var(--card-border-inset)]">
-                <h2 className="text-xl font-extrabold text-[var(--text-primary)]">✍️ 最近创作</h2>
-                <a href="/articles" className="text-sm font-medium text-accent hover:underline">查看全部 →</a>
+                <div>
+                  <h2 className="text-xl font-extrabold text-[var(--text-primary)]">📝 文章</h2>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">空间里的一些书写——技术、折腾与生活随笔。</p>
+                </div>
+                <a href="/articles" className="text-sm font-medium text-accent hover:underline shrink-0 ml-4">查看全部 →</a>
               </div>
               {posts.map((post) => (
                 <PostCard key={post.slug} post={post} />
@@ -113,7 +116,7 @@ export default async function Home({
             </main>
 
             {/* 右：关注我（md+ 停靠中心右下方，随中心滚动常驻两侧底部） */}
-            <aside className="order-3 md:order-3 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
+            <aside className="order-2 md:order-3 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
               <div className="glass-card p-5">
                 <h2 className="text-base font-semibold mb-3 text-[var(--text-secondary)] flex items-center gap-2">
                   <span>💖</span> 关注我
