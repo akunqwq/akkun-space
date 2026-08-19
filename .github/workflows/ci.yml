@@ -33,7 +33,7 @@ jobs:
 
       # Lint
       - name: Lint
-        run: npm run lint
+        run: npm run eslint .
 
       # 构建
       - name: Build

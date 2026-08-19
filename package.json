@@ -9,7 +9,7 @@
     "build": "next build",
     "generate-index": "tsx scripts/generate-posts-index.ts",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "remove-duplicates": "tsx scripts/remove-duplicates.ts",
     "search-test": "tsx scripts/search-quality-test.ts"
   },
