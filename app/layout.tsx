@@ -130,9 +130,10 @@ export default function RootLayout({
       title: m.title,
       href: "/music",
       meta: m.artist,
-      // Hero 预览缩略图用本地静态封面（public/music/cover/），避免直接暴露私有桶路径；
-      // 实际播放时封面仍走 lib/music-url 的签名 URL（见 CoverImage）。无封面回退默认图。
-      cover: m.cover ? `/music/cover/${m.cover.split("/").pop()}` : DEFAULT_COVER,
+      // Hero 预览缩略图改走私有桶签名 URL（与音乐库一致），避免依赖未提交/未部署的本地封面文件。
+      // m.cover 为桶内对象路径（如 test/cover/covermusic1.jpg）；无封面回退 DEFAULT_COVER（公开 SVG）。
+      cover: m.cover ?? DEFAULT_COVER,
+      coverSigned: Boolean(m.cover),
     })),
     games: gameItems.slice(0, 3).map((g) => ({
       title: g.title,

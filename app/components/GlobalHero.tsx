@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getRouteHero } from "@/lib/hero";
+import CoverImage from "./music/CoverImage";
 
 export interface FeaturedItem {
   title: string;
@@ -12,6 +13,7 @@ export interface FeaturedItem {
   meta?: string;
   cover?: string;
   emoji?: string;
+  coverSigned?: boolean;
 }
 
 export interface LobbyChannel {
@@ -120,13 +122,20 @@ function FeaturedList({ items }: { items: FeaturedItem[] }) {
               className="group/i flex items-center gap-3 rounded-xl px-2 py-1.5 -mx-2 hover:bg-[var(--hero-item-hover)] transition-colors"
             >
               {f.cover ? (
-                // 小缩略图用原生 img：封面可能是本地路径或远程(picsum) URL，避免 next/image 远程域名配置
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={f.cover}
-                  alt=""
-                  className="w-9 h-9 rounded-md object-cover shrink-0"
-                />
+                f.coverSigned ? (
+                  <CoverImage
+                    item={{ title: f.title, cover: f.cover }}
+                    className="w-9 h-9 rounded-md object-cover shrink-0"
+                  />
+                ) : (
+                  // 小缩略图用原生 img：封面可能是本地路径或远程(picsum) URL，避免 next/image 远程域名配置
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={f.cover}
+                    alt=""
+                    className="w-9 h-9 rounded-md object-cover shrink-0"
+                  />
+                )
               ) : (
                 <span className="flex items-center justify-center w-9 h-9 rounded-md bg-[var(--hero-badge-bg)] text-[var(--hero-badge-text)] text-sm shrink-0">
                   {f.emoji ?? "·"}

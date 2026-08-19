@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { MusicItem } from "@/lib/music";
 import { DEFAULT_COVER } from "@/lib/music";
 import { getSignedMusicUrl } from "@/lib/music-url";
 
@@ -13,7 +12,7 @@ export default function CoverImage({
   style,
   ...rest
 }: {
-  item: MusicItem;
+  item: { cover?: string; title: string };
   className?: string;
   loading?: "lazy" | "eager";
   style?: React.CSSProperties;

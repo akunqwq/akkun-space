@@ -21,6 +21,9 @@ import MusicBar from "./MusicBar";
 
 const RATES = [0.5, 1, 1.25, 1.5, 2];
 
+// 播放会话持久化：刷新后悬浮窗（队列 / 曲目 / 进度 / 音量等）不丢失
+const SESSION_KEY = "music-session";
+
 const initialState: MusicState = {
   queue: [],
   currentIndex: -1,
@@ -168,6 +171,12 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const loadedKeyRef = useRef<string | null>(null); // 已加载到 el.src 的存储 key
   const resignCountRef = useRef(0); // 连续重签次数（防 404/真错误死循环）
 
+  // —— 会话持久化相关 ref ——
+  const stateRef = useRef(state); // 始终持有最新 state，供持久化读取
+  stateRef.current = state;
+  const hydratedRef = useRef(false); // 防止重复水合
+  const pendingSeekRef = useRef<number | null>(null); // 刷新后恢复播放位置（秒）
+
   // 依赖 ref，确保 seek 不会被首次渲染闭包冻结
   const activeEl = useCallback((): HTMLMediaElement | null => audioRef.current, []);
 
@@ -199,6 +208,21 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       if (currentKeyRef.current !== key) return; // 已切到别的歌
       el.src = url;
       loadedKeyRef.current = key;
+      // 刷新恢复：元数据就绪后跳转到上次进度
+      const seekTo = pendingSeekRef.current;
+      if (seekTo != null && seekTo > 0) {
+        const onMeta = () => {
+          try {
+            el.currentTime = seekTo;
+          } catch {
+            /* ignore */
+          }
+          el.removeEventListener("loadedmetadata", onMeta);
+          pendingSeekRef.current = null;
+          dispatch({ type: "SET_TIME", t: seekTo });
+        };
+        el.addEventListener("loadedmetadata", onMeta);
+      }
       dispatch({ type: "SET_TIME", t: 0 });
       dispatch({ type: "SET_DURATION", d: 0 });
       dispatch({ type: "SET_BUFFERED", b: 0 });
@@ -256,6 +280,92 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       /* ignore */
     }
   }, [state.minimized]);
+
+  // —— 播放会话持久化（刷新后悬浮窗不丢失）——
+  const persistSession = useCallback(() => {
+    try {
+      const s = stateRef.current;
+      localStorage.setItem(
+        SESSION_KEY,
+        JSON.stringify({
+          queue: s.queue,
+          currentIndex: s.currentIndex,
+          currentTime: s.currentTime,
+          isPlaying: s.isPlaying,
+          volume: s.volume,
+          rate: s.rate,
+          muted: s.muted,
+        }),
+      );
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  // 首次挂载：从 localStorage 恢复会话（队列 / 曲目 / 进度 / 音量等）
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    let saved: {
+      queue?: MusicItem[];
+      currentIndex?: number;
+      currentTime?: number;
+      isPlaying?: boolean;
+      volume?: number;
+      rate?: number;
+      muted?: boolean;
+    } | null = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+    } catch {
+      saved = null;
+    }
+    if (
+      saved &&
+      Array.isArray(saved.queue) &&
+      saved.queue.length > 0 &&
+      typeof saved.currentIndex === "number"
+    ) {
+      dispatch({ type: "LOAD", queue: saved.queue, index: saved.currentIndex });
+      if (typeof saved.volume === "number") {
+        dispatch({ type: "SET_VOLUME", v: saved.volume });
+      }
+      if (typeof saved.rate === "number") {
+        dispatch({ type: "SET_RATE", r: saved.rate });
+      }
+      if (saved.muted) dispatch({ type: "TOGGLE_MUTE" });
+      if (typeof saved.currentTime === "number" && saved.currentTime > 0) {
+        pendingSeekRef.current = saved.currentTime;
+      }
+      // 恢复播放意图（浏览器自动播放策略可能拦截 → 自动回退为暂停）
+      if (saved.isPlaying) dispatch({ type: "PLAY" });
+    }
+  }, [dispatch]);
+
+  // 离开页面 / 切后台时持久化（捕获刷新前的实时状态）
+  useEffect(() => {
+    const onHide = () => persistSession();
+    const onVis = () => {
+      if (document.visibilityState === "hidden") persistSession();
+    };
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      document.removeEventListener("visibilitychange", onVis);
+    };
+  }, [persistSession]);
+
+  // 暂停 / 播放结束（队列清空）时持久化进度；跳过挂载首跑避免误覆盖
+  const skipPauseSave = useRef(true);
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (skipPauseSave.current) {
+      skipPauseSave.current = false;
+      return;
+    }
+    if (!state.isPlaying) persistSession();
+  }, [state.isPlaying, persistSession]);
 
   // 倍速
   useEffect(() => {
