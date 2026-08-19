@@ -13,7 +13,6 @@ export default async function ArticlesPage() {
 
   return (
     <GlassPage maxWidth="max-w-[1400px]">
-      {/* 胶囊状搜索栏 + 类型筛选 + 文章列表 */}
       <ArticleSearchBar articles={articles} />
     </GlassPage>
   );

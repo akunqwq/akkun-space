@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 // 正在探索（泛主题、长期稳定）与 Roadmap（稳定项目目标）：data/content/about.json
 const { exploring, roadmap } = aboutData;
 
-// 自定义 GitHub 图标（lucide 的 Github 已弃用，这里用官方 mark 的 SVG 替代）
+
 function GitHubIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" className={className} aria-hidden="true">
@@ -26,7 +26,7 @@ function GitHubIcon({ className }: { className?: string }) {
   );
 }
 
-// 社交数据源 data/site/socials.json 只存数据；图标组件在此按 key 映射
+
 const SOCIAL_ICONS: Record<string, React.ElementType> = {
   bilibili: Tv,
   github: GitHubIcon,
@@ -165,7 +165,7 @@ export default function AboutPage() {
           width={96}
           height={96}
           className="w-24 h-24 rounded-2xl border-2 border-[var(--border-color)] object-cover shrink-0"
-          title="兄弟，来杯咖啡吗？"
+          title="兄弟，点杯蜜雪冰城吗？"
         />
         <div className="text-center sm:text-left min-w-0">
           <h1 className="text-2xl font-bold text-[var(--accent)]">阿鲲</h1>
@@ -200,9 +200,6 @@ export default function AboutPage() {
         <h2 className="text-center text-lg font-bold text-[var(--text-primary)] mb-2">
           兴趣标签
         </h2>
-        <p className="text-center text-sm text-[var(--text-muted)] mb-4">
-          漂浮的兴趣标签，刷新有惊喜。
-        </p>
         <div className="min-h-[280px]">
           <TagWall tags={interests.map(toSearchChip)} />
         </div>

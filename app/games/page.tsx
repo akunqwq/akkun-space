@@ -57,8 +57,15 @@ export default function GamesPage() {
 
 function GamePoster({ game }: { game: GameItem }) {
   const status = game.status as GameStatus | undefined;
+  const bingSearchUrl = `https://cn.bing.com/search?q=${encodeURIComponent(game.title)}`;
   return (
-    <article className="group relative rounded-xl overflow-hidden bg-[var(--card-bg)] border border-[var(--card-border)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:border-[var(--accent)]/50">
+    <a
+      href={bingSearchUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`${game.title}`}
+      className="group relative block rounded-xl overflow-hidden bg-[var(--card-bg)] border border-[var(--card-border)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-2xl hover:border-[var(--accent)]/50 cursor-pointer"
+    >
       <div className="relative aspect-[616/353] bg-black/20 overflow-hidden">
         {game.cover ? (
           <Image
@@ -100,6 +107,6 @@ function GamePoster({ game }: { game: GameItem }) {
           ))}
         </div>
       </div>
-    </article>
+    </a>
   );
 }

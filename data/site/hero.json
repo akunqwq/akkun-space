@@ -41,13 +41,13 @@
       "image": "/images/games/genshin.webp",
       "home": {
         "label": "游戏库",
-        "eyebrow": "游戏收藏",
-        "title": "我的游戏世界",
+        "eyebrow": "精选",
+        "title": "游戏",
         "desc": "记录我玩过、正在游玩与喜爱的游戏，也为未来的 Web 游戏项目预留一席之地。"
       },
       "page": {
-        "eyebrow": "游戏收藏",
-        "title": "我的游戏世界",
+        "eyebrow": "精选",
+        "title": "游戏",
         "desc": "记录我玩过、正在游玩与喜爱的游戏，也为未来的 Web 游戏项目预留一席之地。"
       }
     },

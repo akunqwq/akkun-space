@@ -4,7 +4,7 @@
     "title": "原神",
     "cover": "/images/games/genshin.webp",
     "platform": "PC · 移动端",
-    "source": "HoYoverse",
+    "source": "米哈游",
     "genres": ["开放世界", "RPG", "二次元"],
     "status": "playing"
   },
@@ -15,6 +15,15 @@
     "platform": "PC · 移动端",
     "source": "鹰角网络",
     "genres": ["塔防", "策略", "二次元"],
+    "status": "playing"
+  },
+  {
+    "id": "honor-of-kings",
+    "title": "王者荣耀",
+    "cover": "/images/games/region-menu-bg-wzxg.fd3fad33.webp",
+    "platform": "移动端",
+    "source": "腾讯游戏",
+    "genres": ["MOBA", "多人竞技"],
     "status": "playing"
   }
 ]
