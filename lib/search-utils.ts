@@ -8,7 +8,7 @@
  * 4. 评分阈值过滤 —— 后处理低质量匹配结果
  */
 
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import FlexSearch, { Index } from 'flexsearch';
 
 // 重新导出 Document，避免复杂的泛型约束问题

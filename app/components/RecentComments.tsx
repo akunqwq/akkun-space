@@ -94,7 +94,6 @@ export default function RecentComments() {
       p = { x: window.innerWidth - 56 - FAB_MARGIN, y: window.innerHeight - 56 - footerH - FAB_MARGIN };
     }
     setFab(clampFab(p.x, p.y));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 视口尺寸变化时重新夹紧并持久化
@@ -109,7 +108,6 @@ export default function RecentComments() {
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onFabPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
@@ -219,7 +217,6 @@ export default function RecentComments() {
       setPanelInitialized(true);
     });
     return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 视口尺寸变化：重新夹紧并持久化
@@ -234,7 +231,6 @@ export default function RecentComments() {
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 卸载时取消可能挂起的 rAF，避免拖拽中组件卸载导致更新已卸载组件

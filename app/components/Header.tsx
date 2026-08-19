@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Menu, X } from "lucide-react";
+import { Search } from "lucide-react";
 import { getCountdown } from "@/lib/holidays";
 import { GREETINGS, GREETING_DWELL } from "@/lib/greetings";
 import { headerNav } from "@/lib/nav";

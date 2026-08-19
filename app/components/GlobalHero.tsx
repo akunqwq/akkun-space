@@ -128,9 +128,8 @@ function FeaturedList({ items }: { items: FeaturedItem[] }) {
                     className="w-9 h-9 rounded-md object-cover shrink-0"
                   />
                 ) : (
-                  // 小缩略图用原生 img：封面可能是本地路径或远程(picsum) URL，避免 next/image 远程域名配置
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                // 小缩略图用原生 img：封面可能是本地路径或远程(picsum) URL，避免 next/image 远程域名配置
+                <img
                     src={f.cover}
                     alt=""
                     className="w-9 h-9 rounded-md object-cover shrink-0"
