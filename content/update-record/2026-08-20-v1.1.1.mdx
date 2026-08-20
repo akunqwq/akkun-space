@@ -1,18 +1,15 @@
 ---
-title: "fix: update-record workflow checkout main + workflow_dispatch support"
+title: "修复 update-record 工作流并支持手动触发"
 date: "2026-08-20"
 category: "update"
 version: "v1.1.1"
 ---
-### fix: update-record workflow checkout main + workflow_dispatch support (#3)
 
-- checkout 明确 ref: main，避免 PR closed 事件默认 checkout head ref 导致分支错乱
+### 修复 update-record 工作流
 
-- 添加 workflow_dispatch 支持，便于手动重测（修复后验证）
+- 修复 PR 关闭时错误检出 head 分支的问题，统一基于 `main` 执行
+- 支持 `workflow_dispatch` 手动触发，便于调试与验证
+- 创建草稿 PR 时明确指定目标分支，避免分支错乱
 
-- Open draft PR 步骤从 origin/main 创建新分支，明确 gh pr create --head
-
-**包含的提交**
-- fix: update-record workflow checkout main + workflow_dispatch support
-
-> 本条目由 update-record 自动化草稿生成，请人工润色叙事与版本号后再合并。
+**相关 PR**
+- #3 `fix: update-record workflow checkout main + workflow_dispatch support`
