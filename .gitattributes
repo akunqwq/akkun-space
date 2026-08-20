@@ -1,0 +1,4 @@
+# GitHub Linguist: 把博客正文识别为项目文档
+# 单一 .mdx（如"生态环境法典" 501KB）压住 Languages 头条 70%+ 是失真——
+# 头条理应是 TypeScript（真实技术栈）。文档类从统计中排除但保留代码搜索。
+content/posts/** linguist-documentation
