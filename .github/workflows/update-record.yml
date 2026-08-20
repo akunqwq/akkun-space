@@ -5,6 +5,13 @@ name: Update Record (auto draft)
 on:
   pull_request:
     types: [closed]
+  # 允许手动触发重测（修复后验证用）
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "要生成更新记录的 PR 编号"
+        required: true
+        default: "2"
 
 permissions:
   contents: write
@@ -14,15 +21,20 @@ jobs:
   draft:
     # 仅当：PR 已合并 + 目标分支是 main + 非机器人分支/作者，避免自我触发的死循环
     if: >-
-      github.event.pull_request.merged == true &&
-      github.event.pull_request.base.ref == 'main' &&
-      github.event.pull_request.user.login != 'github-actions[bot]' &&
-      !startsWith(github.event.pull_request.head.ref, 'chore/update-record/')
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.base.ref == 'main' &&
+       github.event.pull_request.user.login != 'github-actions[bot]' &&
+       !startsWith(github.event.pull_request.head.ref, 'chore/update-record/'))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # 关键修复：明确 checkout main，避免 PR closed 事件默认 checkout head ref
+      - name: Checkout main
+        uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v4
         with:
@@ -32,12 +44,25 @@ jobs:
       - name: Install dependencies (for tsx)
         run: npm ci
 
+      - name: Resolve PR number
+        id: resolve
+        env:
+          PR_NUMBER_INPUT: ${{ github.event.inputs.pr_number }}
+          PR_NUMBER_EVENT: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "$PR_NUMBER_INPUT" ]; then
+            echo "PR_NUMBER=$PR_NUMBER_INPUT" >> "$GITHUB_ENV"
+          else
+            echo "PR_NUMBER=$PR_NUMBER_EVENT" >> "$GITHUB_ENV"
+          fi
+
       - name: Fetch PR metadata and commits
         id: meta
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ env.PR_NUMBER }}
         run: |
+          set -e
           PR_JSON=$(gh pr view "$PR_NUMBER" --json title,body,labels,mergedAt \
             --jq '{title: .title, body: .body, labels: [.labels[].name], mergedAt: .mergedAt}')
           {
@@ -54,7 +79,7 @@ jobs:
 
       - name: Generate update-record draft
         env:
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ env.PR_NUMBER }}
           PR_TITLE: ${{ env.PR_TITLE }}
           PR_BODY: ${{ env.PR_BODY }}
           PR_LABELS: ${{ env.PR_LABELS }}
@@ -65,12 +90,15 @@ jobs:
       - name: Open draft PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_NUMBER: ${{ env.PR_NUMBER }}
         run: |
+          set -e
           BRANCH="chore/update-record/${PR_NUMBER}"
           git config user.email "actions@github.com"
           git config user.name "github-actions[bot]"
-          git checkout -b "$BRANCH"
+          git fetch origin main
+          # 关键修复：从 origin/main 创建新分支（而非当前 detached/head 状态）
+          git checkout -B "$BRANCH" origin/main
           git add content/update-record/
           if git diff --cached --quiet; then
             echo "无新条目生成，跳过"
@@ -79,6 +107,7 @@ jobs:
           git commit -m "chore: auto draft update-record for #${PR_NUMBER}"
           git push origin "$BRANCH"
           gh pr create \
+            --head "$BRANCH" \
             --title "chore: update-record draft for #${PR_NUMBER}" \
             --body "自动化生成的更新日志草稿（来自 #${PR_NUMBER}）。请人工润色叙事与版本号后再合并；合并后本 PR 不会再次触发生成。" \
             --base main
