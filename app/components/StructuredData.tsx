@@ -3,10 +3,9 @@ import seoData from '@/data/site/seo.json'
 
 interface StructuredDataProps {
   type: 'website' | 'blog' | 'person'
-  data?: any
 }
 
-export default function StructuredData({ type, data }: StructuredDataProps) {
+export default function StructuredData({ type }: StructuredDataProps) {
   const baseUrl = 'https://www.akkun.online' 
 
   const getStructuredData = () => {

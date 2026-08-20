@@ -43,7 +43,7 @@ export interface PostMeta {
   order?: number;
   type?: PostType;
   slug?: string;   // 自定义 URL
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // 文章列表项类型

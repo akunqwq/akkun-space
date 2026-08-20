@@ -159,23 +159,27 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const currentItemRef = useRef<MusicItem | null>(null);
 
   const currentItem = state.currentIndex >= 0 ? state.queue[state.currentIndex] ?? null : null;
-  currentItemRef.current = currentItem;
 
   // —— refs：跨异步闭包读取最新状态，避免冻结 ——
   const isPlayingRef = useRef(state.isPlaying);
-  isPlayingRef.current = state.isPlaying;
   const playbackStateRef = useRef(state.playbackState);
-  playbackStateRef.current = state.playbackState;
   const currentKeyRef = useRef<string | null>(currentItem?.src ?? null);
-  currentKeyRef.current = currentItem?.src ?? null;
   const loadedKeyRef = useRef<string | null>(null); // 已加载到 el.src 的存储 key
   const resignCountRef = useRef(0); // 连续重签次数（防 404/真错误死循环）
 
   // —— 会话持久化相关 ref ——
   const stateRef = useRef(state); // 始终持有最新 state，供持久化读取
-  stateRef.current = state;
   const hydratedRef = useRef(false); // 防止重复水合
   const pendingSeekRef = useRef<number | null>(null); // 刷新后恢复播放位置（秒）
+
+  // 同步最新 state 到 ref（替代 render 内 mutation，符合 React 19 rules-of-hooks）
+  useEffect(() => {
+    isPlayingRef.current = state.isPlaying;
+    playbackStateRef.current = state.playbackState;
+    currentItemRef.current = currentItem;
+    currentKeyRef.current = currentItem?.src ?? null;
+    stateRef.current = state;
+  }, [state, currentItem]);
 
   // 依赖 ref，确保 seek 不会被首次渲染闭包冻结
   const activeEl = useCallback((): HTMLMediaElement | null => audioRef.current, []);

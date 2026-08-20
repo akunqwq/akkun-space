@@ -13,7 +13,7 @@ export interface UpdateRecordMeta {
   emoji?: string;
   category?: string;
   version?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // 更新记录内容类型

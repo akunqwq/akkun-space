@@ -54,6 +54,15 @@ export default function MusicBubble() {
     setPos(next);
   }, []);
 
+  // 持久化（提前定义供下方 useEffect 引用，避免 TDZ 误报）
+  const persist = useCallback((p: Pos) => {
+    try {
+      window.localStorage.setItem(FAB_KEY, JSON.stringify(p));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   // 视口变化重新夹紧并持久化
   useEffect(() => {
     const onResize = () => {
@@ -71,14 +80,6 @@ export default function MusicBubble() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  const persist = useCallback((p: Pos) => {
-    try {
-      window.localStorage.setItem(FAB_KEY, JSON.stringify(p));
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault();
@@ -94,6 +95,7 @@ export default function MusicBubble() {
       isLongPressFired.current = false;
       // 长按 → 展开回底部条
       longPressTimer.current = setTimeout(() => {
+        // eslint-disable-next-line react-hooks/refs -- setTimeout 回调内非 render 阶段
         isLongPressFired.current = true;
         m.toggleMinimize();
       }, LONG_PRESS_MS);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 type TagWallTag = string | { label: string; href?: string };
 
@@ -93,9 +93,9 @@ export default function TagWall({ tags, className }: TagWallProps) {
   const [items, setItems] = useState<TagItem[]>([]);
 
   // 每次加载一个新 seed，本次生命周期固定（不随 resize / re-render 变）
-  const seedRef = useRef<number | undefined>(undefined);
-  if (seedRef.current === undefined) seedRef.current = Math.random();
-  const seed = seedRef.current;
+  // React 19 推荐用 useState lazy initializer 表达"组件级稳定值"，
+  // 比 useRef + render 内 mutation 更符合 rules-of-hooks
+  const [seed] = useState<number>(() => Math.random());
 
   useEffect(() => {
     const normalized = tags.map(normalizeTag);
@@ -122,6 +122,7 @@ export default function TagWall({ tags, className }: TagWallProps) {
       },
     }));
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 动画初始位置同步设置是合理用法
     setItems(start);
     const timer = setTimeout(() => setItems(target), 60);
 

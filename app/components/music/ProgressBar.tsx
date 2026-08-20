@@ -46,6 +46,7 @@ export default function ProgressBar() {
 
   const played = m.duration ? m.currentTime / m.duration : 0;
   const buffered = m.duration ? m.buffered / m.duration : 0;
+  // eslint-disable-next-line react-hooks/refs -- ratioFromEvent 是合法的事件坐标转换辅助
   const hoverRatio = hoverX != null ? ratioFromEvent(hoverX) : 0;
 
   return (

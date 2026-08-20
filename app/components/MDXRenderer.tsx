@@ -6,6 +6,7 @@ import MDXImage from './mdx/MDXImage';
 import MDXLink from './mdx/MDXLink';
 import MDXHeading from './mdx/MDXHeading';
 import MDXBlockquote from './mdx/MDXBlockquote';
+import Underline from './mdx/Underline';
 import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 
@@ -15,7 +16,7 @@ import remarkGfm from 'remark-gfm';
  */
 const mdxComponents: MDXComponents = {
   // 自定义组件（已拆分为独立文件）
-  Underline: require('./mdx/Underline').default,
+  Underline,
   img: MDXImage,
   a: MDXLink,
   pre: MDXCode,

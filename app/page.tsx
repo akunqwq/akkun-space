@@ -2,6 +2,7 @@ import { getPostsIndex, getPostsMeta, type PostsIndexStats } from "../lib/posts"
 import { socials } from "../lib/socials";
 import PostCard from "./components/PostCard";
 import Pagination from "./components/Pagination";
+import Link from "next/link";
 
 // 每页文章数
 const PAGE_SIZE = 10;
@@ -107,7 +108,7 @@ export default async function Home({
                   <h2 className="text-xl font-extrabold text-[var(--text-primary)]">📝 文章</h2>
                   <p className="mt-1 text-sm text-[var(--text-muted)]">空间里的一些书写——技术、折腾与生活随笔。</p>
                 </div>
-                <a href="/articles" className="text-sm font-medium text-accent hover:underline shrink-0 ml-4">查看全部 →</a>
+                <Link href="/articles" className="text-sm font-medium text-accent hover:underline shrink-0 ml-4">查看全部 →</Link>
               </div>
               {posts.map((post) => (
                 <PostCard key={post.slug} post={post} />
@@ -192,9 +193,9 @@ export default async function Home({
                     </li>
                   ))}
                   <li className="pt-1">
-                    <a href="/articles?type=news" className="text-accent hover:underline text-xs">
+                    <Link href="/articles?type=news" className="text-accent hover:underline text-xs">
                       查看全部资讯存档 →
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </details>
