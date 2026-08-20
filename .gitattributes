@@ -2,3 +2,7 @@
 # 单一 .mdx（如"生态环境法典" 501KB）压住 Languages 头条 70%+ 是失真——
 # 头条理应是 TypeScript（真实技术栈）。文档类从统计中排除但保留代码搜索。
 content/posts/** linguist-documentation
+
+# 锁定 package-lock.json 行尾为 LF（与 .gitattributes 自身风格一致）
+# 消除 autocrlf=true 反复触发的 "LF will be replaced by CRLF" 警告
+package-lock.json text eol=lf
