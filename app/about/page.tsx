@@ -4,9 +4,9 @@ import Link from "next/link";
 import { Globe, Tv, Sparkles, Rocket, Compass, Code2 } from "lucide-react";
 import TagWall from "../components/TagWall";
 import GlassPage from "../components/GlassPage";
-import { interests } from "@/lib/interests";
-import { techStack } from "@/lib/techStack";
-import { socials, getSocial } from "@/lib/socials";
+import { interests } from "@/lib/site";
+import { techStack } from "@/lib/site";
+import { socials, getSocial } from "@/lib/site";
 import aboutData from "@/data/content/about.json";
 
 export const metadata: Metadata = {

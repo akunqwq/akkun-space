@@ -4,9 +4,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
-import { getCountdown } from "@/lib/holidays";
-import { GREETINGS, GREETING_DWELL } from "@/lib/greetings";
-import { headerNav } from "@/lib/nav";
+import { getCountdown } from "@/lib/site";
+import { GREETINGS, GREETING_DWELL } from "@/lib/site";
+import { headerNav } from "@/lib/site";
 import { SearchModal } from "./SearchModal";
 
 // 获取当前时间格式化字符串（包含秒数）

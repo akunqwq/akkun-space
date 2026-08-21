@@ -9,7 +9,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/interaction'
 
 // 阅读满多少秒才计入一次阅读量
 const COUNT_AFTER_SECONDS = 120

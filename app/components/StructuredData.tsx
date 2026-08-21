@@ -1,4 +1,4 @@
-import { socialUrls } from '@/lib/socials'
+import { socialUrls } from '@/lib/site'
 import seoData from '@/data/site/seo.json'
 
 interface StructuredDataProps {

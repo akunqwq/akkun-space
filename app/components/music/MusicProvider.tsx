@@ -9,12 +9,12 @@ import {
   useRef,
   type ReactNode,
 } from "react";
-import type { MusicItem } from "@/lib/music";
-import { DEFAULT_COVER } from "@/lib/music";
+import type { MusicItem } from "@/lib/portfolio";
+import { DEFAULT_COVER } from "@/lib/portfolio";
 import {
   getSignedMusicUrl,
   invalidateSignedMusicUrl,
-} from "@/lib/music-url";
+} from "@/lib/portfolio";
 import type { MusicContextValue, MusicState, PlaybackState } from "./types";
 import AudioSurface from "./AudioSurface";
 import MusicBar from "./MusicBar";

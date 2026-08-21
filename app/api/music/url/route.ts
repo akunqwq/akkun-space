@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin, SIGNED_URL_TTL } from "@/lib/supabase-storage";
-import { MUSIC_BUCKET } from "@/lib/music";
+import { supabaseAdmin, SIGNED_URL_TTL } from "@/lib/interaction";
+import { MUSIC_BUCKET } from "@/lib/portfolio";
 
 // 为私有桶 `music` 内的对象签发临时签名 URL。
 // GET /api/music/url?key=test/audio/song1.mp3

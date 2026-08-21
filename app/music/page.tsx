@@ -1,4 +1,4 @@
-import { musicItems } from "@/lib/music";
+import { musicItems } from "@/lib/portfolio";
 import MusicCard from "../components/music/MusicCard";
 import GlassPage from "../components/GlassPage";
 

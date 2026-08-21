@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import UpdateRecordRenderer from "../components/UpdateRecordRenderer";
 import GlassPage from "../components/GlassPage";
-import { getUpdateRecords } from "@/lib/updateRecord";
+import { getUpdateRecords } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "更新日志",

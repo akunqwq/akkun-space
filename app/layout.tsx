@@ -13,11 +13,11 @@ import FloatingThemeToggle from "./components/FloatingThemeToggle";
 import FloatingActions from "./components/FloatingActions";
 import FloatingEmojis from "./components/FloatingEmojis";
 import GlobalHero, { type FeaturedItem, type LobbyChannel } from "./components/GlobalHero";
-import { getPostsIndex } from "../lib/posts";
-import { getUpdateRecords } from "../lib/updateRecord";
-import { musicItems, DEFAULT_COVER } from "../lib/music";
-import { gameItems, STATUS_LABELS } from "../lib/games";
-import { heroChannels } from "../lib/hero";
+import { getPostsIndex } from "../lib/content";
+import { getUpdateRecords } from "../lib/content";
+import { musicItems, DEFAULT_COVER } from "../lib/portfolio";
+import { gameItems, STATUS_LABELS } from "../lib/portfolio";
+import { heroChannels } from "../lib/site";
 import seoData from "../data/site/seo.json";
 
 const geistSans = localFont({

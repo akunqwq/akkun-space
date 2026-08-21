@@ -17,7 +17,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import matter from 'gray-matter';
-import { calcReadingTime } from '../lib/reading-time';
+import { calcReadingTime } from '../lib/content/reading-time';
 import postTypesData from '../data/content/post-types.json';
 
 const postsDir = path.join(process.cwd(), 'content/posts');

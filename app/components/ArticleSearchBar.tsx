@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, X, FileText } from 'lucide-react';
-import type { PostListItem, PostType } from '@/lib/posts';
-import { POST_TYPES, POST_TYPE_LABELS, TYPE_BADGE_STYLES } from '@/lib/postTypes';
-import { formatDate } from '@/lib/formatDate';
+import type { PostListItem, PostType } from '@/lib/content';
+import { POST_TYPES, POST_TYPE_LABELS, TYPE_BADGE_STYLES } from '@/lib/content';
+import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -15,7 +15,7 @@ import {
   useDebouncedValue,
   SEARCH_DEBOUNCE_MS,
   type EnrichedDocument,
-} from '@/lib/search-utils';
+} from '@/lib/content';
 
 // ==================== 类型定义 ====================
 

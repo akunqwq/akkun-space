@@ -1,7 +1,7 @@
 "use client";
 
 import { Play, Music2 } from "lucide-react";
-import type { MusicItem } from "@/lib/music";
+import type { MusicItem } from "@/lib/portfolio";
 import { useMusic } from "./MusicProvider";
 import CoverImage from "./CoverImage";
 import { formatTime } from "./utils";

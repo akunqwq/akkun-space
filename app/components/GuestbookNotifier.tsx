@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { updateFaviconBadge } from "@/lib/favicon-badge";
+import { updateFaviconBadge } from "@/lib/utils";
 
 /**
  * 留言板未读通知管理器

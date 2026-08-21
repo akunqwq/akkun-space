@@ -1,10 +1,10 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getPostBySlug, getAllPosts } from "../../../lib/posts";
-import { formatDate } from "../../../lib/formatDate";
+import { getPostBySlug, getAllPosts } from "../../../lib/content";
+import { formatDate } from "../../../lib/utils";
 import MDXRenderer from "../../components/MDXRenderer";
 import ViewCounter from "../../components/ViewCounter";
-import { extractToc } from "../../../lib/toc";
+import { extractToc } from "../../../lib/content";
 import TableOfContents from "../../components/TableOfContents";
 import GlassPage from "../../components/GlassPage";
 import { notFound } from "next/navigation";

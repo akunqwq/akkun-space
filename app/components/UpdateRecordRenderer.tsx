@@ -4,8 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import remarkGfm from 'remark-gfm';
 import ClientCodeBlock from './ClientCodeBlock';
-import type { UpdateRecord } from '@/lib/updateRecord';
-import { formatDate } from '@/lib/formatDate';
+import type { UpdateRecord } from '@/lib/content';
+import { formatDate } from '@/lib/utils';
 
 // 专门为更新记录内容设计的 MDX 组件映射
 const updateRecordComponents: MDXComponents = {
@@ -210,9 +210,14 @@ interface UpdateRecordRendererProps {
 }
 
 // 单条更新记录卡片组件
+// 加 id={record.slug} 让搜索结果可精确跳转（/update-record#slug 浏览器自动滚动定位）
+// scroll-mt-24 预留顶部 Header 高度，避免锚点定位被悬浮 Header 遮挡
 function UpdateCard({ record }: { record: UpdateRecord }) {
   return (
-    <div className="bg-[var(--card-bg-inset)] backdrop-blur-[6px] border border-[var(--card-border-inset)] rounded-xl p-4 mb-3">
+    <div
+      id={record.slug}
+      className="bg-[var(--card-bg-inset)] backdrop-blur-[6px] border border-[var(--card-border-inset)] rounded-xl p-4 mb-3 scroll-mt-24"
+    >
       {/* 记录标题栏 */}
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-[var(--card-border-inset)]">
         {record.emoji && <span className="text-xl">{record.emoji}</span>}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { TocItem } from "../../lib/toc";
+import type { TocItem } from "../../lib/content";
 
 export default function TableOfContents({ headings }: { headings: TocItem[] }) {
   const [activeId, setActiveId] = useState<string>("");

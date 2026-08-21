@@ -5,7 +5,7 @@ import {
   STATUS_LABELS,
   type GameItem,
   type GameStatus,
-} from "../../lib/games";
+} from "../../lib/portfolio";
 import GlassPage from "../components/GlassPage";
 
 export const metadata: Metadata = {

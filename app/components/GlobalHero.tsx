@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getRouteHero } from "@/lib/hero";
+import { getRouteHero } from "@/lib/site";
 import CoverImage from "./music/CoverImage";
 
 export interface FeaturedItem {

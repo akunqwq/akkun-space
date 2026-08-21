@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DEFAULT_COVER } from "@/lib/music";
-import { getSignedMusicUrl } from "@/lib/music-url";
+import { DEFAULT_COVER } from "@/lib/portfolio";
+import { getSignedMusicUrl } from "@/lib/portfolio";
 
 // 封面图：从私有桶换签名 URL 显示；无 cover / 签名失败回退本地默认封面。
 export default function CoverImage({

@@ -11,7 +11,7 @@ import {
   useDebouncedValue,
   SEARCH_DEBOUNCE_MS,
   type EnrichedDocument,
-} from '@/lib/search-utils';
+} from '@/lib/content';
 
 // ==================== 类型定义 ====================
 

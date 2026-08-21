@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
-import { getPostsIndex } from '@/lib/posts'
-import { navItems } from '@/lib/nav'
+import { getPostsIndex } from '@/lib/content'
+import { navItems } from '@/lib/site'
 
 // 站点基础 URL：优先读环境变量，未配置时回退到默认域名
 // 换域名只需在 .env.local 设置 NEXT_PUBLIC_SITE_URL，无需改代码

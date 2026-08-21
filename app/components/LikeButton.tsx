@@ -11,7 +11,7 @@
 
 import { useEffect, useState } from 'react'
 import { Heart } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/lib/interaction'
 
 const STORAGE_KEY = 'blog_liked_articles'
 

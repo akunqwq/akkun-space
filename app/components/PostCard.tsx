@@ -9,10 +9,10 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { formatDate } from "../../lib/formatDate";
-import { type PostIndexItem } from "../../lib/posts";
+import { formatDate } from "../../lib/utils";
+import { type PostIndexItem } from "../../lib/content";
 // 类型标签与徽章配色：单一数据源 data/content/post-types.json（经 lib/postTypes 派生）
-import { POST_TYPE_LABELS, TYPE_BADGE_STYLES } from "../../lib/postTypes";
+import { POST_TYPE_LABELS, TYPE_BADGE_STYLES } from "../../lib/content";
 
 export default function PostCard({ post }: { post: PostIndexItem }) {
   const type = post.type ?? "essay";

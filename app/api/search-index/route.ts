@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getPostsIndex } from '@/lib/posts';
+import { getPostsIndex } from '@/lib/content';
 
 export const dynamic = 'force-static';
 

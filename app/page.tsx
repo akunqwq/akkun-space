@@ -1,5 +1,5 @@
-import { getPostsIndex, getPostsMeta, type PostsIndexStats } from "../lib/posts";
-import { socials } from "../lib/socials";
+import { getPostsIndex, getPostsMeta, type PostsIndexStats } from "../lib/content";
+import { socials } from "../lib/site";
 import PostCard from "./components/PostCard";
 import Pagination from "./components/Pagination";
 import Link from "next/link";

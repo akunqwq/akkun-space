@@ -1,4 +1,4 @@
-import type { MusicItem } from "@/lib/music";
+import type { MusicItem } from "@/lib/portfolio";
 
 // 自研常驻播放器「AkkunPlayer」的正式代号（用于 aria-label / 注释等标识）。
 export const PLAYER_NAME = "AkkunPlayer";
