@@ -113,6 +113,57 @@ function dateFromIso(iso: string): string {
   return new Date(iso).toISOString().slice(0, 10);
 }
 
+// ---------------------------------------------------------------------------
+// 自动润色：参照现代国产定制 Android 系统（HyperOS / ColorOS / OriginOS）更新日志
+// 的呈现方式——按 conventional-commit 前缀把提交归到 🆕新增 / ✨优化 / 🐛修复 / 🔧其他
+// 四类，正文用「用户能感知的好处」组织，技术细节下沉到「其他」。
+// 草稿仍是草稿：总括句留给人工补一句人话，但骨架已直接是 ROM 风，润色成本很低。
+// ---------------------------------------------------------------------------
+type CatKey = 'feature' | 'fix' | 'perf' | 'other';
+
+const CAT_META: Record<CatKey, { emoji: string; heading: string }> = {
+  feature: { emoji: '🆕', heading: '🆕 新增' },
+  fix: { emoji: '🐛', heading: '🐛 修复' },
+  perf: { emoji: '✨', heading: '✨ 优化' },
+  other: { emoji: '🔧', heading: '🔧 其他' },
+};
+
+const CAT_ORDER: CatKey[] = ['feature', 'fix', 'perf', 'other'];
+
+/** 按提交前缀自动归类（含中文关键词兜底） */
+function classifyCommit(c: string): CatKey {
+  const s = c.toLowerCase();
+  if (/^(feat|feature|enhancement)/.test(s)) return 'feature';
+  if (/^(fix|bug|bugfix|hotfix)/.test(s)) return 'fix';
+  if (/^(perf|optimize|optimise|refactor|style|improve)/.test(s)) return 'perf';
+  if (/^(chore|docs|test|ci|build|deps)/.test(s)) return 'other';
+  if (/(修复|修)/.test(c)) return 'fix';
+  if (/(新增|添加|增加)/.test(c)) return 'feature';
+  if (/(优化|改进|提升)/.test(c)) return 'perf';
+  return 'other';
+}
+
+/** 去掉 conventional-commit 前缀（feat(bili): xxx → xxx），保留人话部分 */
+function cleanCommit(c: string): string {
+  return (
+    c
+      .replace(
+        /^(feat|feature|fix|bugfix|hotfix|perf|optimize|optimise|refactor|style|chore|docs|test|ci|build|deps)(\([^)]*\))?:\s*/i,
+        '',
+      )
+      .trim() || c
+  );
+}
+
+/** 统计提交分类，返回出现最多的类别（用于卡片 emoji） */
+function dominantCategory(commits: string[]): CatKey {
+  const count: Record<CatKey, number> = { feature: 0, fix: 0, perf: 0, other: 0 };
+  for (const c of commits) count[classifyCommit(c)] += 1;
+  let best: CatKey = 'feature';
+  for (const k of CAT_ORDER) if (count[k] > count[best]) best = k;
+  return best;
+}
+
 function buildMdx(
   input: Inputs,
   category: string,
@@ -120,13 +171,12 @@ function buildMdx(
   date: string,
 ): string {
   const title = input.prTitle;
-  const bodyLines = input.prBody
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .slice(0, 30); // 截断过长的 PR 描述，避免草稿臃肿
-  const bodyText = bodyLines.join("\n\n");
-  const commitBullets = input.commits.map((c) => `- ${c}`).join("\n");
+
+  // 按前缀自动归类到 ROM 风格四类
+  const grouped: Record<CatKey, string[]> = { feature: [], fix: [], perf: [], other: [] };
+  for (const c of input.commits) grouped[classifyCommit(c)].push(cleanCommit(c));
+
+  const emoji = CAT_META[dominantCategory(input.commits)].emoji;
 
   const frontmatter = [
     "---",
@@ -134,18 +184,35 @@ function buildMdx(
     `date: "${date}"`,
     `category: "${category}"`,
     `version: "${version}"`,
+    `emoji: "${emoji}"`,
     "---",
     "",
   ].join("\n");
 
-  const sections: string[] = [
-    `### ${title} (#${input.prNumber})`,
-    "",
-    bodyText || "_（待补充变更说明）_",
-  ];
+  const sections: string[] = [];
 
-  if (input.commits.length) {
-    sections.push("", "**包含的提交**", commitBullets);
+  // 总括句：留给人工填一句用户视角的总结
+  sections.push(
+    `> 本次更新：_（一句话总括这次更新为用户带来的变化，例如「上线了行业数据查询工具，并让投稿列表加载更稳更快」）_`,
+    "",
+  );
+
+  // PR 描述作为背景补充（可选，截断避免臃肿）
+  const bodyLines = input.prBody
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 20);
+  if (bodyLines.length) {
+    sections.push(...bodyLines, "");
+  }
+
+  // 分类条目（仅输出非空类别，顺序 新增→修复→优化→其他）
+  for (const key of CAT_ORDER) {
+    const items = grouped[key];
+    if (!items.length) continue;
+    sections.push(`### ${CAT_META[key].heading}`);
+    sections.push(...items.map((it) => `- ${it}`), "");
   }
 
   sections.push(
