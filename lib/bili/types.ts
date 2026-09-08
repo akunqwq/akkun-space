@@ -136,6 +136,17 @@ export interface CacheResult<T> {
   cachedAt: number;
 }
 
+/** 投稿视频列表获取状态（stale-while-revalidate + 熔断降级语义） */
+export type VideoStatus = 'fresh' | 'stale' | 'unavailable';
+
+/** 投稿视频列表获取结果：拆分 videos 与状态，供 UI 区分 新鲜/陈旧/不可用 */
+export interface VideoListResult {
+  videos: BiliVideoItem[];
+  videoTotal: number;
+  status: VideoStatus;
+  cachedAt: number;
+}
+
 /** UP 主详情合并结果（acc/info + relation/stat + card） */
 export interface UpInfoResult {
   info: BiliUpInfo;
@@ -152,7 +163,7 @@ export interface UpDetailPageData {
   card: BiliUpCard;
   videos: BiliVideoItem[];
   videoTotal: number;
-  degraded: boolean;
+  videoStatus: VideoStatus;
 }
 
 /** Supabase bili_up_snapshots 行类型 */

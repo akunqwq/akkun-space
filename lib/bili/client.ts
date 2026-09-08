@@ -27,6 +27,7 @@ import type {
   UpCardInfo,
   UpInfoResult,
   VideoListData,
+  VideoListResult,
 } from './types';
 import {
   getCachedBiliUp,
@@ -45,10 +46,84 @@ const DEFAULT_HEADERS: Record<string, string> = {
   'Accept': 'application/json, text/plain, */*',
 };
 
-/** 请求间随机延时 2-5 秒，防触发 B 站 IP 限制（调研 1.1.3） */
+/** 请求间随机延时（200-500ms 抖动）。
+ *  仅作辅助手段，非核心解法：真正的稳定性来自 1h 缓存 + stale-while-revalidate
+ *  + 熔断（Circuit Breaker）。randomDelay 只是抹平请求节奏，避免被 B 站瞬时识别为脚本。 */
 function randomDelay(minMs = 200, maxMs = 500): Promise<void> {
   const ms = Math.floor(Math.random() * (maxMs - minMs)) + minMs;
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// --------------------------------------------------------------------------
+// 熔断器（Circuit Breaker）：仅守护 WBI 的 arc/search 投稿列表接口。
+// 该接口是社区公认风控最重的 B 站接口（服务器 IP 尤甚）。连续失败达阈值即"熔断"，
+// 在冷却窗口内直接跳过实时请求（改走缓存/降级），避免对 B 站发起无效轰炸。
+// 冷却结束后进入 half-open，放行一次探针；成功则复位，失败则重新熔断。
+// --------------------------------------------------------------------------
+type BreakerState = 'closed' | 'open' | 'half-open';
+
+class CircuitBreaker {
+  private state: BreakerState = 'closed';
+  private failures = 0;
+  private openedAt = 0;
+
+  constructor(
+    private readonly threshold = 3,
+    private readonly cooldownMs = 60_000,
+  ) {}
+
+  async exec<T>(fn: () => Promise<T>): Promise<T> {
+    if (this.state === 'open') {
+      if (Date.now() >= this.openedAt + this.cooldownMs) {
+        this.state = 'half-open';
+      } else {
+        throw new Error('CircuitBreaker: open — arc/search 暂被熔断，跳过实时请求');
+      }
+    }
+    try {
+      const result = await fn();
+      this.failures = 0;
+      this.state = 'closed';
+      return result;
+    } catch (err) {
+      this.failures += 1;
+      if (this.failures >= this.threshold || this.state === 'half-open') {
+        this.state = 'open';
+        this.openedAt = Date.now();
+      }
+      throw err;
+    }
+  }
+}
+
+/** 全局共享的 arc/search 熔断器（同一服务器 IP，所有 mid 共用一份健康状态） */
+const videoSearchBreaker = new CircuitBreaker(3, 60_000);
+
+// --------------------------------------------------------------------------
+// 退避重试（backoff retry）：仅在真正需要时重试，且用指数退避 + 抖动，
+// 绝不做"马上再来一次"式紧循环。配合熔断器，瞬时抖动会被重试兜住，
+// 持续故障会被熔断挡在门外。
+// --------------------------------------------------------------------------
+async function withBackoff<T>(
+  fn: () => Promise<T>,
+  opts: { retries?: number; baseMs?: number; maxMs?: number } = {},
+): Promise<T> {
+  const retries = opts.retries ?? 1;
+  const baseMs = opts.baseMs ?? 600;
+  const maxMs = opts.maxMs ?? 2000;
+  let attempt = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      return await fn();
+    } catch (err) {
+      attempt += 1;
+      if (attempt > retries) throw err;
+      const backoff = Math.min(maxMs, baseMs * 2 ** (attempt - 1));
+      const jitter = Math.floor(Math.random() * backoff);
+      await new Promise((r) => setTimeout(r, backoff + jitter));
+    }
+  }
 }
 
 // --------------------------------------------------------------------------
@@ -149,13 +224,28 @@ export class BiliClient {
     };
   }
 
-  /** 获取 UP 主投稿视频列表（分页） */
+  /** 获取 UP 主投稿视频列表（分页）。
+   *  架构：1h 缓存优先 → 命中立即返回；未命中才打 arc/search（WBI，风控重）。
+   *  arc/search 经熔断 + 指数退避重试守护；失败则降级为 stale/无数据，
+   *  不再让单接口异常拖垮整页。返回携带 videoStatus（fresh/stale/unavailable）。 */
   async getUpVideos(
     mid: number,
     page: number,
-  ): Promise<CacheResult<BiliVideoListResponse>> {
+  ): Promise<VideoListResult> {
     return getCachedBiliVideos(mid, page, async () => {
-      return this.fetchUpVideos(mid, page);
+      return videoSearchBreaker.exec(() => this.fetchUpVideosWithRetry(mid, page));
+    });
+  }
+
+  /** arc/search 实时拉取（带退避重试，绝不做"立即重试"） */
+  private async fetchUpVideosWithRetry(
+    mid: number,
+    page: number,
+  ): Promise<BiliVideoListResponse> {
+    return withBackoff(() => this.fetchUpVideos(mid, page), {
+      retries: 1,
+      baseMs: 600,
+      maxMs: 2000,
     });
   }
 

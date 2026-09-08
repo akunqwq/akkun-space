@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 
 import { getBiliClient } from '@/lib/bili/client';
-import type { BiliVideoItem } from '@/lib/bili/types';
+import type { BiliVideoItem, VideoStatus } from '@/lib/bili/types';
 import VideoList from '@/app/components/tools/VideoList';
 import VideoStatQuery from '@/app/components/tools/VideoStatQuery';
 
@@ -68,13 +68,11 @@ export default async function UpDetailPage({ params }: Props) {
   const { info, stat, card, degraded } = upRes.value.data;
   let videos: BiliVideoItem[] = [];
   let videoTotal = 0;
-  let videosDegraded = false;
+  let videoStatus: VideoStatus = 'unavailable';
   if (vidRes.status === 'fulfilled') {
-    videos = vidRes.value.data.list.vlist;
-    videoTotal = vidRes.value.data.list.page.count;
-    videosDegraded = vidRes.value.degraded;
-  } else {
-    videosDegraded = true;
+    videos = vidRes.value.videos;
+    videoTotal = vidRes.value.videoTotal;
+    videoStatus = vidRes.value.status;
   }
 
   const jsonLd = {
@@ -164,13 +162,7 @@ export default async function UpDetailPage({ params }: Props) {
             共 {videoTotal.toLocaleString()} 个
           </span>
         </div>
-        {videosDegraded && (
-          <p className="mb-3 flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-sm text-amber-500">
-            <AlertTriangle className="h-4 w-4" />
-            投稿列表接口被 B 站风控拦截（服务器 IP 限制），暂无法展示视频。
-          </p>
-        )}
-        <VideoList videos={videos} />
+        <VideoList videos={videos} status={videoStatus} />
       </div>
 
       <VideoStatQuery />

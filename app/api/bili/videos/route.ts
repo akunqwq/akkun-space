@@ -6,7 +6,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { getBiliClient } from '@/lib/bili/client';
-import type { BiliVideoListResponse } from '@/lib/bili/types';
+import type { VideoStatus } from '@/lib/bili/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,12 +38,14 @@ export async function GET(req: NextRequest) {
 
   const client = getBiliClient();
   try {
+    // getUpVideos 已内置缓存 + 熔断 + 降级：即使 B 站不可达也返回结果（status=unavailable），
+    // 不会抛错到这里。videoStatus 由前端据此展示对应提示。
     const result = await client.getUpVideos(mid, page);
-    const data: BiliVideoListResponse = result.data;
+    const videoStatus: VideoStatus = result.status;
     return NextResponse.json({
       code: 0,
-      data,
-      degraded: result.degraded,
+      data: { videos: result.videos, videoTotal: result.videoTotal },
+      videoStatus,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : '未知错误';

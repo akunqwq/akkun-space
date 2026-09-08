@@ -21,5 +21,7 @@ export type {
   UpDetailPageData,
   UpInfoResult,
   VideoListData,
+  VideoListResult,
+  VideoStatus,
   WbiSignResult,
 } from './types';

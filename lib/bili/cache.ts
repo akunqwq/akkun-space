@@ -22,6 +22,8 @@ import type {
   BiliVideoStat,
   CacheResult,
   UpInfoResult,
+  VideoListResult,
+  VideoStatus,
 } from './types';
 
 // -----------------------------------------------------------------------------
@@ -31,32 +33,38 @@ import type {
 interface CacheEntry {
   data: unknown;
   expiresAt: number;
+  // 写入时刻（用于判断 fresh/stale，供 UI 展示数据新鲜度）
+  cachedAt: number;
   // 是否是降级保留下来的旧数据
   degraded: boolean;
 }
 
 const l1Store = new Map<string, CacheEntry>();
 
-/** L1 读：未命中或已过期返回 null */
+/** L1 读：未过期返回新鲜数据（degraded=false）；已过期返回陈旧数据（degraded=true） */
 function l1Get<T>(key: string): CacheResult<T> | null {
   const entry = l1Store.get(key);
   if (!entry) return null;
-  if (Date.now() > entry.expiresAt) {
-    // 过期但保留旧数据用于降级，返回 degraded=true
-    return {
-      data: entry.data as T,
-      degraded: true,
-      cachedAt: entry.expiresAt - (entry.expiresAt - 0),
-    };
-  }
+  const stale = Date.now() > entry.expiresAt;
   return {
     data: entry.data as T,
-    degraded: false,
-    cachedAt: Date.now(),
+    degraded: stale,
+    cachedAt: entry.cachedAt,
   };
 }
 
-/** L1 写：同时缓存新鲜数据和降级用旧数据（降级时不覆盖 expiresAt） */
+/** L1 原始读：返回条目（含 expiresAt/cachedAt），供上层计算 fresh/stale 状态 */
+function l1GetRaw<T>(key: string): { data: T; expiresAt: number; cachedAt: number } | null {
+  const entry = l1Store.get(key);
+  if (!entry) return null;
+  return {
+    data: entry.data as T,
+    expiresAt: entry.expiresAt,
+    cachedAt: entry.cachedAt,
+  };
+}
+
+/** L1 写：记录写入时刻（cachedAt），供新鲜度判断 */
 function l1Set<T>(
   key: string,
   data: T,
@@ -66,6 +74,7 @@ function l1Set<T>(
   l1Store.set(key, {
     data,
     expiresAt: Date.now() + ttlMs,
+    cachedAt: Date.now(),
     degraded: opts.degraded ?? false,
   });
 }
@@ -80,7 +89,7 @@ function l1GetStale<T>(key: string): CacheResult<T> | null {
   return {
     data: entry.data as T,
     degraded: true,
-    cachedAt: entry.expiresAt,
+    cachedAt: entry.cachedAt,
   };
 }
 
@@ -167,39 +176,63 @@ export async function getCachedBiliUp(
 
 /**
  * 获取 UP 主投稿视频列表（分页）。
- * fetcher 负责实际请求 B 站 arc/search 接口。
+ * 架构（用户决策）：1h 缓存优先，命中立即返回；未命中才打 arc/search（WBI，风控重）。
+ * arc/search 调用由 client 层经熔断 + 退避重试守护；本层负责 stale-while-revalidate：
+ *   - L1 命中且未过期 → 返回 fresh
+ *   - L1 命中但已过期 → 返回 stale（仍展示旧数据）+ 后台异步刷新
+ *   - L1 未命中 → 走 L2（可能命中跨实例缓存或打 B 站）；失败则降级为 stale/无数据
+ * 不再让单接口异常拖垮整页。返回 VideoListResult（含 videoStatus）。
  */
 export async function getCachedBiliVideos(
   mid: number,
   page: number,
   fetcher: () => Promise<BiliVideoListResponse>,
-): Promise<CacheResult<BiliVideoListResponse>> {
+): Promise<VideoListResult> {
   const key = `bili:videos:${mid}:${page}`;
 
-  const l1Hit = l1Get<BiliVideoListResponse>(key);
-  if (l1Hit && !l1Hit.degraded) {
-    return l1Hit;
+  const raw = l1GetRaw<BiliVideoListResponse>(key);
+  if (raw) {
+    const stale = Date.now() > raw.expiresAt;
+    const status: VideoStatus = stale ? 'stale' : 'fresh';
+    if (stale) {
+      // stale-while-revalidate：立即返回旧数据，后台异步刷新（失败静默，保留旧缓存）
+      void wrapL2<BiliVideoListResponse>([key], VIDEOS_TTL_SEC, fetcher).then(
+        (data) => l1Set(key, data, VIDEOS_TTL_MS),
+        () => {
+          /* 保留旧缓存 */
+        },
+      );
+    }
+    return {
+      videos: raw.data.list.vlist,
+      videoTotal: raw.data.list.page.count,
+      status,
+      cachedAt: raw.cachedAt,
+    };
   }
 
+  // L1 未命中：走 L2（跨实例持久缓存；若已过期 unstable_cache 会后台再验证）
   try {
-    const data = await wrapL2<BiliVideoListResponse>(
-      [key],
-      VIDEOS_TTL_SEC,
-      fetcher,
-    );
-    const result: CacheResult<BiliVideoListResponse> = {
-      data,
-      degraded: false,
+    const data = await wrapL2<BiliVideoListResponse>([key], VIDEOS_TTL_SEC, fetcher);
+    l1Set(key, data, VIDEOS_TTL_MS);
+    return {
+      videos: data.list.vlist,
+      videoTotal: data.list.page.count,
+      status: 'fresh',
       cachedAt: Date.now(),
     };
-    l1Set(key, data, VIDEOS_TTL_MS);
-    return result;
-  } catch (err) {
+  } catch {
+    // L2/接口全失败：尝试任意陈旧 L1 兜底
     const stale = l1GetStale<BiliVideoListResponse>(key);
     if (stale) {
-      return stale;
+      return {
+        videos: stale.data.list.vlist,
+        videoTotal: stale.data.list.page.count,
+        status: 'stale',
+        cachedAt: stale.cachedAt,
+      };
     }
-    throw err;
+    return { videos: [], videoTotal: 0, status: 'unavailable', cachedAt: 0 };
   }
 }
 

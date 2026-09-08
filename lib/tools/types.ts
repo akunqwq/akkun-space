@@ -10,6 +10,7 @@ import type {
   BiliUpCard,
   BiliUpInfo,
   BiliVideoItem,
+  VideoStatus,
 } from '@/lib/bili/types';
 import type {
   FinanceCompany,
@@ -24,7 +25,7 @@ export interface UpDetailPageData {
   card: BiliUpCard;
   videos: BiliVideoItem[];
   videoTotal: number;
-  degraded: boolean;
+  videoStatus: VideoStatus;
 }
 
 /** 公司详情页渲染数据 */
