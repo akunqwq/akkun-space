@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getPostBySlug, getAllPosts } from "../../../lib/content";
+import { getPostBySlug, getAllPosts } from "../../../lib/content/posts";
 import { formatDate } from "../../../lib/utils";
 import MDXRenderer from "../../components/MDXRenderer";
 import ViewCounter from "../../components/ViewCounter";
@@ -105,7 +105,7 @@ export default async function ArticlePage({
             <time dateTime={post.date} className="text-sm text-accent">
               {formatDate(post.date)}
             </time>
-            <ViewCounter slug={slug} />
+            <ViewCounter slug={slug} key={slug} />
           </div>
 
           {post.summary && (

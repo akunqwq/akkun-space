@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/interaction'
+import { type NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/interaction/supabase-storage'
 
 export const dynamic = 'force-dynamic'
 

@@ -1,0 +1,42 @@
+---
+title: "上线行业数据查询工具：B站UP主数据 + 游戏公司财报营收速查"
+date: "2026-09-08"
+category: "update"
+version: "v1.2.0"
+---
+
+### 新增 行业数据查询工具（/tools）
+
+把博客从「内容展示」扩展到「可用工具」，第一波落地两个独立查询模块，统一收在 `/tools` 子路径下，沿用全局 GlassPage + GlobalHero 玻璃拟态设计语言。
+
+#### B站 UP 主数据查询（/tools/bili-up）
+
+- 输入 mid（即空间 URL 里的数字，如 `space.bilibili.com/12345` 的 `12345`）即可查询
+- 实时抓取 UP 主资料（头像、昵称、官方/等级/大会员标识、签名）与基础数据（粉丝 / 关注 / 视频数 / 列表总播放）
+- 视频列表 + 单视频数据查询（BV 号 → 播放 / 点赞 / 投币 / 收藏 / 转发 / 弹幕 / 评论，含降级提示）
+- 接入直播间跳转、Person 结构化数据（SEO）
+
+#### 游戏公司财报营收速查（/tools/finance）
+
+- 12 家游戏上市公司速查：腾讯、网易、哔哩哔哩、三七互娱、世纪华通、完美世界、吉比特、巨人网络、心动、中手游、祖龙、IGG
+- 公司列表页 + 详情页（行情市场 HK / US / A股；红涨绿跌 A 股配色）
+- 业务分部表格 + 季度营收趋势图（内联 SVG 柱状图 `RevenueBarChart`）
+- Organization 结构化数据（SEO）
+
+### 技术实现要点
+
+- **B站接口**：自实现 WBI 签名（`lib/bili/wbi.ts`，Node `crypto` MD5 + MIXIN_KEY 重排），双层缓存降级（`lib/bili/cache.ts`：L1 模块 Map + L2 `unstable_cache`，失败时回退旧数据并标 `degraded`）
+- **数据层**：`supabase/migrations/002_finance_tables.sql` 新建 `finance_companies` / `finance_segments` / `finance_quarterly` 三表（RLS：anon 只读 + service_role 写）；`scripts/import-finance-csv.ts` + `npm run import:finance` 从 `data/finance/*.csv` 导入
+- **稳健性**：财报详情页对「配置存在但库未导入」的公司渲染「数据未导入」占位而非 `notFound()`，避免 Vercel 构建期 featured 预渲染失败
+- **可发现性**：`app/sitemap.ts` 补齐 12 个公司页；顶部导航「工具」入口接入 `data/site/nav.json`
+- **工程纪律**：server-only 模块（bili / finance 查询）顶部 `import 'server-only'`，聚合入口仅 re-export 纯类型与函数，避免客户端误引 fs / service_role key
+
+### 部署顺序（上线前必做）
+
+1. 在 Supabase 执行 `002_finance_tables.sql`
+2. 本地/CI 跑 `npm run import:finance` 导入 CSV
+3. Vercel 已内置 `/api/cron/bili-snapshot` 定时任务，无需改动
+
+**已知约束**
+- B站数据走实时接口，未做落库快照展示（快照表已建，定时任务已接，后续可扩展）
+- 财报数据当前为手动 CSV 导入，尚未接入自动化数据源

@@ -21,17 +21,10 @@ export default function CoverImage({
   const [errored, setErrored] = useState(false);
 
   useEffect(() => {
+    if (!item.cover) return; // 初始已是 DEFAULT_COVER，无需做事
+
     let cancelled = false;
-    setErrored(false);
-
-    // 无封面 → 直接用本地默认
-    if (!item.cover) {
-      setSrc(DEFAULT_COVER);
-      return;
-    }
-
-    // 先占位默认封面，签名返回后替换（缓存命中时近乎同步）
-    setSrc(DEFAULT_COVER);
+    // 缓存命中时近乎同步，先占位默认封面，签名返回后替换
     getSignedMusicUrl(item.cover)
       .then((url) => {
         if (!cancelled) setSrc(url);

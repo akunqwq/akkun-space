@@ -3,13 +3,18 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
-  ReactNode,
-  useCallback,
+  useMemo,
+  useSyncExternalStore,
+  type ReactNode,
 } from "react";
-
-type Theme = "light" | "dark";
+import {
+  subscribe,
+  getSnapshot,
+  getServerSnapshot,
+  setTheme,
+  toggleTheme,
+  type Theme,
+} from "@/lib/theme/theme-store";
 
 interface ThemeContextType {
   theme: Theme;
@@ -26,90 +31,34 @@ export function useTheme() {
   return ctx;
 }
 
-const STORAGE_KEY = "theme";
-
+/**
+ * ThemeProvider
+ *
+ * 架构反转：不再「我管 state + effect 同步给外部」，而是订阅 theme-store 这个
+ * external store 的 source。store 负责 localStorage / matchMedia / DOM 同步 /
+ * 跨 tab 同步，Provider 只做 context 桥接。
+ *
+ * - useSyncExternalStore：SSR 用 getServerSnapshot('dark')，与 layout.tsx 的
+ *   blocking script 保底一致 → 无 hydration mismatch；客户端首次订阅时 store
+ *   同步初始化，若值与 SSR 不同主动 callback 触发一次 reconcile。
+ * - useMemo 包裹 value（方案一）：本项目消费者仅 ThemeToggle /
+ *   FloatingThemeToggle 且都读 isDark 状态，方案二的拆分 context 收益为 0。
+ *   toggleTheme / setTheme 是模块级 stable function，依赖列表里引用永不变。
+ */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // 在客户端渲染前（组件实例化阶段）同步读取 localStorage / matchMedia
-  // 优先级：1) localStorage 手动选择  2) 系统/浏览器偏好  3) 保底默认 dark
-  const [theme, setThemeState] = useState<Theme>(() => {
-    try {
-      // 尝试读取 localStorage（同步执行）
-      const saved = typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
-      if (saved === "dark" || saved === "light") return saved as Theme;
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
-      // 否则读系统首选（若可访问）；区分「系统明确要 light」与「无偏好」
-      if (typeof window !== "undefined" && window.matchMedia) {
-        const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        if (prefersLight) return "light";
-        if (prefersDark) return "dark";
-      }
-    } catch (e) {
-      // ignore
-    }
-    return "dark"; // 保底默认 dark
-  });
-
-  const [mounted, setMounted] = useState(false);
-
-  const applyToDocument = useCallback((isDark: boolean) => {
-    const root = document.documentElement;
-    root.classList.toggle("dark", isDark);
-
-    const metaTheme = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null;
-    const metaColorScheme = document.querySelector('meta[name="color-scheme"]') as HTMLMetaElement | null;
-    if (metaTheme) metaTheme.content = isDark ? "#0d1116" : "#ffffff";
-    if (metaColorScheme) metaColorScheme.content = isDark ? "dark" : "light";
-  }, []);
-
-  // 应用初始主题（只执行一次）
-  useEffect(() => {
-    setMounted(true);
-    applyToDocument(theme === "dark");
-  }, [theme, applyToDocument]);
-
-  // 仅在用户未显式保存时，跟随系统变化
-  // 挂载后运行一次：若已显式保存主题则跳过，否则监听系统偏好变化
-  useEffect(() => {
-    if (!mounted) return;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return;
-
-      const mql = window.matchMedia("(prefers-color-scheme: dark)");
-      const handler = (e: MediaQueryListEvent) => {
-        const prefersLight = window.matchMedia("(prefers-color-scheme: light)").matches;
-        const sys: Theme = e.matches ? "dark" : prefersLight ? "light" : "dark";
-        setThemeState(sys);
-        applyToDocument(sys === "dark");
-      };
-      mql.addEventListener("change", handler);
-      return () => mql.removeEventListener("change", handler);
-    } catch {
-      // ignore
-    }
-  }, [applyToDocument, mounted]);
-
-  const setTheme = useCallback(
-    (newTheme: Theme) => {
-      setThemeState(newTheme);
-      try {
-        localStorage.setItem(STORAGE_KEY, newTheme);
-      } catch {
-        // ignore storage errors
-      }
-      applyToDocument(newTheme === "dark");
-    },
-    [applyToDocument]
+  const value = useMemo<ThemeContextType>(
+    () => ({
+      theme,
+      isDark: theme === "dark",
+      toggleTheme,
+      setTheme,
+    }),
+    // toggleTheme / setTheme 是模块级 stable function（引用永不变），
+    // ESLint 视为 outer scope values 不算有效依赖；只跟 theme 变化重算。
+    [theme]
   );
 
-  const toggleTheme = useCallback(() => {
-    setTheme(theme === "light" ? "dark" : "light");
-  }, [theme, setTheme]);
-
-  return (
-    <ThemeContext.Provider value={{ theme, isDark: theme === "dark", toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }

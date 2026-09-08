@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createHighlighter, type Highlighter } from "shiki";
+import { useIsDarkMode } from "@/lib/hooks/useIsDarkMode";
 
 interface ClientCodeBlockProps {
   children: string;
@@ -33,34 +34,10 @@ function getSharedHighlighter(): Promise<Highlighter> {
 export default function ClientCodeBlock({ children, className }: ClientCodeBlockProps) {
   const [html, setHtml] = useState("");
   const [copied, setCopied] = useState(false);
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // 主题由 useSyncExternalStore 订阅 documentElement class，无需 mounted flag + checkTheme + MutationObserver
+  const isDark = useIsDarkMode();
 
-  // 检测当前主题状态
-  const checkTheme = () => {
-    const htmlElement = document.documentElement;
-    const isDarkMode = htmlElement.classList.contains('dark');
-    setIsDark(isDarkMode);
-  };
-
-  // 组件挂载后才启用主题检测
-  useEffect(() => {
-    setMounted(true);
-    checkTheme();
-
-    // 监听主题切换
-    const observer = new MutationObserver(() => {
-      checkTheme();
-    });
-
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
+  // 代码高亮：依赖 children/className/isDark，主题切换时自动重新高亮
   useEffect(() => {
     async function runHighlight() {
       const highlighter = await getSharedHighlighter();
@@ -83,7 +60,7 @@ export default function ClientCodeBlock({ children, className }: ClientCodeBlock
     }
 
       runHighlight();
-  }, [children, className, isDark, mounted]);
+  }, [children, className, isDark]);
 
   // 语言标签
   const langLabel = (className || "").replace("language-", "").toUpperCase();

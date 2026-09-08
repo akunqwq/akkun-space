@@ -44,6 +44,9 @@ export default function MusicBar() {
   // 客户端计算默认位置；优先读取已保存位置。
   // 依赖加入 currentItem / minimized：bar 真正出现在视口时才（重新）计算并 setPos，
   // 否则 bar 首次挂载时 barRef 为 null、pos 永远为 null，导致 onPointerDown 早退、无法拖动。
+  // 同 MusicBubble：mount 时一次性读取 localStorage + DOM 尺寸 + 视口 clamp 后同步给 React，
+  // 是合法的"React 与外部世界同步"用法；store 化会过度（getSnapshot 需稳定引用 → 缓存层）。
+  // 故此处局部豁免 React 19 set-state-in-effect 规则。
   useEffect(() => {
     if (pos || !barRef.current) return;
     const el = barRef.current;
@@ -63,6 +66,7 @@ export default function MusicBar() {
     const defTop =
       (document.querySelector("header")?.getBoundingClientRect().height ?? 64) +
       16;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性同步外部世界（localStorage + DOM 尺寸 + 视口 clamp）到 React
     setPos(
       saved ?? {
         left: (window.innerWidth - w) / 2,
@@ -191,6 +195,7 @@ export default function MusicBar() {
         <div className="flex items-center gap-2 sm:gap-3 px-3 pb-2.5">
           {/* 封面 */}
           <CoverImage
+            key={item.cover ?? "no-cover"}
             item={item}
             className="w-12 h-12 rounded-lg object-cover shrink-0 shadow"
           />

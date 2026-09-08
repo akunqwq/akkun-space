@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin, SIGNED_URL_TTL } from "@/lib/interaction";
+import { type NextRequest, NextResponse } from "next/server";
+import { supabaseAdmin, SIGNED_URL_TTL } from "@/lib/interaction/supabase-storage";
 import { MUSIC_BUCKET } from "@/lib/portfolio";
 
 // 为私有桶 `music` 内的对象签发临时签名 URL。

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
-import { getPostsIndex } from '@/lib/content'
+import { getPostsIndex } from '@/lib/content/posts'
 import { navItems } from '@/lib/site'
+import { FINANCE_COMPANIES } from '@/lib/tools'
 
 // 站点基础 URL：优先读环境变量，未配置时回退到默认域名
 // 换域名只需在 .env.local 设置 NEXT_PUBLIC_SITE_URL，无需改代码
@@ -28,5 +29,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }))
 
-  return [...staticPages, ...postPages]
+  // 工具：游戏公司财报详情页（code 来自 FINANCE_COMPANIES，与数据表一致）
+  const financePages: MetadataRoute.Sitemap = FINANCE_COMPANIES.map((c) => ({
+    url: new URL(
+      `/tools/finance/${encodeURIComponent(c.code)}`,
+      baseUrl,
+    ).toString(),
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.5,
+  }))
+
+  return [...staticPages, ...postPages, ...financePages]
 }

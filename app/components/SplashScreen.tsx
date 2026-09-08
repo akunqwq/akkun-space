@@ -29,6 +29,12 @@ export default function SplashScreen() {
   const isInitialMount = useRef(true);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect --
+     * phase 状态机门控：读 pathname / matchMedia / localStorage 后决定动画
+     * 启动与退出时机。这是 React 与外部世界同步的合法用法（非避 hydration
+     * mismatch）。重构为 useSyncExternalStore 会过度工程：需拆多个 store
+     * （pathname / matchMedia / fonts.ready）+ 引入缓存层，偏离轻量版原则。
+     */
     // 消费 initial mount 标记（无论是否首页，第一次 effect run 即算硬刷新）
     const wasInitial = isInitialMount.current;
     isInitialMount.current = false;
@@ -91,6 +97,7 @@ export default function SplashScreen() {
       cancelled = true;
       clearTimeout(doneTimer);
     };
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [pathname]);
 
   // 状态机 done 时彻底卸载 DOM

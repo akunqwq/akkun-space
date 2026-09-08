@@ -180,7 +180,7 @@ version: "v0.3.0"
 
 ## 部署
 
-- **Vercel（推荐）**：连接 GitHub 仓库，自动构建部署。需在 Vercel 配置 4 个环境变量（`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY` / `NEXT_PUBLIC_SITE_URL`），改完必须 Redeploy。
+- **Vercel（推荐）**：连接 GitHub 仓库，自动构建部署。
 - **自托管**：`npm run build && npm run start`。
 
 ---

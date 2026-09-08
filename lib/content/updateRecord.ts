@@ -1,26 +1,18 @@
+// 强约束：本模块含 fs / path / glob 等 Node.js 专有操作，仅服务端可用。
+// 客户端组件请走聚合入口 @/lib/content 拿纯类型，绕过聚合入口直接 import 本模块
+// 会在构建期报错（清晰提示），而非运行时模糊的 "Can't resolve 'fs'"。
+import 'server-only';
+
 import fs from 'fs';
 import path from 'path';
 import { glob } from 'glob';
 import matter from 'gray-matter';
+// 纯类型从 types.ts 拉取，re-export 保持旧 import 路径 @/lib/content/updateRecord 兼容
+import type { UpdateRecord } from './types';
+export type { UpdateRecordMeta, UpdateRecord } from './types';
 
 const contentDir = path.join(process.cwd(), "content");
 const updateRecordDir = path.join(contentDir, "update-record");
-
-// 更新记录元数据类型
-export interface UpdateRecordMeta {
-  title: string;
-  date: string;
-  emoji?: string;
-  category?: string;
-  version?: string;
-  [key: string]: unknown;
-}
-
-// 更新记录内容类型
-export interface UpdateRecord extends UpdateRecordMeta {
-  slug: string;
-  bodyRaw: string;
-}
 
 // 获取所有更新记录
 export function getUpdateRecords(): UpdateRecord[] {

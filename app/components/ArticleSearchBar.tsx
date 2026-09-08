@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Search, X, FileText } from 'lucide-react';
 import type { PostListItem, PostType } from '@/lib/content';
 import { POST_TYPES, POST_TYPE_LABELS, TYPE_BADGE_STYLES } from '@/lib/content';
@@ -12,10 +12,9 @@ import {
   createEnrichedDocument,
   addDocToIndex,
   extractScoredResults,
-  useDebouncedValue,
-  SEARCH_DEBOUNCE_MS,
   type EnrichedDocument,
 } from '@/lib/content';
+import { useDebouncedValue, SEARCH_DEBOUNCE_MS } from '@/lib/hooks/useDebouncedValue';
 
 // ==================== 类型定义 ====================
 
@@ -62,14 +61,15 @@ export function ArticleSearchBar({ articles }: ArticleSearchBarProps) {
   // 防抖后的查询值（实际用于搜索的值）
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
   const [activeType, setActiveType] = useState<PostType | 'all'>('all');
-  const [searchResults, setSearchResults] = useState<PostListItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // 初始化索引（Document 模式，支持评分）
-  const { doc, map } = useMemo(() => createArticleIndex(articles), [articles]);
+  // map 仅 createArticleIndex 内部用于 enrich 字段索引，外部不再直接使用
+  const { doc } = useMemo(() => createArticleIndex(articles), [articles]);
 
-  // 执行搜索 + 类型过滤（监听防抖后的 query）
-  useEffect(() => {
+  // 搜索结果直接派生（useMemo），不再走 state + effect 反模式：
+  // query / activeType / articles / doc 任一变化都会重新计算，符合 React 派生状态推荐写法
+  const searchResults = useMemo(() => {
     let filtered = articles;
 
     // 类型过滤
@@ -81,10 +81,7 @@ export function ArticleSearchBar({ articles }: ArticleSearchBarProps) {
     if (debouncedQuery.trim()) {
       // 搜索词预处理：拦截无意义输入
       const { valid } = sanitizeQuery(debouncedQuery);
-      if (!valid) {
-        setSearchResults([]);
-        return;
-      }
+      if (!valid) return [];
 
       // 使用 enrich 搜索 + 评分过滤
       const rawResult = doc.search(debouncedQuery, {
@@ -98,7 +95,7 @@ export function ArticleSearchBar({ articles }: ArticleSearchBarProps) {
       filtered = filtered.filter((a) => matchedSlugs.has(a.slug));
     }
 
-    setSearchResults(filtered);
+    return filtered;
   }, [debouncedQuery, activeType, articles, doc]);
 
   return (

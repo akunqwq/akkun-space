@@ -33,6 +33,11 @@ export default function MusicBubble() {
   const isLongPressFired = useRef(false);
 
   // 初始化位置（localStorage 优先，否则默认左上）
+  // 说明：mount 时一次性读取 localStorage + DOM headerH + 视口尺寸做 clamp，
+  // 然后同步给 React——这是合法的"React 与外部世界同步"用法（非 setState in effect 反模式）。
+  // store 化（useSyncExternalStore 订阅 localStorage + resize）会过度：
+  //   getSnapshot 需返回稳定引用 → 引入缓存层 → 偏离"轻量版"原则。
+  // 故此处局部豁免 React 19 set-state-in-effect 规则。
   useEffect(() => {
     const headerH =
       document.querySelector("header")?.getBoundingClientRect().height ?? 0;
@@ -51,6 +56,7 @@ export default function MusicBubble() {
       y: clamp(p.y, MARGIN, window.innerHeight - ORB_SIZE - MARGIN),
     };
     posRef.current = next;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性同步外部世界（localStorage + DOM 尺寸 + 视口 clamp）到 React
     setPos(next);
   }, []);
 
@@ -188,6 +194,7 @@ export default function MusicBubble() {
             确保封面确定占 (ORB_SIZE-4) 见方、中心 (28,28)，与 SVG 环 (cx/cy=28) 完全同心。
             不用 translate 居中，避免与 animate-spin 的 transform 冲突。 */}
         <CoverImage
+          key={item.cover ?? "no-cover"}
           item={item}
           className="absolute top-[2px] left-[2px] w-[calc(100%-4px)] h-[calc(100%-4px)] rounded-full object-cover shadow-lg animate-spin-slow"
           style={{

@@ -13,8 +13,8 @@ import FloatingThemeToggle from "./components/FloatingThemeToggle";
 import FloatingActions from "./components/FloatingActions";
 import FloatingEmojis from "./components/FloatingEmojis";
 import GlobalHero, { type FeaturedItem, type LobbyChannel } from "./components/GlobalHero";
-import { getPostsIndex } from "../lib/content";
-import { getUpdateRecords } from "../lib/content";
+import { getPostsIndex } from "../lib/content/posts";
+import { getUpdateRecords } from "../lib/content/updateRecord";
 import { musicItems, DEFAULT_COVER } from "../lib/portfolio";
 import { gameItems, STATUS_LABELS } from "../lib/portfolio";
 import { heroChannels } from "../lib/site";
@@ -217,9 +217,13 @@ export default function RootLayout({
             <FloatingEmojis />
             <Header />
             <main className="pt-16 pb-16">
-              {/* 全站唯一的背景/视觉承载层：路由感知，跨页面平滑交叉淡变 */}
+              {/* 全站唯一的背景/视觉承载层：路由感知，跨页面平滑交叉淡变（全宽，不受限宽壳约束） */}
               <GlobalHero homeChannels={homeChannels} />
-              {children}
+              {/* 中央限宽容器：全站内容统一居中限宽（1400px），与 GlassPage / 首页内容区同宽。
+                  各页内部自行处理负 margin 上浮（骑在 Hero 底部）与内边距，无需再各自声明 max-width */}
+              <div className="mx-auto max-w-[1400px] px-4">
+                {children}
+              </div>
             </main>
 
             <Footer />

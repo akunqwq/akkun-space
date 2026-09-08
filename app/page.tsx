@@ -1,4 +1,5 @@
-import { getPostsIndex, getPostsMeta, type PostsIndexStats } from "../lib/content";
+import { getPostsIndex, getPostsMeta } from "../lib/content/posts";
+import type { PostsIndexStats } from "../lib/content";
 import { socials } from "../lib/site";
 import PostCard from "./components/PostCard";
 import Pagination from "./components/Pagination";
@@ -42,6 +43,7 @@ export default async function Home({
   const allPosts = getPostsIndex(); // 只读元数据索引，不含正文
 
   // 分类统计：优先用构建时生成的 meta，旧格式则实时从索引计算
+  // 首页不再展开分类明细（兴趣+明细统计已移至底部资讯区 + 关于我页）
   const meta = getPostsMeta();
   const stats: PostsIndexStats =
     meta?.stats ?? (() => {
@@ -75,109 +77,97 @@ export default async function Home({
       {/* 下方内容：GlobalHero 已在 layout 中挂载（首页为 Lobby 轮播）；
           玻璃面板负 margin 上浮，骑在 Hero 底部 */}
       <div className="relative z-20 max-w-[1400px] mx-auto px-6 -mt-20 md:-mt-28 pb-12">
-        {/* 三栏玻璃面板：外层 1px 霓虹渐变描边，内层毛玻璃 */}
+        {/* 玻璃面板：外层 1px 霓虹渐变描边，内层毛玻璃 */}
         <div className="glass-glow rounded-3xl p-[1px]">
           <div className="glass-panel glass-shine rounded-[23px] p-6 pt-8 md:pt-10">
-          {/* 三栏：左信息(停靠底部) | 中(滚动主体) | 右信息(停靠底部) */}
-          <div className="flex flex-col md:flex-row md:items-start md:gap-8">
-            {/* 左：我的兴趣 / 统计（md+ 停靠中心左下方，随中心滚动常驻两侧底部） */}
-            <aside className="order-1 md:order-1 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
-              <div className="glass-card p-5">
-                <h2 className="text-base font-semibold mb-3 text-[var(--text-secondary)]">🌸 我的兴趣</h2>
-                <p className="text-sm text-[var(--text-muted)] leading-relaxed">
-                  ACG / 纯音乐 / MMD / 原神 / 敲代码
-                  <br />才...才不是猫娘喵。
-                </p>
-                <div className="mt-5 pt-4 border-t border-[var(--card-border-inset)]">
-                  <h3 className="text-xs font-medium mb-2 text-[var(--text-muted)]">📊 站点统计</h3>
-                  <ul className="text-xs text-[var(--text-muted)] space-y-1">
-                    <li>技术文章 {stats.tech} 篇</li>
-                    <li>折腾记录 {stats.tinker} 篇</li>
-                    <li>随笔 {stats.essay} 篇</li>
-                    <li>资讯存档 {stats.news} 篇</li>
-                    <li className="pt-1 font-medium text-[var(--text-secondary)]">总计 {stats.total} 篇</li>
-                  </ul>
+            {/* 两栏布局（移动端优化后）：
+                - 移动端：堆叠为 文章流(order-1) → 关注我(order-2)，核心内容最先可见
+                - 桌面端 md+：左 文章流 + 右 关注我（sticky 底部），移除原左栏（兴趣+明细统计已迁出） */}
+            <div className="flex flex-col md:flex-row md:items-start md:gap-8">
+              {/* 中：最近创作（视觉重心，滚动主体） */}
+              <main className="order-1 md:order-1 flex-1 min-w-0 space-y-10">
+                <div className="flex items-baseline justify-between pb-3 border-b border-[var(--card-border-inset)]">
+                  <div>
+                    <h2 className="text-xl font-extrabold text-[var(--text-primary)]">📝 文章</h2>
+                    <p className="mt-1 text-sm text-[var(--text-muted)]">空间里的一些书写——技术、折腾与生活随笔。</p>
+                  </div>
+                  <Link href="/articles" className="text-sm font-medium text-accent hover:underline shrink-0 ml-4">查看全部 →</Link>
                 </div>
-              </div>
-            </aside>
+                {posts.map((post) => (
+                  <PostCard key={post.slug} post={post} />
+                ))}
+                <Pagination currentPage={currentPage} totalPages={totalPages} />
+              </main>
 
-            {/* 中：最近创作（视觉重心，滚动主体） */}
-            <main className="order-3 md:order-2 flex-1 min-w-0 space-y-10">
-              <div className="flex items-baseline justify-between pb-3 border-b border-[var(--card-border-inset)]">
-                <div>
-                  <h2 className="text-xl font-extrabold text-[var(--text-primary)]">📝 文章</h2>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">空间里的一些书写——技术、折腾与生活随笔。</p>
-                </div>
-                <Link href="/articles" className="text-sm font-medium text-accent hover:underline shrink-0 ml-4">查看全部 →</Link>
-              </div>
-              {posts.map((post) => (
-                <PostCard key={post.slug} post={post} />
-              ))}
-              <Pagination currentPage={currentPage} totalPages={totalPages} />
-            </main>
-
-            {/* 右：关注我（md+ 停靠中心右下方，随中心滚动常驻两侧底部） */}
-            <aside className="order-2 md:order-3 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
-              <div className="glass-card p-5">
-                <h2 className="text-base font-semibold mb-3 text-[var(--text-secondary)] flex items-center gap-2">
-                  <span>💖</span> 关注我
-                </h2>
-                <p className="text-sm text-[var(--text-muted)] mb-3">你可以在这里找到我：</p>
-                <div className="space-y-2">
-                  {HOME_SOCIALS.map((s) => {
-                    const style = SOCIAL_CARD_STYLES[s.key];
-                    const inner = (
-                      <>
-                        <span className={`flex items-center justify-center w-9 h-9 shrink-0 rounded-lg text-base ${style.iconBox}`}>
-                          {s.emoji}
-                        </span>
-                        <span className="flex flex-col min-w-0">
-                          <span className={`text-sm font-medium text-[var(--text-secondary)] transition-colors ${style.labelHover}`}>
-                            {s.label}
+              {/* 右：关注我（移动端堆在文章后，桌面端右栏 sticky 底部） */}
+              <aside className="order-2 md:order-2 md:w-[260px] lg:w-[320px] md:shrink-0 md:self-end md:sticky md:bottom-24">
+                <div className="glass-card p-5">
+                  <h2 className="text-base font-semibold mb-3 text-[var(--text-secondary)] flex items-center gap-2">
+                    <span>💖</span> 关注我
+                  </h2>
+                  <p className="text-sm text-[var(--text-muted)] mb-3">你可以在这里找到我：</p>
+                  <div className="space-y-2">
+                    {HOME_SOCIALS.map((s) => {
+                      const style = SOCIAL_CARD_STYLES[s.key];
+                      const inner = (
+                        <>
+                          <span className={`flex items-center justify-center w-9 h-9 shrink-0 rounded-lg text-base ${style.iconBox}`}>
+                            {s.emoji}
                           </span>
-                          <span className="text-xs text-[var(--text-muted)] truncate">{s.handle}</span>
-                          {s.desc && (
-                            <span className="text-xs text-[var(--text-muted)]/80 mt-0.5 leading-snug">{s.desc}</span>
+                          <span className="flex flex-col min-w-0">
+                            <span className={`text-sm font-medium text-[var(--text-secondary)] transition-colors ${style.labelHover}`}>
+                              {s.label}
+                            </span>
+                            <span className="text-xs text-[var(--text-muted)] truncate">{s.handle}</span>
+                            {s.desc && (
+                              <span className="text-xs text-[var(--text-muted)]/80 mt-0.5 leading-snug">{s.desc}</span>
+                            )}
+                          </span>
+                          {s.href && (
+                            <span className="ml-auto text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform">↗</span>
                           )}
-                        </span>
-                        {s.href && (
-                          <span className="ml-auto text-[var(--text-muted)] group-hover:translate-x-0.5 transition-transform">↗</span>
-                        )}
-                      </>
-                    );
-                    const cardClass = `group flex items-center gap-3 p-2.5 rounded-xl border border-[var(--card-border-inset)] transition-all duration-200 ${style.card}`;
-                    return s.href ? (
-                      <a
-                        key={s.key}
-                        href={s.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={s.title}
-                        className={cardClass}
-                      >
-                        {inner}
-                      </a>
-                    ) : (
-                      <div key={s.key} title={s.title} className={cardClass}>
-                        {inner}
-                      </div>
-                    );
-                  })}
+                        </>
+                      );
+                      const cardClass = `group flex items-center gap-3 p-2.5 rounded-xl border border-[var(--card-border-inset)] transition-all duration-200 ${style.card}`;
+                      return s.href ? (
+                        <a
+                          key={s.key}
+                          href={s.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={s.title}
+                          className={cardClass}
+                        >
+                          {inner}
+                        </a>
+                      ) : (
+                        <div key={s.key} title={s.title} className={cardClass}>
+                          {inner}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            </aside>
+              </aside>
+            </div>
           </div>
         </div>
-        </div>
 
-        {/* 资讯存档：低权重区，面板下方 */}
+        {/* 资讯存档：低权重区，面板下方
+            标题处追加"空间共 X 篇文章"小统计，把原左栏的明细统计降级为页脚补充信息
+            （明细分类统计对回访用户是冗余信息，放底部作为档案区补充即可） */}
         {newsPosts.length > 0 && (
           <section className="mt-10 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
               <details className="group bg-[var(--card-bg)] backdrop-blur-lg rounded-2xl border border-[var(--card-border)] p-5">
                 <summary className="cursor-pointer list-none flex items-center justify-between text-[var(--text-secondary)]">
-                  <span className="font-medium">
-                    📂 资讯存档（{newsPosts.length} 篇新闻记录）
+                  <span className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-medium">
+                      📂 资讯存档（{newsPosts.length} 篇新闻记录）
+                    </span>
+                    <span className="text-xs text-[var(--text-muted)] font-normal">
+                      · 空间共 {stats.total} 篇文章
+                    </span>
                   </span>
                   <span className="text-xs group-open:rotate-180 transition-transform">▾</span>
                 </summary>

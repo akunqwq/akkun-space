@@ -54,5 +54,3 @@ scripts/crawler/cache/
 public/music/*.mp3
 
 .workbuddy/
-
-scripts/

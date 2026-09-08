@@ -2,7 +2,8 @@
  * generate-posts-index.ts - 构建时文章索引生成脚本
  * ================================================
  *
- * 读取 content/posts 下所有 .md / .mdx 文件，
+ * 读取 content/posts 下所有 .md / .mdx 文件
+ * （.md 纯 Markdown 文章；.mdx 支持 JSX/组件/import 等能力；两者都是合法 source），
  * 只提取「列表页需要的元数据」（不含正文），生成 data/posts.json。
  *
  * 首页/列表页直接读这个 JSON，无需在渲染时读取并编译所有文章正文，
@@ -15,6 +16,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import matter from 'gray-matter';
 import { calcReadingTime } from '../lib/content/reading-time';
@@ -53,10 +55,9 @@ function normalizeDate(date: unknown): string {
   return '';
 }
 
-function generateIndex() {
+export function generateIndex() {
   if (!fs.existsSync(postsDir)) {
-    console.error('❌ posts 目录不存在:', postsDir);
-    process.exit(1);
+    throw new Error(`posts 目录不存在: ${postsDir}`);
   }
 
   const files = fs.readdirSync(postsDir);
@@ -132,4 +133,7 @@ function generateIndex() {
   console.log(`   🔖 内容 hash: ${hash}`);
 }
 
-generateIndex();
+// 作为独立脚本运行时（prebuild / generate-index 命令）自动执行；
+// 被 dev.ts import 时不自动执行，由调用方控制时机
+const __isMain = fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (__isMain) generateIndex();

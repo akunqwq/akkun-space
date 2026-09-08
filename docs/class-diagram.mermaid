@@ -1,0 +1,262 @@
+%% B 站 / 游戏产业数据查询工具 — 数据结构和接口类图
+%% 文档日期：2026-09-08
+%% 架构师：Bob
+
+classDiagram
+    %% ============ B 站 API 类型 ============
+    class BiliUpInfo {
+        +mid: number
+        +name: string
+        +face: string
+        +sign: string
+        +level: number
+        +official_verify: boolean
+        +vip_type: number
+        +vip_status: number
+        +live_room: LiveRoomInfo
+    }
+
+    class BiliRelationStat {
+        +mid: number
+        +following: number
+        +follower: number
+        +whisper: number
+    }
+
+    class BiliUpCard {
+        +card: UpCardInfo
+        +following: boolean
+    }
+
+    class UpCardInfo {
+        +mid: string
+        +name: string
+        +fans: number
+        +attention: number
+        +archive_count: number
+        +article_count: number
+    }
+
+    class BiliVideoItem {
+        +bvid: string
+        +aid: number
+        +title: string
+        +play: number
+        +video_review: number
+        +danmaku: number
+        +reply: number
+        +favorite: number
+        +coin: number
+        +share: number
+        +like: number
+        +created: number
+        +length: string
+        +pic: string
+    }
+
+    class BiliVideoListResponse {
+        +list: VideoListData
+    }
+
+    class VideoListData {
+        +vlist: BiliVideoItem[]
+        +tlist: Record~string, TlistItem~
+        +page: PageInfo
+    }
+
+    class PageInfo {
+        +pn: number
+        +ps: number
+        +count: number
+    }
+
+    class BiliVideoStat {
+        +bvid: string
+        +aid: number
+        +view: number
+        +danmaku: number
+        +reply: number
+        +favorite: number
+        +coin: number
+        +share: number
+        +like: number
+        +now_rank: number
+        +his_rank: number
+    }
+
+    class LiveRoomInfo {
+        +roomStatus: number
+        +liveStatus: number
+        +url: string
+        +title: string
+        +cover: string
+        +roomid: number
+    }
+
+    class TlistItem {
+        +tid: number
+        +count: number
+        +name: string
+    }
+
+    %% ============ WBI 签名 ============
+    class WbiSigner {
+        -imgKey: string
+        -subKey: string
+        -mixinKey: string
+        -keyFetchedAt: number
+        -KEY_CACHE_TTL: number
+        +ensureKeys() void
+        -fetchNavKeys() Promise~void~
+        -getMixinKey(orig: string) string
+        +sign(params: Record~string,string~) Promise~WbiSignResult~
+    }
+
+    class WbiSignResult {
+        +w_rid: string
+        +wts: number
+    }
+
+    %% ============ B 站 API 客户端 ============
+    class BiliClient {
+        -signer: WbiSigner
+        -cache: BiliCache
+        -BASE_URL: string
+        +getUpInfo(mid: number) Promise~UpInfoResult~
+        +getRelationStat(mid: number) Promise~BiliRelationStat~
+        +getUpVideos(mid: number, page: number) Promise~BiliVideoListResponse~
+        +getVideoStat(bvid: string) Promise~BiliVideoStat~
+        -request(path: string, params: Record~string,string~, useWbi: boolean) Promise~any~
+        -cachedFetch(cacheKey: string, ttl: number, fetcher: Function) Promise~CacheResult~
+    }
+
+    class UpInfoResult {
+        +info: BiliUpInfo
+        +stat: BiliRelationStat
+        +card: BiliUpCard
+        +degraded: boolean
+        +cachedAt: number
+    }
+
+    class CacheResult~T~ {
+        +data: T
+        +degraded: boolean
+        +cachedAt: number
+    }
+
+    %% ============ 缓存 ============
+    class BiliCache {
+        -store: Map~string, CacheEntry~
+        +get~T~(key: string) T | null
+        +set(key: string, data: any, ttl: number) void
+        +isExpired(key: string) boolean
+        +clear() void
+    }
+
+    class CacheEntry {
+        +data: any
+        +expiresAt: number
+    }
+
+    %% ============ Supabase 快照 ============
+    class BiliUpSnapshot {
+        +id: string
+        +mid: number
+        +follower_count: number
+        +following_count: number
+        +sampled_at: string
+        +created_at: string
+    }
+
+    class BiliUpTracked {
+        +mid: number
+        +name: string
+        +last_queried_at: string
+        +created_at: string
+    }
+
+    class SnapshotQueries {
+        +supabaseAdmin: SupabaseClient
+        +upsertTracked(mid: number, name: string) Promise~void~
+        +getTrackedUps() Promise~BiliUpTracked[]~
+        +insertSnapshot(mid: number, follower: number, following: number) Promise~void~
+        +getSnapshots(mid: number, limit: number) Promise~BiliUpSnapshot[]~
+    }
+
+    %% ============ 财报数据 ============
+    class FinanceCompany {
+        +code: string
+        +name: string
+        +market: string
+        +game_revenue: number
+        +total_revenue: number
+        +yoy_growth: number
+        +ratio: number
+        +period: string
+        +updated_at: string
+    }
+
+    class FinanceSegment {
+        +id: string
+        +company_code: string
+        +segment_name: string
+        +revenue: number
+        +yoy_growth: number
+        +period: string
+    }
+
+    class FinanceQuarterly {
+        +id: string
+        +company_code: string
+        +quarter: string
+        +game_revenue: number
+    }
+
+    class FinanceQueries {
+        +supabaseAdmin: SupabaseClient
+        +getAllCompanies() Promise~FinanceCompany[]~
+        +getCompanyByCode(code: string) Promise~FinanceCompany | null~
+        +getSegments(code: string) Promise~FinanceSegment[]~
+        +getQuarterlyTrend(code: string, limit: number) Promise~FinanceQuarterly[]~
+    }
+
+    %% ============ 工具页渲染数据 ============
+    class UpDetailPageData {
+        +info: BiliUpInfo
+        +stat: BiliRelationStat
+        +card: BiliUpCard
+        +videos: BiliVideoItem[]
+        +videoTotal: number
+        +degraded: boolean
+    }
+
+    class CompanyDetailPageData {
+        +company: FinanceCompany
+        +segments: FinanceSegment[]
+        +quarterly: FinanceQuarterly[]
+    }
+
+    %% ============ 关系 ============
+    WbiSigner --> WbiSignResult : produces
+    BiliClient --> WbiSigner : uses
+    BiliClient --> BiliCache : uses
+    BiliClient --> UpInfoResult : produces
+    BiliClient ..> BiliUpInfo : fetches
+    BiliClient ..> BiliRelationStat : fetches
+    BiliClient ..> BiliVideoListResponse : fetches
+    BiliClient ..> BiliVideoStat : fetches
+    BiliUpInfo --> LiveRoomInfo : contains
+    BiliVideoListResponse --> VideoListData : contains
+    VideoListData --> BiliVideoItem : contains list
+    VideoListData --> PageInfo : contains
+    SnapshotQueries --> BiliUpSnapshot : manages
+    SnapshotQueries --> BiliUpTracked : manages
+    FinanceQueries --> FinanceCompany : manages
+    FinanceQueries --> FinanceSegment : manages
+    FinanceQueries --> FinanceQuarterly : manages
+    UpDetailPageData --> BiliUpInfo
+    UpDetailPageData --> BiliRelationStat
+    UpDetailPageData --> BiliVideoItem
+    CompanyDetailPageData --> FinanceCompany
+    CompanyDetailPageData --> FinanceSegment
+    CompanyDetailPageData --> FinanceQuarterly

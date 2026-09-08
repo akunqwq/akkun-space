@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAllPosts } from "../../lib/content";
+import { getAllPosts } from "../../lib/content/posts";
 import GlassPage from "../components/GlassPage";
 import { ArticleSearchBar } from "../components/ArticleSearchBar";
 

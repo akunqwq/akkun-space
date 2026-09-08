@@ -1,0 +1,153 @@
+%% B 站 / 游戏产业数据查询工具 — 程序调用流程时序图
+%% 文档日期：2026-09-08
+%% 架构师：Bob
+
+%% ============ 流程一：用户查 UP 主 ============
+sequenceDiagram
+    participant User as 用户浏览器
+    participant Page as bili-up/[mid]/page.tsx<br/>(Server Component, ISR)
+    participant API as /api/bili/up/route.ts
+    participant Client as BiliClient
+    participant Signer as WbiSigner
+    participant Cache as BiliCache (Map)
+    participant Bili as B 站 API
+    participant Snapshot as SnapshotQueries
+    participant SB as Supabase (supabaseAdmin)
+
+    User->>Page: 访问 /tools/bili-up/12345
+    Note over Page: ISR revalidate=3600s<br/>首次/过期后重新生成
+
+    alt 缓存未过期（ISR 命中）
+        Page-->>User: 返回静态 HTML（含 UP 主信息+视频列表）
+    else 缓存过期或首次
+        Page->>API: GET /api/bili/up?mid=12345
+        API->>Client: getUpInfo(12345)
+
+        alt L1 Map 缓存命中（未过期）
+            Cache-->>Client: 返回缓存数据（degraded=false）
+            Client-->>API: UpInfoResult
+        else L1 缓存未命中
+            Client->>Signer: sign({mid: "12345"})
+            alt 密钥未获取/已过期
+                Signer->>Bili: GET /x/web-interface/nav
+                Bili-->>Signer: img_url + sub_key
+                Note over Signer: 置换表生成 mixinKey<br/>缓存密钥 24h
+            end
+            Signer-->>Client: {w_rid, wts}
+
+            Client->>Bili: GET /x/space/wbi/acc/info?mid=12345&w_rid=xxx&wts=xxx
+            Bili-->>Client: UP 主详情（name/face/sign/level...）
+
+            Client->>Bili: GET /x/relation/stat?vmid=12345
+            Bili-->>Client: {follower, following}
+
+            Client->>Cache: set("up:12345", data, 30min)
+            Client->>Snapshot: upsertTracked(12345, name)
+            Snapshot->>SB: UPSERT bili_up_tracked
+            Client-->>API: UpInfoResult（degraded=false）
+        end
+
+        alt B 站接口失败
+            Bili--xClient: 超时/412/限流
+            Note over Client: 降级：返回最近缓存<br/>degraded=true
+            Cache-->>Client: 返回旧数据（如果有）
+            Client-->>API: UpInfoResult（degraded=true）
+        end
+
+        API-->>Page: JSON {info, stat, card, degraded}
+        Page-->>User: 渲染 HTML + 降级提示（如 degraded）
+    end
+
+    Note over Page: 同时调用 /api/bili/videos?mid=12345<br/>获取投稿视频列表（流程类似）
+
+%% ============ 流程二：用户查游戏公司 ============
+sequenceDiagram
+    participant User as 用户浏览器
+    participant Page as finance/[code]/page.tsx<br/>(Server Component, ISR)
+    participant FQ as FinanceQueries
+    participant SB as Supabase (supabaseAdmin)
+
+    User->>Page: 访问 /tools/finance/00700.HK
+    Note over Page: ISR revalidate=86400s（财报季度更新）
+
+    alt ISR 缓存未过期
+        Page-->>User: 返回静态 HTML（公司详情+SVG bar+营收构成）
+    else 缓存过期或首次
+        Page->>FQ: getCompanyByCode("00700.HK")
+        FQ->>SB: SELECT * FROM finance_companies WHERE code='00700.HK'
+        SB-->>FQ: FinanceCompany
+
+        alt 公司不存在
+            FQ-->>Page: null
+            Page-->>User: 404 notFound()
+        else 公司存在
+            Page->>FQ: getSegments("00700.HK")
+            FQ->>SB: SELECT * FROM finance_segments WHERE company_code='00700.HK'
+            SB-->>FQ: FinanceSegment[]
+
+            Page->>FQ: getQuarterlyTrend("00700.HK", 4)
+            FQ->>SB: SELECT * FROM finance_quarterly WHERE company_code='00700.HK' ORDER BY quarter DESC LIMIT 4
+            SB-->>FQ: FinanceQuarterly[]
+
+            FQ-->>Page: {company, segments, quarterly}
+            Note over Page: 渲染 RevenueBarChart（SVG）<br/>+ 营收构成表格<br/>+ JSON-LD Organization
+            Page-->>User: 静态 HTML
+        end
+    end
+
+%% ============ 流程三：Vercel Cron 每日采样 ============
+sequenceDiagram
+    participant Cron as Vercel Cron
+    participant API as /api/cron/bili-snapshot/route.ts
+    participant SQ as SnapshotQueries
+    participant Client as BiliClient
+    participant Bili as B 站 API
+    participant SB as Supabase (supabaseAdmin)
+
+    Cron->>API: GET（Header: Authorization: Bearer CRON_SECRET）
+    Note over API: 验证 CRON_SECRET<br/>不匹配则 401
+
+    API->>SQ: getTrackedUps()
+    SQ->>SB: SELECT * FROM bili_up_tracked ORDER BY last_queried_at DESC
+    SB-->>SQ: BiliUpTracked[]
+    SQ-->>API: trackedUps[]
+
+    Note over API: 遍历 trackedUps<br/>间隔 2-5s 随机延时
+
+    loop 每个 tracked UP 主
+        API->>Client: getRelationStat(mid)
+        Client->>Bili: GET /x/relation/stat?vmid={mid}
+        Bili-->>Client: {follower, following}
+        Client-->>API: BiliRelationStat
+
+        API->>SQ: insertSnapshot(mid, follower, following)
+        SQ->>SB: INSERT INTO bili_up_snapshots
+        SB-->>SQ: success
+    end
+
+    API-->>Cron: 200 {sampled: N, failed: M}
+
+%% ============ 流程四：视频统计查询（内嵌） ============
+sequenceDiagram
+    participant User as 用户浏览器
+    participant Comp as VideoStatQuery.tsx<br/>(Client Component)
+    participant API as /api/bili/video-stat/route.ts
+    participant Client as BiliClient
+    participant Cache as BiliCache
+    participant Bili as B 站 API
+
+    User->>Comp: 输入 BV 号 + 点击查询
+    Comp->>API: GET /api/bili/video-stat?bvid=BV1xx...
+    API->>Client: getVideoStat("BV1xx...")
+
+    alt L1 缓存命中（5min TTL）
+        Cache-->>Client: BiliVideoStat（degraded=false）
+    else 缓存未命中
+        Client->>Bili: GET /x/web-interface/view?bvid=BV1xx...
+        Bili-->>Client: BiliVideoStat（view/danmaku/reply/...）
+        Client->>Cache: set("videostat:BV1xx...", data, 5min)
+    end
+
+    Client-->>API: CacheResult<BiliVideoStat>
+    API-->>Comp: JSON {stat, degraded}
+    Comp-->>User: 渲染统计表格 + 降级提示

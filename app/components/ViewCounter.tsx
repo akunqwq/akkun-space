@@ -23,7 +23,6 @@ export default function ViewCounter({ slug }: { slug: string }) {
     const db = supabase
 
     let active = true
-    setViews(null)
 
     // 1) 先只读当前阅读量（不 +1），立即展示
     const fetchViews = async () => {

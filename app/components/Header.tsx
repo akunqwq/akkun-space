@@ -59,8 +59,14 @@ export default function Header() {
     firstLoadRef.current = false;
 
     // 无障碍：减少动效时静态显示当前句，不轮播
+    // 说明：读 matchMedia 决定初始静态问候语 + typing 标记，
+    // 是 React 与外部世界（用户系统偏好）同步的合法 effect-setState 用法。
+    // 改造为 useSyncExternalStore 订阅 prefers-reduced-motion 收益有限
+    // （该分支只在 mount 一次执行），属于过度工程，故此处豁免。
     if (prefersReducedMotion()) {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性同步用户系统偏好到 React */
       setTitleText(GREETINGS[startIdx]);
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 同上：初始化静态问候 typing 标记 */
       setIsTitleTyping(false);
       return;
     }
@@ -165,6 +171,9 @@ export default function Header() {
   useEffect(() => {
     const isArticle = pathname?.startsWith("/articles/") ?? false;
     if (!isArticle) {
+      // 路径切换：非文章页时清零进度条。
+      // Header 是 root 组件无法用 key 重置，effect-setState 在此为数据源切换的清理动作。
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 路径切换清理非文章页的进度条 */
       setReadingProgress(0);
       return;
     }
@@ -173,6 +182,7 @@ export default function Header() {
       raf = 0;
       const article = document.querySelector("article");
       if (!article) {
+        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 文章 DOM 尚未挂载，进度归零 */
         setReadingProgress(0);
         return;
       }
@@ -181,9 +191,11 @@ export default function Header() {
       const total = rect.height - vh;
       if (total <= 0) {
         // 文章不足一屏：顶部到达视口顶即视为读完
+        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 派生计算结果同步到 React */
         setReadingProgress(rect.top <= 0 ? 1 : 0);
       } else {
         const scrolled = Math.min(Math.max(-rect.top, 0), total);
+        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 派生计算结果同步到 React */
         setReadingProgress(Math.round((scrolled / total) * 1000) / 1000);
       }
     };

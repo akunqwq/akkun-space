@@ -62,6 +62,15 @@
   --accent: #ec4899;
   --accent-hover: #db2777;
 
+  /* B 站品牌色（bili 工具专用强调色：蓝 #00AEEC / 粉 #FF6699） */
+  --bili-blue: #00AEEC;
+  --bili-pink: #FF6699;
+  --bili-blue-soft: rgba(0, 174, 236, 0.40);
+  --bili-pink-soft: rgba(255, 102, 153, 0.30);
+  --bili-blue-ring: rgba(0, 174, 236, 0.45);
+  --bili-blue-glow: rgba(0, 174, 236, 0.20);
+  --bili-gradient: linear-gradient(135deg, #00AEEC 0%, #FF6699 100%);
+
   /* 媒体播放器表面（淡蓝调） */
   --player-bg: #eff6ff;
 
@@ -180,6 +189,15 @@ html.dark {
   /* 品牌强调色 Catkun Pink 🌸（暗色提亮） */
   --accent: #f472b6;
   --accent-hover: #ec4899;
+
+  /* B 站品牌色（暗色下增强发光，蓝在纯黑上更跳） */
+  --bili-blue: #00AEEC;
+  --bili-pink: #FF6699;
+  --bili-blue-soft: rgba(0, 174, 236, 0.45);
+  --bili-pink-soft: rgba(255, 102, 153, 0.35);
+  --bili-blue-ring: rgba(0, 174, 236, 0.55);
+  --bili-blue-glow: rgba(0, 174, 236, 0.30);
+  --bili-gradient: linear-gradient(135deg, #00AEEC 0%, #FF6699 100%);
 
   /* 媒体播放器表面（淡蓝调） */
   --player-bg: #0b1220;
@@ -437,6 +455,24 @@ body {
   animation: fadeIn .15s ease-out;
 }
 
+/* 半屏搜索面板：从顶部轻量下滑 + 淡入（cubic-bezier 与 splash 入场一致） */
+@keyframes searchSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-search-slide {
+  animation: searchSlideDown 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-search-slide { animation: none; }
+}
+
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -640,4 +676,39 @@ html.splash-done .splash-overlay {
   .hero-feat-anim {
     animation: none;
   }
+}
+
+/* ===== B 站工具专用 ===== */
+
+/* 蓝→粉品牌渐变（搜索按钮等强调元素） */
+.bili-gradient {
+  background-image: var(--bili-gradient);
+}
+
+/* 骨架屏：毛玻璃底 + 流光扫过，避免请求等待期画面突兀闪烁 */
+@keyframes biliShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--card-bg-subtle), transparent 35%);
+  border: 1px solid var(--card-border);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--panel-ring), transparent 35%) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: biliShimmer 1.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
 }

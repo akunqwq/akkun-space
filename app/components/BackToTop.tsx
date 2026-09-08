@@ -1,28 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useCallback } from 'react'
 import { ArrowUp } from 'lucide-react'
+import { useScrollVisibility } from '@/lib/hooks/useScrollVisibility'
 
 const SHOW_THRESHOLD = 400
 
 
 export default function BackToTop() {
-  const [visible, setVisible] = useState(false)
+  // 滚动可见性由 useSyncExternalStore 订阅，无需 useState/useEffect
+  const visible = useScrollVisibility(SHOW_THRESHOLD)
 
   const scrollToTop = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
-  }, [])
-
-  useEffect(() => {
-    setVisible(window.scrollY > SHOW_THRESHOLD)
-
-    const onScroll = () => {
-      const shouldShow = window.scrollY > SHOW_THRESHOLD
-      setVisible((prev) => (prev === shouldShow ? prev : shouldShow))
-    }
-
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   return (
@@ -48,4 +38,3 @@ export default function BackToTop() {
     </button>
   )
 }
-

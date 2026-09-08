@@ -34,6 +34,7 @@ export default function MusicCard({
         title={`播放 ${item.title}`}
       >
         <CoverImage
+          key={item.cover ?? "no-cover"}
           item={item}
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"

@@ -5,27 +5,20 @@ import { Sun, Moon } from 'lucide-react';
 import { useTheme } from './ThemeProvider';
 
 export default function FloatingThemeToggle() {
-  const [mounted, setMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const { isDark, toggleTheme } = useTheme();
 
-  // 避免hydration不匹配
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // 滚动时隐藏，停止滚动后显示
+  // 说明：setIsVisible 都在 handleScroll 事件回调里（非 effect body 同步执行），
+  // 不触发 react-hooks/set-state-in-effect 规则。这是合法的「订阅外部世界」用法。
   useEffect(() => {
     let scrollTimeout: NodeJS.Timeout;
-    let isScrolling = false;
 
     const handleScroll = () => {
-      isScrolling = true;
       setIsVisible(false);
 
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        isScrolling = false;
         setIsVisible(true);
       }, 300);
     };
@@ -36,8 +29,6 @@ export default function FloatingThemeToggle() {
       clearTimeout(scrollTimeout);
     };
   }, []);
-
-  if (!mounted) return null;
 
   return (
     <button

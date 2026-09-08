@@ -1,69 +1,84 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Search, X, FileText, History, Compass } from 'lucide-react';
 import Link from 'next/link';
 import {
   sanitizeQuery,
   createEnrichedDocument,
   addDocToIndex,
   extractScoredResults,
-  useDebouncedValue,
-  SEARCH_DEBOUNCE_MS,
   type EnrichedDocument,
+  type SearchEntry,
 } from '@/lib/content';
+import { useDebouncedValue, SEARCH_DEBOUNCE_MS } from '@/lib/hooks/useDebouncedValue';
 
 // ==================== 类型定义 ====================
 
-interface SearchItem {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  category: string;
-}
+/** 三类实体聚合后的分组结果 */
+type GroupedResults = {
+  article: SearchEntry[];
+  update: SearchEntry[];
+  page: SearchEntry[];
+};
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// ==================== 类型元数据 ====================
+
+import type { ComponentType } from 'react';
+
+const TYPE_META: Record<SearchEntry['type'], { label: string; icon: ComponentType<{ className?: string }> }> = {
+  article: { label: '文章', icon: FileText },
+  update: { label: '更新', icon: History },
+  page: { label: '页面', icon: Compass },
+};
+
+// 按固定顺序遍历分组，确保渲染稳定：文章 → 更新 → 页面
+const GROUP_ORDER: Array<keyof GroupedResults> = ['article', 'update', 'page'];
+
 // ==================== 组件 ====================
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
-  // 防抖后的查询值（实际用于搜索的值）
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
-  const [results, setResults] = useState<SearchItem[]>([]);
+  const [results, setResults] = useState<SearchEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const indexRef = useRef<EnrichedDocument | null>(null);
-  const dataMapRef = useRef<Map<string, SearchItem>>(new Map());
+  const dataMapRef = useRef<Map<string, SearchEntry>>(new Map());
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
-  // 初始化 FlexSearch Document 索引（enrich 模式，支持评分）
+  // 初始化 FlexSearch 索引（聚合文章/更新/页面，统一索引）
   useEffect(() => {
     if (!isOpen || indexRef.current) return;
 
     setLoading(true);
     fetch('/api/search-index')
       .then((res) => res.json())
-      .then((data: SearchItem[]) => {
+      .then((data: SearchEntry[]) => {
         const doc = createEnrichedDocument({
-          storeFields: ['title', 'description', 'tags', 'category'],
+          storeFields: ['title', 'description', 'href', 'tags', 'category', 'type'],
         });
 
-        const dataMap = new Map<string, SearchItem>();
+        const dataMap = new Map<string, SearchEntry>();
 
-        data.forEach((item) => {
-          dataMap.set(item.id, item);
-          addDocToIndex(doc, item.id, `${item.title} ${item.description} ${item.tags.join(' ')}`, {
-            title: item.title,
-            description: item.description,
-            tags: item.tags,
-            category: item.category,
+        data.forEach((entry) => {
+          dataMap.set(entry.id, entry);
+          // 搜索文本：标题 + 描述 + 标签（不同类型的可搜索字段差异在这里统一）
+          const searchText = `${entry.title} ${entry.description} ${(entry.tags || []).join(' ')}`;
+          addDocToIndex(doc, entry.id, searchText, {
+            title: entry.title,
+            description: entry.description,
+            href: entry.href,
+            tags: entry.tags,
+            category: entry.category,
+            type: entry.type,
           });
         });
 
@@ -77,7 +92,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       });
   }, [isOpen]);
 
-  // 打开时自动聚焦输入框
+  // 打开时重置状态 + 自动聚焦
   useEffect(() => {
     if (isOpen) {
       setQuery('');
@@ -103,27 +118,28 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
       return;
     }
 
-    // 使用 enrich 搜索 + 评分过滤
     const rawResult = indexRef.current.search(debouncedQuery, {
-      limit: 20,
+      limit: 30,
       enrich: true,
     });
 
     const scoredResults = extractScoredResults<string>(rawResult);
-    const matchedItems = scoredResults
+    const matched = scoredResults
       .map(({ id }) => dataMapRef.current.get(id))
-      .filter((item): item is SearchItem => Boolean(item));
+      .filter((e): e is SearchEntry => Boolean(e));
 
-    setResults(matchedItems);
+    setResults(matched);
     setSelectedIndex(-1);
   }, [debouncedQuery]);
 
-  // 输入变化 → 更新原始 query（防抖 hook 会自动延迟触发搜索）
-  const handleInputChange = useCallback((value: string) => {
-    setQuery(value);
-  }, []);
+  // 按类型分组（保持 FlexSearch 给出的相关度顺序）
+  const groupedResults = useMemo<GroupedResults>(() => ({
+    article: results.filter((e) => e.type === 'article'),
+    update: results.filter((e) => e.type === 'update'),
+    page: results.filter((e) => e.type === 'page'),
+  }), [results]);
 
-  // 键盘导航
+  // 键盘导航（按拍平后的扁平索引递增，跨组连续）
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -148,46 +164,49 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   if (!isOpen) return null;
 
+  // 渲染时给每条结果分配扁平索引（供 selectedIndex / ref 数组使用）
+  let flatIndex = 0;
+
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4" role="dialog" aria-modal="true" aria-label="搜索文章">
-      {/* 遮罩背景 */}
+    <div className="fixed inset-0 z-[100] flex flex-col items-center" role="dialog" aria-modal="true" aria-label="搜索">
+      {/* 遮罩：顶部更深的渐变，强化"从上方降临"的层次感 */}
       <div
-        className="fixed inset-0 bg-black/50 dark:bg-black/65 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/15 dark:from-black/80 dark:via-black/55 dark:to-black/30 backdrop-blur-md transition-opacity animate-fadeIn"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* 搜索框 Modal - 玻璃拟态，跟随主题 */}
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] shadow-[var(--panel-shadow)] backdrop-blur-xl animate-in zoom-in-95 fade-in duration-200">
-        {/* 输入区 */}
-        <div className="relative flex items-center gap-3 border-b border-[var(--border-color)] px-4 py-4">
+      {/* 半屏沉浸面板：从顶部下滑，贴顶 + 底部大圆角，玻璃拟态跟随主题 */}
+      <div className="relative h-[min(640px,72vh)] w-full max-w-3xl flex flex-col overflow-hidden rounded-b-3xl border border-t-0 border-[var(--card-border)] bg-[var(--card-bg)] shadow-[var(--panel-shadow)] backdrop-blur-2xl animate-search-slide">
+        {/* 输入区：更舒展的现代搜索栏 */}
+        <div className="relative flex items-center gap-4 border-b border-[var(--border-color)] px-6 py-5">
           <Search className="h-5 w-5 shrink-0 text-[var(--text-muted)]" />
           <input
             ref={inputRef}
             type="text"
             value={query}
-            onChange={(e) => handleInputChange(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="搜索文章标题、标签或描述..."
+            placeholder="搜索文章、更新日志、页面..."
             autoFocus
-            className="w-full bg-transparent text-base text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none"
+            className="w-full bg-transparent text-lg text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none"
           />
           {(query || loading) && (
             <button
               onClick={() => { setQuery(''); setResults([]); setSelectedIndex(-1); inputRef.current?.focus(); }}
-              className="shrink-0 rounded p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--card-bg-inset)] transition-colors"
+              className="shrink-0 rounded-lg p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--card-bg-inset)] transition-colors"
               aria-label="清除"
             >
               <X className="h-4 w-4" />
             </button>
           )}
-          <kbd className="hidden shrink-0 rounded border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-2 py-0.5 text-xs text-[var(--text-muted)] sm:inline-block">
+          <kbd className="hidden shrink-0 rounded-md border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-2 py-0.5 text-xs text-[var(--text-muted)] sm:inline-block">
             ESC
           </kbd>
         </div>
 
-        {/* 结果列表 */}
-        <div className="max-h-[50vh] overflow-y-auto p-2">
+        {/* 结果区：分组渲染（文章 → 更新 → 页面），跨组键盘导航连续 */}
+        <div className="flex-1 overflow-y-auto p-2">
           {loading && (
             <div className="py-12 text-center">
               <div className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)]">
@@ -202,16 +221,15 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
           {!loading && query && results.length === 0 && (
             <div className="py-12 text-center">
-              <p className="text-sm text-[var(--text-secondary)]">未找到相关文章</p>
+              <p className="text-sm text-[var(--text-secondary)]">未找到相关内容</p>
               <p className="mt-1 text-xs text-[var(--text-muted)]">试试其他关键词？</p>
             </div>
           )}
 
           {!loading && !query && (
             <div className="py-8 text-center">
-              <p className="text-sm text-[var(--text-muted)]">
-                输入关键词开始搜索
-              </p>
+              <p className="text-sm text-[var(--text-muted)]">输入关键词开始搜索</p>
+              <p className="mt-1 text-xs text-[var(--text-muted)]">支持搜索：文章、更新日志、页面</p>
               <div className="mt-4 flex justify-center gap-3 text-xs text-[var(--text-muted)]">
                 <span><kbd className="rounded border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-1.5 py-0.5 text-[var(--text-secondary)]">↑</kbd> <kbd className="rounded border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-1.5 py-0.5 text-[var(--text-secondary)]">↓</kbd> 导航</span>
                 <span><kbd className="rounded border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-1.5 py-0.5 text-[var(--text-secondary)]">Enter</kbd> 选择</span>
@@ -220,50 +238,89 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             </div>
           )}
 
-          {results.map((item, idx) => (
-            <Link
-              key={item.id}
-              ref={(el) => { resultsRefs.current[idx] = el; }}
-              href={`/articles/${item.id}`}
-              onClick={onClose}
-              className={`block rounded-xl p-3 transition-all duration-150 ${
-                idx === selectedIndex
-                  ? 'border-accent/30 bg-accent/10'
-                  : 'border-transparent hover:border-[var(--border-color)] hover:bg-[var(--card-bg-inset)]'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h4 className={`font-medium leading-snug ${idx === selectedIndex ? 'text-accent' : 'text-[var(--text-primary)]'}`}>
-                  {item.title}
-                </h4>
-                {item.category && (
-                  <span className="shrink-0 rounded-full bg-[var(--card-bg-inset)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
-                    {item.category}
-                  </span>
-                )}
-              </div>
-              {item.description && (
-                <p className="mt-1 line-clamp-2 text-xs text-[var(--text-muted)]">{item.description}</p>
-              )}
-              {item.tags.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {item.tags.map((tag) => (
-                    <span key={tag} className="rounded bg-[var(--card-bg-inset)] px-1.5 py-0.5 text-[11px] text-[var(--text-muted)]">
-                      #{tag}
-                    </span>
-                  ))}
+          {GROUP_ORDER.map((type) => {
+            const group = groupedResults[type];
+            if (group.length === 0) return null;
+            const meta = TYPE_META[type];
+            const Icon = meta.icon;
+            return (
+              <div key={type} className="mb-1">
+                {/* 组标题：图标 + 类型名 + 命中数 */}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium uppercase tracking-wider text-[var(--text-muted)]">
+                  <Icon className="h-3 w-3" />
+                  <span>{meta.label}</span>
+                  <span className="opacity-60">· {group.length}</span>
                 </div>
-              )}
-            </Link>
-          ))}
+                {group.map((entry) => {
+                  const idx = flatIndex++;
+                  return (
+                    <Link
+                      key={entry.id}
+                      ref={(el) => { resultsRefs.current[idx] = el; }}
+                      href={entry.href}
+                      onClick={onClose}
+                      className={`group relative block rounded-xl p-3 pl-4 transition-all duration-150 ${
+                        idx === selectedIndex
+                          ? 'bg-accent/10'
+                          : 'hover:bg-[var(--card-bg-inset)]'
+                      }`}
+                    >
+                      {/* 选中态左侧 accent 竖条 */}
+                      {idx === selectedIndex && (
+                        <span className="absolute left-1 top-1/2 -translate-y-1/2 h-7 w-1 rounded-full bg-accent" />
+                      )}
+                      <div className="flex items-start justify-between gap-3">
+                        <h4 className={`font-medium leading-snug ${idx === selectedIndex ? 'text-accent' : 'text-[var(--text-primary)] group-hover:text-accent'}`}>
+                          {entry.title}
+                        </h4>
+                        {entry.category && (
+                          <span className="shrink-0 rounded-full bg-[var(--card-bg-inset)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
+                            {entry.category}
+                          </span>
+                        )}
+                      </div>
+                      {entry.description && (
+                        <p className="mt-1 line-clamp-2 text-xs text-[var(--text-muted)]">{entry.description}</p>
+                      )}
+                      {entry.tags.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {entry.tags.map((tag) => (
+                            <span key={tag} className="rounded bg-[var(--card-bg-inset)] px-1.5 py-0.5 text-[11px] text-[var(--text-muted)]">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            );
+          })}
         </div>
 
-        {/* 底部提示 */}
-        {!loading && results.length > 0 && (
-          <div className="border-t border-[var(--border-color)] px-4 py-2 text-right text-xs text-[var(--text-muted)]">
-            找到 {results.length} 篇文章
-          </div>
-        )}
+        {/* 底部状态栏：按类型分项统计 + 快捷键 */}
+        <div className="flex items-center justify-between border-t border-[var(--border-color)] px-6 py-2.5 text-xs text-[var(--text-muted)]">
+          <span>
+            {!loading && results.length > 0 && (
+              <>
+                {groupedResults.article.length > 0 && `${groupedResults.article.length} 篇文章`}
+                {groupedResults.article.length > 0 && (groupedResults.update.length > 0 || groupedResults.page.length > 0) && ' · '}
+                {groupedResults.update.length > 0 && `${groupedResults.update.length} 条更新`}
+                {groupedResults.update.length > 0 && groupedResults.page.length > 0 && ' · '}
+                {groupedResults.page.length > 0 && `${groupedResults.page.length} 个页面`}
+              </>
+            )}
+            {!loading && !query && '准备就绪'}
+            {!loading && query && results.length === 0 && '无匹配结果'}
+          </span>
+          <span className="hidden sm:flex items-center gap-1.5">
+            <kbd className="rounded border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-1.5 py-0.5">↵</kbd>
+            <span>打开</span>
+            <kbd className="rounded border border-[var(--border-color)] bg-[var(--card-bg-inset)] px-1.5 py-0.5">Esc</kbd>
+            <span>关闭</span>
+          </span>
+        </div>
       </div>
     </div>
   );

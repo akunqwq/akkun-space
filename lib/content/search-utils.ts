@@ -4,16 +4,39 @@
  * 职责：
  * 1. 搜索词预处理（sanitizeQuery）—— 过滤无意义乱码输入
  * 2. FlexSearch Document 索引工厂 —— 支持 enrich（评分/字段级匹配信息）
- * 3. 防抖 Hook —— 减少快速连续输入时的无效搜索
- * 4. 评分阈值过滤 —— 后处理低质量匹配结果
+ * 3. 评分阈值过滤 —— 后处理低质量匹配结果
+ *
+ * 注意：原同模块的 useDebouncedValue Hook 已迁至 lib/hooks/useDebouncedValue.ts。
+ *   原因：本模块被服务端（SSG）与客户端组件共同导入，React hook 的 import 链
+ *   在服务端模块解析时触发 "EcmaScript file had an error"。
  */
 
-import { useEffect, useState } from 'react';
-import FlexSearch, { Index } from 'flexsearch';
+import FlexSearch, { type Index } from 'flexsearch';
 
 // 重新导出 Document，避免复杂的泛型约束问题
 // FlexSearch.Document 的完整签名是 Document<T, P, W>，实际使用中用 any 简化
 export type EnrichedDocument = InstanceType<typeof FlexSearch.Document>;
+
+// ==================== 可搜索实体统一形状 ====================
+
+/**
+ * 所有可搜索实体（文章 / 更新记录 / 页面）规整成的统一形状。
+ *
+ * API 层（/api/search-index）负责把三类异构数据映射成此类型，
+ * 上层（FlexSearch 召回、SearchModal 展示）无需感知来源差异。
+ *
+ * id 格式约定：`"type:slug"`，避免跨类型 slug 冲突。
+ */
+export interface SearchEntry {
+  /** 全局唯一 id：`"type:slug"` 格式避免跨类型冲突 */
+  id: string;
+  type: 'article' | 'update' | 'page';
+  title: string;
+  description: string;
+  href: string;
+  tags: string[];
+  category: string;
+}
 
 // ==================== 常量 ====================
 
@@ -26,9 +49,6 @@ export const MAX_REPEATED_CHARS = 3;
  *  实际阈值需要根据数据量调参。这里设为 0 表示暂时不硬截断，
  *  主要依赖 sanitizeQuery 在输入层拦截。 */
 export const MIN_SCORE_THRESHOLD = 0;
-
-/** 防抖延迟（ms） */
-export const SEARCH_DEBOUNCE_MS = 200;
 
 // ==================== 1. 搜索词预处理 ====================
 
@@ -123,32 +143,7 @@ export function addDocToIndex(
   });
 }
 
-// ==================== 3. 防抖 Hook ====================
-
-/**
- * 防抖值 Hook
- * 返回一个延迟更新的 value，适用于搜索框等高频输入场景
- *
- * @example
- * const [query, setQuery] = useState('');
- * const debouncedQuery = useDebouncedValue(query, 200);
- * // debouncedQuery 会在 setQuery 停止 200ms 后更新
- */
-export function useDebouncedValue<T>(value: T, delay: number = SEARCH_DEBOUNCE_MS): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-// ==================== 4. 评分过滤 ====================
+// ==================== 3. 评分过滤 ====================
 
 /** 带评分信息的搜索结果项 */
 export interface ScoredResult<T> {

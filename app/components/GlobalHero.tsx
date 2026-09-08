@@ -124,6 +124,7 @@ function FeaturedList({ items }: { items: FeaturedItem[] }) {
               {f.cover ? (
                 f.coverSigned ? (
                   <CoverImage
+                    key={f.cover ?? "no-cover"}
                     item={{ title: f.title, cover: f.cover }}
                     className="w-9 h-9 rounded-md object-cover shrink-0"
                   />
