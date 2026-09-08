@@ -6,10 +6,28 @@
 // -----------------------------------------------------------------------------
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { getBiliClient } from '@/lib/bili/client';
+import { BiliApiError, getBiliClient } from '@/lib/bili/client';
 import type { BiliVideoStat } from '@/lib/bili/types';
 
 export const dynamic = 'force-dynamic';
+
+/** B 站业务错误码 → 用户可读的中文提示（透传给前端，避免笼统"查询失败"） */
+function friendlyBiliMessage(code: number, raw: string): string {
+  switch (code) {
+    case 62002:
+      return '稿件不可见（可能被删除、审核中或受地域限制）';
+    case -404:
+    case 62004:
+      return '视频不存在，请检查 BV 号';
+    case -400:
+      return 'BV 号无效';
+    case -352:
+    case -403:
+      return '接口受 B 站风控限制，请稍后重试';
+    default:
+      return raw || '查询失败';
+  }
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -38,6 +56,13 @@ export async function GET(req: NextRequest) {
       degraded: result.degraded,
     });
   } catch (err) {
+    // B 站业务错误（稿件不可见/不存在/风控）：透传可读提示，返回 200 让前端展示具体原因
+    if (err instanceof BiliApiError) {
+      return NextResponse.json({
+        code: err.biliCode,
+        message: friendlyBiliMessage(err.biliCode, err.biliMessage),
+      });
+    }
     const message = err instanceof Error ? err.message : '未知错误';
     console.error('[bili/video-stat] 获取失败:', message);
     return NextResponse.json(

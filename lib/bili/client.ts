@@ -159,6 +159,21 @@ async function authHeaders(): Promise<Record<string, string>> {
 }
 
 /**
+ * B 站业务错误（HTTP 成功但响应 code != 0）。
+ * 与普通 Error 区分：route 据此把业务错误（稿件不可见/不存在/风控）透传给前端展示具体原因，
+ * 而非统一 502"接口不可用"——避免用户查到不可见视频时误以为功能挂了。
+ */
+export class BiliApiError extends Error {
+  constructor(
+    readonly biliCode: number,
+    readonly biliMessage: string,
+  ) {
+    super(`bili code=${biliCode} msg=${biliMessage}`);
+    this.name = 'BiliApiError';
+  }
+}
+
+/**
  * B 站 API 客户端。
  * 封装 4 个核心方法（getUpInfo / getRelationStat / getUpVideos / getVideoStat），
  * 内部走 cache.ts 双层缓存，失败时降级。
@@ -476,7 +491,7 @@ export class BiliClient {
       };
     }>;
     if (json.code !== 0 || !json.data?.stat) {
-      throw new Error(`BiliClient.fetchVideoStat: bili code=${json.code} msg=${json.message}`);
+      throw new BiliApiError(json.code, json.message);
     }
     return {
       bvid: json.data.bvid,
