@@ -12,6 +12,7 @@ import { MusicProvider } from "./components/music/MusicProvider";
 import FloatingThemeToggle from "./components/FloatingThemeToggle";
 import FloatingActions from "./components/FloatingActions";
 import FloatingEmojis from "./components/FloatingEmojis";
+import PersonalEventOverlay from "./components/personal-events/PersonalEventOverlay";
 import GlobalHero, { type FeaturedItem, type LobbyChannel } from "./components/GlobalHero";
 import { getPostsIndex } from "../lib/content/posts";
 import { getUpdateRecords } from "../lib/content/updateRecord";
@@ -231,6 +232,7 @@ export default function RootLayout({
             <RecentComments />
             <FloatingThemeToggle />
             <FloatingActions />
+            <PersonalEventOverlay />
           </MusicProvider>
         </ThemeProvider>
       </body>
