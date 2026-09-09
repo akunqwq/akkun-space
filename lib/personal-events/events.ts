@@ -70,8 +70,8 @@ function checkSiteAnniversary(today: Date): PersonalEventPublic | null {
 
 /** 所有已注册的事件判断器。空数组 = 不触发任何事件。 */
 const EVENT_CHECKERS: Array<(today: Date) => PersonalEventPublic | null> = [
-  // checkBirthday,            // 取消注释并在 .env.local 配置 PERSONAL_BIRTHDAY=MM-DD 即可启用
-  // checkSiteAnniversary,     // 取消注释并在 .env.local 配置 SITE_LAUNCHED_AT=YYYY-MM-DD 即可启用
+   checkBirthday,           
+   checkSiteAnniversary,     
 ];
 
 /** 返回今天所有触发的事件。空数组 = 今天无事件，客户端不弹窗。 */
