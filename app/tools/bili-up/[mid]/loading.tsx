@@ -4,9 +4,10 @@
 // 避免画面从空白突兀切入（SSG/ISR 未命中缓存时的首屏体验）。
 // 由 app/tools/layout.tsx 的 GlassPage 包裹，自然落在玻璃面板内。
 // -----------------------------------------------------------------------------
+import styles from '../../../components/tools/biliTools.module.css';
 
 function Skeleton({ className = '' }: { className?: string }) {
-  return <div className={`skeleton ${className}`} />;
+  return <div className={`${styles.skeleton} ${className}`} />;
 }
 
 export default function Loading() {

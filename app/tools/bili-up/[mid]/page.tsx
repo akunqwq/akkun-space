@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowRight } from 'lucide-react';
 
 import { getBiliClient } from '@/lib/bili/client';
 import type { BiliVideoItem, VideoStatus } from '@/lib/bili/types';
 import VideoList from '@/app/components/tools/VideoList';
-import VideoStatQuery from '@/app/components/tools/VideoStatQuery';
 
 export const revalidate = 3600;
 
@@ -165,7 +164,19 @@ export default async function UpDetailPage({ params }: Props) {
         <VideoList videos={videos} status={videoStatus} />
       </div>
 
-      <VideoStatQuery />
+      {/* 单视频查询已独立成 tool 页（v1.3.0），此处保留入口引导；视频列表每条附「查数据」直达 */}
+      <div className="mt-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)]/50 p-5 text-center">
+        <p className="text-sm text-[var(--text-secondary)]">
+          想查单条视频的播放、弹幕、三连数据？
+        </p>
+        <Link
+          href="/tools/bili-video"
+          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-[var(--bili-blue)] hover:underline"
+        >
+          前往视频数据查询
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
 
       <script
         type="application/ld+json"

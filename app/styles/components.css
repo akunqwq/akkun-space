@@ -1,0 +1,25 @@
+/* components.css —— 通用基础组件类（@layer components）
+   仅收纳无法归入 glass / animations / tokens 的跨组件基础原语（卡片、主按钮）。
+   置于 @layer components，确保 Tailwind 的 Utility 类（如 hover:bg-blue-600）
+   优先级高于此处的基础类，可被任意覆盖。 */
+
+@layer components {
+  /* 卡片通用样式 */
+  .card {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--panel-shadow-sm);
+  }
+
+  /* 按钮主色通用样式 */
+  .btn-primary {
+    background: var(--btn-primary);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: var(--btn-primary-hover);
+  }
+}

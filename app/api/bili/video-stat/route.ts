@@ -1,13 +1,13 @@
 // app/api/bili/video-stat/route.ts
 // -----------------------------------------------------------------------------
-// 单视频统计代理 API Route（GET ?bvid=xxx）
-// BV 号查询播放/弹幕/收藏/投币/分享/点赞，缓存 5min。
-// 内嵌于 UP 主详情页底部的 VideoStatQuery 组件调用。
+// 单视频详情代理 API Route（GET ?bvid=xxx）
+// BV 号查询播放/弹幕/收藏/投币/分享/点赞 + 标题/UP主/封面等元信息，缓存 5min。
+// 独立 tool 页 /tools/bili-video 的 VideoStatQuery 组件调用。
 // -----------------------------------------------------------------------------
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { BiliApiError, getBiliClient } from '@/lib/bili/client';
-import type { BiliVideoStat } from '@/lib/bili/types';
+import type { BiliVideoDetail } from '@/lib/bili/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
   const client = getBiliClient();
   try {
     const result = await client.getVideoStat(bvid);
-    const data: BiliVideoStat = result.data;
+    const data: BiliVideoDetail = result.data;
     return NextResponse.json({
       code: 0,
       data,

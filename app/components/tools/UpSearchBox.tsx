@@ -8,6 +8,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import styles from './biliTools.module.css';
 import { Search, Loader2 } from 'lucide-react';
 
 // 热门 / 测试 UID 快捷示例：降低初次体验输入门槛，点击直接跳详情页
@@ -77,11 +78,11 @@ export default function UpSearchBox() {
         <button
           type="submit"
           disabled={loading}
-          className={`flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-60 ${
-            ready
-              ? 'bili-gradient shadow-[0_4px_20px_var(--bili-blue-glow)]'
-              : 'bg-[var(--bili-blue)]'
-          }`}
+            className={`flex items-center gap-2 rounded-xl px-6 py-3 font-medium text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:opacity-60 ${
+              ready
+                ? `${styles.biliGradient} shadow-[0_4px_20px_var(--bili-blue-glow)]`
+                : 'bg-[var(--bili-blue)]'
+            }`}
         >
           {loading ? (
             <Loader2 className="h-5 w-5 animate-spin" />

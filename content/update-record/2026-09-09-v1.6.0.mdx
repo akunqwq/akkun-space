@@ -1,0 +1,31 @@
+---
+title: "液态玻璃深度美化：浮岛胶囊 Header + 全局玻璃升级"
+date: "2026-09-09"
+category: "update"
+version: "v1.6.0"
+---
+
+> 本次更新：全局样式从毛玻璃基底升级为液态玻璃（Liquid Glass）效果，参考小米澎湃 OS 4「柔光玻璃」+ 苹果 Liquid Glass 设计语言。Header 重构为胶囊形浮岛，移动端桌面端形态统一。
+
+### 新增
+- 液态玻璃专用 CSS 变量族：`--glass-blur` / `--glass-saturate` / `--glass-blur-sm` / `--glass-saturate-sm`，集中管理折射强度（Light 180% / Dark 200% 饱和度，纯黑底需更强色彩抽离感）
+- `.glass-header` 类：Header 专用液态玻璃形态——`border-radius: 30px` 胶囊形 + `backdrop-filter blur(20px) saturate(var(--glass-saturate))` + inset 高光 + GPU 加速（`will-change` + `translateZ(0)`），底色由调用处按透明态切换
+- Dock 液态玻璃修饰层（`.liquid-dock` 容器 + 三层纯装饰）：边缘折射 `.dock-refract`（径向遮罩留边缘一圈 + 渐变模拟厚玻璃光线弯折，inset -6px 溢出胶囊边界）+ 顶部高光 `.dock-sheen`（175° 线性渐变 + screen 混合，强度按主题变量区分）+ 鼠标跟随光晕 `.dock-glow`（accent 浅蓝光晕，JS 直写 `--glow-x/y` CSS 变量零重渲染，hover 淡入）；主胶囊与移动端下拉胶囊均接入
+- Header 浮岛胶囊重构：从全宽贴顶条改为离顶 12px、左右留边的悬浮胶囊（`top-3 px-4 sm:px-6`），`padding: 14px 20px`，flex 三栏（时间 | 问候 | 导航）
+- 移动端形态统一：不再用全宽下拉条，改为「主胶囊 + 下拉胶囊」双浮岛——两者都是 `.glass-header` 形态，视觉语言一致；移动端主胶囊内精简为问候 + 搜索 + 菜单按钮，导航项收入下拉胶囊
+
+### 调整
+- 品牌强调色 Catkun Pink 粉 → 科技蓝：Light `#3b82f6`（blue-500）/ Dark `#60a5fa`（blue-400），与现有 link-color / blockquote-border / tag-text 蓝色系统一
+- 氛围光球去紫改蓝/青/天蓝（原粉/紫/靛蓝）：蓝+青+天蓝同族不撞色，Dark 模式 AMOLED 纯黑底光球提亮保可见度
+- `.glass-panel` / `.glass-card` 升级：`backdrop-filter` 加 `saturate` 提升色彩抽离感（折射感关键），`.glass-panel` 加多层 inset 模拟玻璃边缘折射 + GPU 加速
+- `panel-shadow` 去粉改蓝：氛围阴影从品牌粉改为科技蓝微光
+- `body` 字体修复：`font-family: Arial` 硬编码 → `var(--font-sans)`（Geist），原 Arial 覆盖了 `@theme` 映射
+- `rainbow-text-light` 去紫：渐变色从紫/粉紫改为蓝/青
+- `PersonalEventOverlay` 去硬编码：`bg-white/10` → `bg-[var(--card-bg)]`（主题感知）
+- Header 透明态：浮岛胶囊形态始终统一，仅底色/文字色切换（浮 Hero 深底白字 / 滚过后主题底主题字）
+- 阅读进度条：从全宽底边改为胶囊内底边（`left-5 right-5`，跟随胶囊 padding），加 `rounded-full`
+
+### 说明
+- 澎湃 OS 4「柔光玻璃」核心特征：折射效果、分层透明度、内容自适应通透度；苹果 Liquid Glass CSS 要点：backdrop-filter blur + saturate + 内描边高光 + 多层 inset
+- 本期不做：动态光效（点按/拖拽光跟随）、SVG displacement 折射扭曲、MusicBar/TagWall 等实色组件升级、scroll edge effect——属交互增强/下期范围
+- `backdrop-filter` 不支持时 graceful degradation：半透明 `--card-bg` 底仍在，可读性不丢（依赖分层纪律）

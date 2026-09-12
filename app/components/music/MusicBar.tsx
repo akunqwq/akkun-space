@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { Play, Pause, Minimize2 } from "lucide-react";
+import Link from "next/link";
+import { Play, Pause, Minimize2, Lock } from "lucide-react";
 import { useMusic } from "./MusicProvider";
 import CoverImage from "./CoverImage";
 import ProgressBar from "./ProgressBar";
@@ -9,6 +10,27 @@ import VolumeControl from "./VolumeControl";
 import MusicBubble from "./MusicBubble";
 import { formatTime } from "./utils";
 import { PLAYER_NAME } from "./types";
+
+/**
+ * 游客态的常驻音乐条：不承载任何播放能力，仅给出登录入口。
+ * 用作全局音乐守卫的最后一道 UI——已登录才能进入音乐库并触发播放。
+ */
+export function MusicLockBar() {
+  return (
+    <div
+      className="fixed bottom-4 left-1/2 z-[115] w-[min(calc(100vw-5rem),28rem)] -translate-x-1/2"
+      aria-label="登录后播放音乐"
+    >
+      <Link
+        href="/login?next=%2Fmusic"
+        className="card flex items-center gap-3 px-4 py-3 text-[var(--text-secondary)] transition-colors hover:text-[var(--accent)]"
+      >
+        <Lock className="h-5 w-5 shrink-0" />
+        <span className="text-sm">登录后即可播放音乐</span>
+      </Link>
+    </div>
+  );
+}
 
 const iconBtn =
   "flex items-center justify-center w-9 h-9 rounded-full text-[var(--text-secondary)] hover:text-accent hover:bg-[var(--theme-toggle-hover)] transition-colors shrink-0 cursor-pointer";

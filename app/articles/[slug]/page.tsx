@@ -1,6 +1,8 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getPostBySlug, getAllPosts } from "../../../lib/content/posts";
+import { getCurrentUser } from "@/lib/auth/session";
 import { formatDate } from "../../../lib/utils";
 import MDXRenderer from "../../components/MDXRenderer";
 import ViewCounter from "../../components/ViewCounter";
@@ -15,14 +17,11 @@ type ArticlePageProps = {
   }>;
 };
 
-// 生成静态路径
-export async function generateStaticParams() {
-  const posts = getAllPosts();
+// 游客可见文章数上限（与 /articles 列表页同一规则：仅最新 3 篇免登录）
+const GUEST_ARTICLE_LIMIT = 3;
 
-  return posts.map((post) => ({
-    slug: post.slug,
-  }));
-}
+// 注意：本页已不再 SSG 预渲染——静态 HTML 无法区分登录态，
+// 由 getCurrentUser() 内的 cookies() 使本页转为按请求动态渲染。
 
 // 生成静态元数据
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
@@ -58,6 +57,27 @@ export default async function ArticlePage({
   // 2. 数据校验
   if (!post) {
     notFound();
+  }
+
+  // 2.5 游客锁定：仅最新 3 篇免登录可见，其余跳转登录页（回跳到本文）
+  const user = await getCurrentUser();
+  if (!user) {
+    const latestSlugs = new Set(
+      getAllPosts()
+        .slice(0, GUEST_ARTICLE_LIMIT)
+        .map((p) => p.slug),
+    );
+    let decodedSlug = slug;
+    try {
+      decodedSlug = decodeURIComponent(slug);
+    } catch {
+      // 保留原值：异常编码的 slug 直接按原文比对
+    }
+    if (!latestSlugs.has(post.slug) && !latestSlugs.has(decodedSlug)) {
+      redirect(
+        `/login?next=${encodeURIComponent(`/articles/${slug}`)}`,
+      );
+    }
   }
 
   // 3. 派生数据

@@ -65,9 +65,9 @@ export default function PersonalEventOverlay() {
       aria-modal="true"
       aria-label={event.title}
     >
-      {/* 中心玻璃拟态卡片（与全站玻璃语言一致） */}
+      {/* 中心玻璃拟态卡片（v1.6.0：去硬编码 bg-white/10，改主题感知 var） */}
       <div
-        className="relative w-full max-w-md rounded-3xl border border-white/20 bg-white/10 p-8 text-center shadow-2xl backdrop-blur-xl"
+        className="relative w-full max-w-md rounded-3xl border border-[var(--card-border)] bg-[var(--card-bg)] p-8 text-center shadow-2xl backdrop-blur-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button

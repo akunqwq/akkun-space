@@ -116,6 +116,23 @@ export interface BiliVideoStat {
   his_rank: number;
 }
 
+/** 单视频详情（/x/web-interface/view 响应 data 字段精选 = stat + 元信息）。
+ *  元信息与 stat 出自同一响应，提取零额外请求。独立 tool 页展示视频卡片用。 */
+export interface BiliVideoDetail extends BiliVideoStat {
+  /** 视频标题 */
+  title: string;
+  /** UP 主 mid（owner.mid） */
+  owner_mid: number;
+  /** UP 主昵称（owner.name） */
+  owner_name: string;
+  /** 封面 URL（pic，协议相对 // 开头时前端需补 https:） */
+  pic: string;
+  /** 发布时间（Unix 秒） */
+  pubdate: number;
+  /** 视频时长（秒） */
+  duration: number;
+}
+
 /** B 站 API 统一响应外壳 */
 export interface BiliApiResponse<T> {
   code: number;

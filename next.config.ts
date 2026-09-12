@@ -2,6 +2,9 @@
 const nextConfig = {
   devIndicators: false,
   pageExtensions: ['tsx', 'ts', 'mdx', 'md'],
+  // nodemailer 含动态 require 与可选原生依赖，交给 Node 直接 require，
+  // 避免打包器处理时报 critical dependency 警告或破坏可选模块解析
+  serverExternalPackages: ['nodemailer'],
   experimental: {
     mdxRs: {
       mdxType: 'gfm',

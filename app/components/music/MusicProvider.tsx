@@ -7,6 +7,7 @@ import {
   useEffect,
   useReducer,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
 import type { MusicItem } from "@/lib/portfolio";
@@ -17,7 +18,7 @@ import {
 } from "@/lib/portfolio";
 import type { MusicContextValue, MusicState, PlaybackState } from "./types";
 import AudioSurface from "./AudioSurface";
-import MusicBar from "./MusicBar";
+import MusicBar, { MusicLockBar } from "./MusicBar";
 
 const RATES = [0.5, 1, 1.25, 1.5, 2];
 
@@ -155,6 +156,9 @@ export function useMusic(): MusicContextValue {
 
 export function MusicProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  // 全局音乐守卫：登录态（null=探测中，false=游客，true=已登录）。
+  // 游客态禁止恢复本地播放会话、禁止任何播放意图。
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentItemRef = useRef<MusicItem | null>(null);
 
@@ -180,6 +184,28 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     currentKeyRef.current = currentItem?.src ?? null;
     stateRef.current = state;
   }, [state, currentItem]);
+
+  // 登录态镜像 ref：供 MediaSession 等闭包稳定读取最新值
+  const authedRef = useRef(authed);
+  useEffect(() => {
+    authedRef.current = authed;
+  }, [authed]);
+
+  // 探测登录态（MusicProvider 在 root layout 内常驻，整站仅此一次 fetch / 整页加载）
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/auth/me')
+      .then((r) => r.json())
+      .then((d: { authed?: boolean }) => {
+        if (!cancelled) setAuthed(Boolean(d?.authed));
+      })
+      .catch(() => {
+        if (!cancelled) setAuthed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // 依赖 ref，确保 seek 不会被首次渲染闭包冻结
   const activeEl = useCallback((): HTMLMediaElement | null => audioRef.current, []);
@@ -244,6 +270,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   // 播放 / 暂停（src 已就绪时直接 play；未就绪由上面的 load effect 接管）
   useEffect(() => {
     if (!currentItem) return;
+    if (authed !== true) return; // 游客禁止播放
     const active = activeEl();
     if (!active) return;
     if (state.isPlaying) {
@@ -253,7 +280,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     } else {
       active.pause();
     }
-  }, [state.isPlaying, currentItem, activeEl]);
+  }, [state.isPlaying, currentItem, activeEl, authed]);
 
   // 音量 / 静音
   useEffect(() => {
@@ -309,7 +336,19 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   // 首次挂载：从 localStorage 恢复会话（队列 / 曲目 / 进度 / 音量等）
   useEffect(() => {
     if (hydratedRef.current) return;
+    // 登录态尚未确认：本次挂载先不处理，等 /api/auth/me 结果后再决定
+    if (authed === null) return;
     hydratedRef.current = true;
+    if (authed === false) {
+      // 游客：清掉残留的本地播放队列，避免登出后仍能续播
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+    // authed === true：恢复播放会话
     let saved: {
       queue?: MusicItem[];
       currentIndex?: number;
@@ -344,7 +383,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       // 恢复播放意图（浏览器自动播放策略可能拦截 → 自动回退为暂停）
       if (saved.isPlaying) dispatch({ type: "PLAY" });
     }
-  }, [dispatch]);
+  }, [dispatch, authed]);
 
   // 离开页面 / 切后台时持久化（捕获刷新前的实时状态）
   useEffect(() => {
@@ -379,27 +418,41 @@ export function MusicProvider({ children }: { children: ReactNode }) {
 
   // —— 公开操作 ——
   const playItem = useCallback((item: MusicItem, queue?: MusicItem[]) => {
+    if (authed !== true) return; // 游客禁止播放
     const q = queue ?? [item];
     const index = Math.max(0, q.findIndex((i) => i.id === item.id));
     dispatch({ type: "LOAD", queue: q, index });
     dispatch({ type: "PLAY" });
-  }, []);
+  }, [authed]);
 
   const playQueue = useCallback((items: MusicItem[], startIndex = 0) => {
+    if (authed !== true) return; // 游客禁止播放
     const item = items[startIndex];
     if (!item) return;
     dispatch({ type: "LOAD", queue: items, index: startIndex });
     dispatch({ type: "PLAY" });
-  }, []);
+  }, [authed]);
 
   const toggle = useCallback(
-    () => dispatch({ type: state.isPlaying ? "PAUSE" : "PLAY" }),
-    [state.isPlaying],
+    () => {
+      if (authed !== true) return; // 游客禁止播放
+      dispatch({ type: state.isPlaying ? "PAUSE" : "PLAY" });
+    },
+    [state.isPlaying, authed],
   );
-  const play = useCallback(() => dispatch({ type: "PLAY" }), []);
+  const play = useCallback(() => {
+    if (authed !== true) return; // 游客禁止播放
+    dispatch({ type: "PLAY" });
+  }, [authed]);
   const pause = useCallback(() => dispatch({ type: "PAUSE" }), []);
-  const next = useCallback(() => dispatch({ type: "NEXT" }), []);
-  const prev = useCallback(() => dispatch({ type: "PREV" }), []);
+  const next = useCallback(() => {
+    if (authed !== true) return; // 游客禁止播放
+    dispatch({ type: "NEXT" });
+  }, [authed]);
+  const prev = useCallback(() => {
+    if (authed !== true) return; // 游客禁止播放
+    dispatch({ type: "PREV" });
+  }, [authed]);
 
   const seek = useCallback(
     (t: number) => {
@@ -496,7 +549,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
     if (typeof navigator === "undefined" || !("mediaSession" in navigator)) return;
     const ms = navigator.mediaSession;
     const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
-      ["play", () => dispatch({ type: "PLAY" })],
+      ["play", () => { if (authedRef.current === true) dispatch({ type: "PLAY" }); }],
       ["pause", () => dispatch({ type: "PAUSE" })],
       ["seekbackward", (d) => seekBy(-(d?.seekOffset ?? 10))],
       ["seekforward", (d) => seekBy(d?.seekOffset ?? 10)],
@@ -621,8 +674,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
         }}
       />
 
-      {/* 全局常驻播放栏 */}
-      <MusicBar />
+      {/* 全局常驻播放栏：游客态替换为登录入口（全局守卫） */}
+      {authed === false ? <MusicLockBar /> : <MusicBar />}
     </MusicContext.Provider>
   );
 }

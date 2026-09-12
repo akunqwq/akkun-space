@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { getCountdown } from "@/lib/site";
-import { GREETINGS, GREETING_DWELL } from "@/lib/site";
-import { headerNav } from "@/lib/site";
+import { GREETINGS, GREETING_DWELL, headerNav } from "@/lib/site";
+import { useScrollDirection } from "@/lib/hooks/useScrollDirection";
+import LiquidGlass from "./LiquidGlass";
 import { SearchModal } from "./SearchModal";
 
-// 获取当前时间格式化字符串（包含秒数）
+// 获取当前时间格式化字符串（完整 YYYY/MM/DD HH:MM:SS，v1.7.3 回退：不再区分移动端紧凑版）
 function getCurrentTime() {
   const now = new Date();
   const year = now.getFullYear();
@@ -32,6 +34,13 @@ function prefersReducedMotion() {
   );
 }
 
+// 浮岛底色 + 文字色 class 切换器：Hero 上深底白字，滚过后主题底主题字。
+// v1.7.4：Header 始终使用白半透玻璃态（--header-bg + --header-text），
+// 不再随滚动在 Hero 上切换为深底白字透明态，两种主题观感一致。
+function islandSurface() {
+  return "bg-[var(--header-bg)] text-[var(--header-text)]";
+}
+
 export default function Header() {
   const pathname = usePathname();
 
@@ -39,40 +48,35 @@ export default function Header() {
   const [countdownText, setCountdownText] = useState("");
   const [titleText, setTitleText] = useState("");
   const [isTitleTyping, setIsTitleTyping] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  // 登录态：默认 false（与 SSR 一致，避免 hydration 抖动）；挂载后探测 /api/auth/me
+  const [authed, setAuthed] = useState(false);
+
+  // 滚动方向：'top' 展开 / 'down' 收缩 / 'up' 还原（useSyncExternalStore 订阅）
+  const direction = useScrollDirection();
+  const isCollapsed = direction === 'down';
 
   const clockIntervalRef = useRef<number | null>(null);
   const greetingIndexRef = useRef(0);
   const firstLoadRef = useRef(true);
 
-  // 品牌问候：常驻 + 自动轮播（逐句打字切换，不隐藏），按数组顺序轮换（非随机）
-  // 路由变化/导航切换 = 一次 brand reload：前进到下一句，再继续顺序轮播
+  // 品牌问候：常驻 + 自动轮播（逐句打字切换）
   useEffect(() => {
-    // 首次加载从第 0 句开始；之后每次导航切换前进一句（顺序、循环）
     const startIdx = firstLoadRef.current
       ? 0
       : (greetingIndexRef.current + 1) % GREETINGS.length;
     greetingIndexRef.current = startIdx;
     firstLoadRef.current = false;
 
-    // 无障碍：减少动效时静态显示当前句，不轮播
-    // 说明：读 matchMedia 决定初始静态问候语 + typing 标记，
-    // 是 React 与外部世界（用户系统偏好）同步的合法 effect-setState 用法。
-    // 改造为 useSyncExternalStore 订阅 prefers-reduced-motion 收益有限
-    // （该分支只在 mount 一次执行），属于过度工程，故此处豁免。
     if (prefersReducedMotion()) {
       /* eslint-disable-next-line react-hooks/set-state-in-effect -- 一次性同步用户系统偏好到 React */
       setTitleText(GREETINGS[startIdx]);
-      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 同上：初始化静态问候 typing 标记 */
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 同上 */
       setIsTitleTyping(false);
       return;
     }
 
-    // 计时器 id 用 effect 内局部变量，而非共享 ref：
-    // 避免 StrictMode 双挂载 / 路由切换时两个 cycle 链交叉清理、并发写同一 state（重字根因）
     let cancelled = false;
     let typingId: number | undefined;
     let rotateId: number | undefined;
@@ -91,8 +95,6 @@ export default function Header() {
           return;
         }
         i += 1;
-        // 从源数组按当前长度切片计算，绝不在 updater 里读会变动的闭包 i，
-        // 杜绝「updater 延迟 flush 时 i 已自增」导致的丢字/错位
         setTitleText(chars.slice(0, i).join(""));
 
         if (i >= chars.length) {
@@ -100,12 +102,12 @@ export default function Header() {
           setIsTitleTyping(false);
           rotateId = window.setTimeout(() => {
             if (cancelled) return;
-            idx = (idx + 1) % GREETINGS.length; // 顺序前进
+            idx = (idx + 1) % GREETINGS.length;
             greetingIndexRef.current = idx;
             cycle(GREETINGS[idx]);
           }, GREETING_DWELL);
         }
-      }, 90); // 正常打字速度
+      }, 90);
     };
 
     cycle(GREETINGS[startIdx]);
@@ -117,7 +119,7 @@ export default function Header() {
     };
   }, [pathname]);
 
-  // 客户端挂载后启动时钟：时间逐秒走动，倒计时常驻显示
+  // 客户端挂载后启动时钟
   useEffect(() => {
     const update = () => {
       setTimeText(getCurrentTime());
@@ -131,49 +133,71 @@ export default function Header() {
     };
   }, []);
 
-  // 全局搜索快捷键：Cmd+K / Ctrl+K 打开搜索，ESC 关闭
+  // 登录态探测：复用 /api/auth/me（server-only 会话，绝不把 cookies() 拉进 layout）。
+  // 默认 authed=false 与 SSR 一致，挂载后异步修正，避免 hydration 抖动。
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled && d?.authed) setAuthed(true);
+      })
+      .catch(() => {
+        if (!cancelled) setAuthed(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // 全局搜索快捷键
   const handleToggleSearch = useCallback(() => {
     setIsSearchOpen((prev) => !prev);
   }, []);
 
+  // Dock CSS 光晕鼠标跟随（WebGL 不可用时的降级路径）。
+  // LiquidGlass 组件已内置 WebGL 光晕（window.pointermove 自驱动），此处仅补 CSS
+  // 兜底：把鼠标位置写入 --glow-x/y，驱动 .dock-glow 的 radial-gradient。
+  // 直接写 style 不走 state，零重渲染；currentTarget 即各自岛容器。
+  const handleDockGlow = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      const el = e.currentTarget;
+      const rect = el.getBoundingClientRect();
+      el.style.setProperty("--glow-x", `${e.clientX - rect.left}px`);
+      el.style.setProperty("--glow-y", `${e.clientY - rect.top}px`);
+    },
+    [],
+  );
+
+  const handleDockGlowReset = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      e.currentTarget.style.setProperty("--glow-x", "50%");
+      e.currentTarget.style.setProperty("--glow-y", "50%");
+    },
+    [],
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd+K 或 Ctrl+K 打开/关闭搜索
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
         e.preventDefault();
         handleToggleSearch();
       }
-      // ESC 关闭搜索
-      if (e.key === 'Escape' && isSearchOpen) {
+      if (e.key === "Escape" && isSearchOpen) {
         e.preventDefault();
         setIsSearchOpen(false);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleToggleSearch, isSearchOpen]);
 
-  // 沉浸式 Header：所有路由都有全屏 GlobalHero，故顶部一律透明浮于 Hero 上，
-  // 滚过 Hero（约 85vh）后变实底；资讯存档等无 Hero 的边界场景仍保持可读。
-  const transparent = !scrolled;
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > window.innerHeight * 0.85);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [pathname]);
-
-  // 阅读进度条（仅文章详情页 /articles/<slug>）：进度仅基于 <article> 内容，
-  // 不含 Header / Footer / 评论区。0% → 滚到文章顶；100% → 文章底到达视口底。
+  // 阅读进度条（仅文章详情页）
   useEffect(() => {
     const isArticle = pathname?.startsWith("/articles/") ?? false;
     if (!isArticle) {
-      // 路径切换：非文章页时清零进度条。
-      // Header 是 root 组件无法用 key 重置，effect-setState 在此为数据源切换的清理动作。
-      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 路径切换清理非文章页的进度条 */
+      /* eslint-disable-next-line react-hooks/set-state-in-effect -- 路径切换清理 */
       setReadingProgress(0);
       return;
     }
@@ -182,7 +206,7 @@ export default function Header() {
       raf = 0;
       const article = document.querySelector("article");
       if (!article) {
-        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 文章 DOM 尚未挂载，进度归零 */
+        /* eslint-disable-next-line react-hooks/set-state-in-effect -- DOM 未挂载 */
         setReadingProgress(0);
         return;
       }
@@ -190,12 +214,11 @@ export default function Header() {
       const vh = window.innerHeight;
       const total = rect.height - vh;
       if (total <= 0) {
-        // 文章不足一屏：顶部到达视口顶即视为读完
-        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 派生计算结果同步到 React */
+        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 派生计算 */
         setReadingProgress(rect.top <= 0 ? 1 : 0);
       } else {
         const scrolled = Math.min(Math.max(-rect.top, 0), total);
-        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 派生计算结果同步到 React */
+        /* eslint-disable-next-line react-hooks/set-state-in-effect -- 派生计算 */
         setReadingProgress(Math.round((scrolled / total) * 1000) / 1000);
       }
     };
@@ -214,121 +237,204 @@ export default function Header() {
     };
   }, [pathname]);
 
+  const isArticle = pathname?.startsWith("/articles/") ?? false;
+
   return (
-    <header className="fixed top-0 left-0 w-full z-50">
-      {/* 背景层：顶部透明（沉浸 Hero），滚过后实底；transition 平滑切换 */}
+    // v1.7.1 浮岛胶囊 Header：
+    //   桌面端单岛 / 移动端双岛，均挂 LiquidGlass 折射层
+    //   滑动交互：滚动向下时岛1 液态收缩、岛2 上移到顶部；向上滚动还原展开
+    //   按压反馈：active 时 scale 0.985（CSS 实现）
+    //   文章页：岛1 收缩为 compact 形态（简化标题；进度条已迁至页面最顶部固定显示）
+    <header className="fixed top-3 left-0 right-0 z-50 px-4 sm:px-6">
+      {/* ========== 阅读进度条（仅文章详情页）：固定页面最顶部 ==========
+          贴最顶边的细进度线，随阅读推进；眼标不放此处（阅读眼归属文章页阅读量指示）。 */}
+      {isArticle && (
+        <div
+          className="fixed top-0 left-0 right-0 z-[60] h-1 pointer-events-none"
+          aria-hidden="true"
+        >
+          <div
+            className="absolute inset-y-0 left-0 bg-[var(--header-accent)] transition-[width] duration-150 ease-out"
+            style={{ width: `${readingProgress * 100}%` }}
+          />
+        </div>
+      )}
+      {/* ========== 桌面端：单岛（md+） ========== */}
       <div
-        className={`absolute inset-0 transition-all duration-300 ${
-          transparent
-            ? "bg-gradient-to-b from-black/40 via-black/15 to-transparent"
-            : "bg-[var(--header-bg)] shadow-lg border-b border-[var(--header-border)] backdrop-blur-xl"
-        }`}
-      />
+        className={`hidden md:flex relative liquid-dock glass-header px-5 py-3.5 items-center justify-between gap-4 transition-colors duration-300 ${islandSurface()}`}
+        onPointerMove={handleDockGlow}
+        onPointerLeave={handleDockGlowReset}
+      >
+        <LiquidGlass radius={30} />
 
-      {/* 内容层：CSS Grid 三栏 [auto_1fr_auto]，无 absolute 子元素，不裁切不重叠 */}
-      <div className="relative grid grid-cols-[auto_1fr_auto] items-center w-full px-4 sm:px-8 py-4 gap-2 sm:gap-6">
+        {/* Dock CSS 修饰层（兼容旧浏览器 / 无 WebGL） */}
+        <div aria-hidden className="dock-refract" />
+        <div aria-hidden className="dock-sheen" />
+        <div aria-hidden className="dock-glow" />
 
-        {/* 左：时间 + 节日倒计时（常驻，类似系统托盘时钟） */}
+        {/* 左：时间 + 节日倒计时 */}
         <div
           suppressHydrationWarning
-          className={`text-left text-xs sm:text-sm leading-tight shrink-0 ${
-            transparent ? "text-white/90" : "text-[var(--text-primary)]"
-          }`}
+          className="relative z-[2] text-left text-xs sm:text-sm leading-tight shrink-0"
         >
-          {/* 日期：浮于 Hero 上时白色与图片融合（light/dark 一致），滚动后回主题色保证可读 */}
-          <div className={`font-mono ${transparent ? "text-white" : "text-[var(--text-primary)]"}`}>{timeText}</div>
-          <div className="text-[var(--accent)]">{countdownText}</div>
+          <div className="font-mono">{timeText}</div>
+          <div className="text-[var(--header-accent)]">{countdownText}</div>
         </div>
 
-        {/* 中：品牌问候 — Grid 1fr 列，overflow-visible 不裁切文本；pointer-events-none 不挡导航 */}
-        <div className="min-w-0 text-center overflow-visible pointer-events-none">
-          <div className="text-base sm:text-lg md:text-2xl font-bold text-[var(--accent)] tracking-wide whitespace-nowrap">
+        {/* 中：品牌问候 */}
+        <div className="relative z-[2] min-w-0 flex-1 text-center overflow-visible pointer-events-none">
+          <div className="text-base sm:text-lg md:text-2xl font-bold text-[var(--header-accent)] tracking-wide whitespace-nowrap">
             {titleText}
             {isTitleTyping && (
-              <span className="animate-pulse text-[var(--accent)] opacity-70">|</span>
+              <span className="animate-pulse text-[var(--header-accent)] opacity-70">|</span>
             )}
           </div>
         </div>
 
         {/* 右：导航 */}
-        <div className="flex justify-end shrink-0">
-          {/* 桌面端导航 */}
-          <nav
-            className={`hidden md:flex items-center gap-6 ${
-              transparent ? "text-white/90" : "text-[var(--text-primary)]"
-            }`}
-          >
+        <nav className="relative z-[2] flex justify-end shrink-0 items-center gap-2">
+          <div className="hidden lg:flex items-center gap-6">
             {headerNav.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:text-[var(--accent)]">
+              <Link key={item.href} href={item.href} className="hover:text-[var(--header-accent)]">
                 {item.label}
               </Link>
             ))}
-            {/* 搜索按钮 */}
-            <button
-              onClick={handleToggleSearch}
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-all ${
-                transparent
-                  ? 'text-white/70 hover:text-white hover:bg-white/10'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/5'
-              }`}
-              aria-label="搜索文章"
+          </div>
+          {authed ? (
+            <Link
+              href="/account"
+              aria-label="我的账号"
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-all hover:bg-current/10 active:scale-95"
             >
-              <Search className="h-4 w-4" />
-              <span className="hidden lg:inline">搜索</span>
-            </button>
-          </nav>
-
-          {/* 移动端汉堡菜单 */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- 默认头像 SVG 图标，无需 next/image 优化 */}
+              <img src="/user.svg" alt="用户头像" className="h-5 w-5 rounded-full" />
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-all hover:bg-current/10"
+            >
+              登录
+            </Link>
+          )}
           <button
-            className={`md:hidden focus:outline-none ${
-              transparent ? "text-white" : "text-[var(--text-primary)]"
-            }`}
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="菜单"
+            onClick={handleToggleSearch}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm transition-all hover:bg-current/10"
+            aria-label="搜索文章"
           >
-            <div className="w-6 h-5 flex flex-col justify-between">
-              <span className={`block h-0.5 w-full bg-current transition-all ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-              <span className={`block h-0.5 w-full bg-current transition-all ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
-              <span className={`block h-0.5 w-full bg-current transition-all ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-            </div>
+            <Search className="h-4 w-4" />
+            <span className="hidden lg:inline">搜索</span>
           </button>
-        </div>
+        </nav>
       </div>
 
-      {/* 移动端菜单 */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden relative z-50 bg-[var(--header-bg)] backdrop-blur-xl border-t border-[var(--header-border)]">
-          <nav className="flex flex-col py-4 px-8 space-y-3">
-            {headerNav.map((item) => (
+      {/* ========== 移动端：双岛（<md） ==========
+          岛1 信息岛：时间 + 倒计时 + 品牌问候
+          岛2 操作岛：导航链接（横向滚动）+ 搜索 + 登录
+          两条岛均挂 LiquidGlass 折射层 + CSS 兼容层
+          滚动向下：岛1 液态收缩（高度/透明度/位移），岛2 上移
+          文章页：岛1 收缩为 compact 形态 */}
+      <div className="md:hidden w-full flex flex-col gap-2">
+        {/* 岛1：信息岛（滚动向下时液态收缩） */}
+        <div
+          className={`relative w-full liquid-dock glass-header overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isCollapsed
+              ? "h-0 opacity-0 -translate-y-2 px-4 py-0"
+              : isArticle
+                ? "h-8 opacity-100 translate-y-0 px-4 py-1"
+                : "h-11 opacity-100 translate-y-0 px-3.5 py-2"
+          } ${islandSurface()}`}
+          style={{ willChange: "height, opacity, transform" }}
+          onPointerMove={handleDockGlow}
+          onPointerLeave={handleDockGlowReset}
+        >
+          <LiquidGlass radius={isArticle ? 16 : 22} />
+          <div aria-hidden className="dock-refract" />
+          <div aria-hidden className="dock-sheen" />
+          <div aria-hidden className="dock-glow" />
+
+          {/* 文章页 compact 形态：仅简化标题（进度条已迁至页面最顶部固定显示） */}
+          {isArticle ? (
+            <div className="relative z-[2] h-full flex items-center justify-between gap-2">
+              <div className="text-xs font-medium text-[var(--header-accent)] shrink-0 whitespace-nowrap truncate">
+                {titleText}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* 左：时间（紧凑 HH:MM） */}
+              <div
+                suppressHydrationWarning
+                className="relative z-[2] text-left leading-tight shrink-0"
+              >
+                <div className="font-mono text-sm font-semibold">{timeText}</div>
+              </div>
+
+              {/* 中：节日倒计时 */}
+              <div
+                suppressHydrationWarning
+                className="relative z-[2] flex-1 min-w-0 text-left truncate"
+              >
+                <div className="text-xs text-[var(--header-accent)] truncate">
+                  {countdownText}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 岛2：操作岛 */}
+        <div
+          className={`relative w-full liquid-dock glass-header pl-3 pr-1.5 py-1.5 flex items-center gap-1.5 min-w-0 transition-colors duration-300 ${islandSurface()}`}
+          onPointerMove={handleDockGlow}
+          onPointerLeave={handleDockGlowReset}
+        >
+          <LiquidGlass radius={22} />
+          <div aria-hidden className="dock-refract" />
+          <div aria-hidden className="dock-sheen" />
+          <div aria-hidden className="dock-glow" />
+
+          {/* 左：导航横向滚动（移动端只显示前 4 个核心项，剩余滚动可见） */}
+          <nav className="relative z-[2] min-w-0 flex-1 flex items-center gap-2 overflow-x-auto no-scrollbar nav-fade-mask">
+            {headerNav.slice(0, 4).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-                onClick={() => setIsMobileMenuOpen(false)}
+                className="shrink-0 text-xs font-medium hover:text-[var(--header-accent)] transition-colors whitespace-nowrap"
               >
                 {item.label}
               </Link>
             ))}
-            {/* 移动端搜索入口 */}
-            <button
-              onClick={() => { setIsMobileMenuOpen(false); setIsSearchOpen(true); }}
-              className="flex items-center gap-2 text-[var(--text-primary)] hover:text-[var(--accent)] py-2"
-            >
-              <Search className="h-4 w-4" />
-              搜索文章
-            </button>
           </nav>
-        </div>
-      )}
 
-      {/* 阅读进度条：仅文章详情页显示，贴 Header 底边，2px 高，Pink Accent，平滑过渡 */}
-      {pathname?.startsWith("/articles/") && (
-        <div
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent transition-[width] duration-150 ease-out z-[1]"
-          style={{ width: `${readingProgress * 100}%` }}
-          aria-hidden="true"
-        />
-      )}
+  
+          <div className="relative z-[2] flex shrink-0 items-center gap-0.5 pl-1.5 border-l border-current/15">
+            {authed ? (
+              <Link
+                href="/account"
+                aria-label="我的账号"
+                className="p-1.5 rounded-lg transition-all hover:bg-current/10 active:scale-95"
+              >
+                <img src="/user.svg" alt="用户头像" className="h-4 w-4 rounded-full" />
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="px-1.5 py-0.5 rounded-lg text-xs font-medium transition-all hover:bg-current/10 active:scale-95"
+              >
+                登录
+              </Link>
+            )}
+             <button
+              onClick={handleToggleSearch}
+              className="p-1.5 rounded-lg transition-all hover:bg-current/10 active:scale-95"
+              aria-label="搜索文章"
+            >
+              <Search className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* 全局搜索弹窗 */}
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />

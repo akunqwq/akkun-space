@@ -10,6 +10,7 @@ export type {
   BiliUpInfo,
   BiliUpSnapshot,
   BiliUpTracked,
+  BiliVideoDetail,
   BiliVideoItem,
   BiliVideoListResponse,
   BiliVideoStat,

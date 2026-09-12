@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, BarChart3, ArrowRight } from "lucide-react";
+import { Search, BarChart3, PlayCircle, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "工具",
   description:
-    "阿鲲做的独立小工具集合：B 站 UP 主数据查询、游戏公司财报营收速查，免费、打开即用。",
+    "阿鲲做的独立小工具集合：B 站 UP 主数据查询、B 站视频数据查询、游戏公司财报营收速查，免费、打开即用。",
 };
 
 const TOOLS = [
@@ -14,6 +14,12 @@ const TOOLS = [
     icon: Search,
     title: "B 站 UP 主数据查询",
     desc: "输入 UP 主 mid，实时查粉丝数、视频播放与三连数据。免费、打开即用。",
+  },
+  {
+    href: "/tools/bili-video",
+    icon: PlayCircle,
+    title: "B 站视频数据查询",
+    desc: "输入 BV 号或粘贴视频链接，实时查播放、弹幕、三连等互动数据。免费、打开即用。",
   },
   {
     href: "/tools/finance",

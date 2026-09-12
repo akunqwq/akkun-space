@@ -18,5 +18,15 @@
     "key": "news",
     "label": "资讯",
     "badgeClass": "bg-gray-500/15 text-gray-600 dark:text-gray-300"
+  },
+  {
+    "key": "reprint",
+    "label": "转载",
+    "badgeClass": "bg-rose-500/15 text-rose-600 dark:text-rose-300"
+  },
+  {
+    "key": "life",
+    "label": "生活",
+    "badgeClass": "bg-amber-500/15 text-amber-600 dark:text-amber-300"
   }
 ]

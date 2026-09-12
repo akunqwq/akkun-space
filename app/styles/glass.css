@@ -1,0 +1,223 @@
+/* glass.css —— 全站复用的液态 / 毛玻璃设计语言
+   收纳主面板、子卡片、Header 浮岛、Dock 修饰层、WebGL 液态玻璃承载层，
+   以及 Header 横滚配套的 no-scrollbar / nav-fade-mask。
+   仅依赖 tokens.css 暴露的 --card-* / --glass-* / --dock-* 等变量。
+
+   所有设计类统一置于 @layer components，确保 Tailwind 的 Utility 类
+   （如 rounded-* / bg-* / p-*）优先级高于此处的基础类，可被任意覆盖。 */
+
+@layer components {
+  /* 玻璃卡片霓虹微边框：1px 渐变描边（品牌粉 → 白 → 透明），
+     让卡片浮在沉浸氛围背景上；作为外层 wrapper 的 p-[1px] 背景使用 */
+  .glass-glow {
+    background-image: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--accent) 55%, transparent),
+      rgba(255, 255, 255, 0.16),
+      transparent
+    );
+  }
+
+  /* 全站统一的液态玻璃主面板：自动适配 Light/Dark 阴影、边框与高光。
+     v1.6.0 升级：backdrop-filter 加 saturate 提升色彩抽离感（折射感关键），
+     多层 inset 模拟玻璃边缘折射，will-change + translateZ GPU 加速防叠加掉帧 */
+  .glass-panel {
+    position: relative;
+    background: var(--card-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border-radius: 23px;
+    border: 1px solid var(--card-border);
+    box-shadow:
+      inset 0 1px 0 0 var(--panel-ring),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.06),
+      var(--panel-shadow);
+    will-change: backdrop-filter;
+    transform: translateZ(0);
+  }
+
+  /* 玻璃顶部高光反射：模拟光线从上方照射玻璃 */
+  .glass-shine::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, var(--panel-shine-opacity)) 0%,
+      rgba(255, 255, 255, calc(var(--panel-shine-opacity) * 0.35)) 18%,
+      transparent 45%
+    );
+    mix-blend-mode: overlay;
+  }
+
+  /* 玻璃容器内的子卡片：统一背景、边框、小阴影（v1.6.0 加 saturate） */
+  .glass-card {
+    background: color-mix(in oklab, var(--card-bg-subtle), transparent 40%);
+    backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate-sm));
+    -webkit-backdrop-filter: blur(var(--glass-blur-sm)) saturate(var(--glass-saturate-sm));
+    border: 1px solid color-mix(in oklab, var(--panel-inner-ring), transparent 60%);
+    border-radius: 1rem;
+    box-shadow: var(--panel-shadow-sm);
+  }
+
+  /* Header 液态玻璃浮岛胶囊（v1.7.0）：形态+玻璃质感类，底色由调用处按透明态切换。
+     border-radius 30px 胶囊形；padding 由调用处控制（14px 20px）；
+     去掉 background，因浮岛在 Hero 上需更深底保证白字可读，滚动后转主题底 */
+  .glass-header {
+    backdrop-filter: blur(20px) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(20px) saturate(var(--glass-saturate));
+    border-radius: 30px;
+    box-shadow:
+      inset 0 1px 0 0 var(--panel-ring),
+      0 8px 24px -8px rgba(0, 0, 0, 0.12);
+    will-change: backdrop-filter;
+    transform: translateZ(0);
+    /* v1.7.3：1px 内描边模拟液体表面张力，提升浮岛"湿润感" */
+    outline: 1px solid color-mix(in oklab, var(--accent) 20%, transparent);
+    outline-offset: -1px;
+  }
+
+  /* ===== Dock 液态玻璃修饰层（v1.6.0 打磨）=====
+     参考小米澎湃 OS「柔光玻璃」，三层纯装饰叠加在 .glass-header 基底之上：
+     边缘折射 + 顶部高光 + 鼠标跟随光晕。全部 pointer-events: none，
+     容器加 .liquid-dock，内容层需 relative z-[2] 浮于修饰层之上。 */
+
+  /* 边缘折射（Liquid Glass 核心）：径向遮罩只留边缘一圈，
+     渐变模拟厚玻璃边缘的光线弯折，inset -6px 让光晕溢出胶囊边界 */
+  .dock-refract {
+    position: absolute;
+    inset: -6px;
+    border-radius: 36px;
+    pointer-events: none;
+    opacity: 0.85;
+    -webkit-mask-image: radial-gradient(
+      110% 110% at 50% 50%,
+      transparent 55%,
+      #000 78%,
+      #000 88%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      110% 110% at 50% 50%,
+      transparent 55%,
+      #000 78%,
+      #000 88%,
+      transparent 100%
+    );
+    background: radial-gradient(
+      120% 120% at 50% 50%,
+      transparent 60%,
+      rgba(255, 255, 255, 0.06) 78%,
+      rgba(255, 255, 255, 0.12) 85%,
+      transparent 95%
+    );
+    filter: blur(1px);
+  }
+
+  /* 顶部高光：175° 线性渐变模拟环境光源打在玻璃弧面上，
+     screen 混合模式让高光与底层内容自然叠加 */
+  .dock-sheen {
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    pointer-events: none;
+    background: linear-gradient(
+      175deg,
+      rgba(255, 255, 255, var(--dock-sheen-strong)) 0%,
+      rgba(255, 255, 255, var(--dock-sheen-weak)) 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.04) 80%,
+      rgba(255, 255, 255, var(--dock-sheen-bottom)) 100%
+    );
+    mix-blend-mode: screen;
+  }
+
+  /* 鼠标跟随光晕（小米柔光玻璃感）：位置由 JS 写 --glow-x/--glow-y，
+     hover 时淡入；accent 浅蓝色光晕呼应「柔光」环境色感知 */
+  .dock-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 30px;
+    pointer-events: none;
+    background: radial-gradient(
+      180px 90px at var(--glow-x, 50%) var(--glow-y, 50%),
+      var(--dock-glow-color),
+      transparent 70%
+    );
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .liquid-dock:hover .dock-glow {
+    opacity: 1;
+  }
+
+  /* ===== LiquidGlass（v1.7.0）=====
+     WebGL Canvas + Fragment Shader 渲染的液态玻璃折射视觉层。
+     wrapper 绝对定位覆盖整个浮岛；canvas 自身 pointer-events:none 不阻挡浮岛交互。
+     默认 z-index:1 介于浮岛背景层与内容层之间，调用者无需额外配置。 */
+  .liquid-glass-wrap {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .liquid-glass-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* 移动端操作岛导航横向滚动条隐藏：横滑顺畅，桌面端无影响 */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* 横向滚动锁定：不干扰主垂直滚动，惯性顺滑（iOS） */
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 移动端操作岛：导航区域右侧渐变遮罩（提示"还能滚"） */
+  .nav-fade-mask {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black calc(100% - 24px),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black calc(100% - 24px),
+      transparent 100%
+    );
+  }
+}
+
+/* 降级与无障碍：无 backdrop-filter 时提高不透明度保可读、隐藏折射层；
+   这些规则处于非分层（unlayered），优先级天然高于 @layer components，
+   确保降级与 reduced-motion 偏好始终生效（不会被 Tailwind utility 覆盖）。 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass-header {
+    background: rgba(255, 255, 255, 0.94);
+  }
+  html.dark .glass-header {
+    background: rgba(10, 10, 12, 0.94);
+  }
+  .dock-refract {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock-refract {
+    display: none;
+  }
+  .dock-glow {
+    transition: none;
+  }
+}

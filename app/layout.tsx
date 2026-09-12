@@ -201,15 +201,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* 全局氛围光晕：固定的粉/紫/蓝弥散光球，营造沉浸式 ACG 背景。
-            位于内容之下（-z-10），透过毛玻璃卡片可见，消除 Hero 与正文的断层感 */}
+        {/* 全局氛围光晕：固定的蓝/青/天蓝弥散光球，营造沉浸式 ACG 背景。
+            位于内容之下（-z-10），透过毛玻璃卡片可见，消除 Hero 与正文的断层感。
+            v1.6.0：原粉/紫/靛蓝 → 蓝/青/天蓝（同族不撞色，彻底去紫，符合用户偏好） */}
         <div
           aria-hidden
           className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
         >
-          <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-pink-400/20 dark:bg-pink-500/25 blur-[120px]" />
-          <div className="absolute top-1/4 -right-24 w-[32rem] h-[32rem] rounded-full bg-purple-400/20 dark:bg-purple-500/25 blur-[120px]" />
-          <div className="absolute bottom-0 left-1/4 w-[26rem] h-[26rem] rounded-full bg-sky-400/12 dark:bg-indigo-500/20 blur-[120px]" />
+          <div className="absolute -top-32 -left-24 w-[30rem] h-[30rem] rounded-full bg-blue-400/20 dark:bg-blue-500/25 blur-[120px]" />
+          <div className="absolute top-1/4 -right-24 w-[32rem] h-[32rem] rounded-full bg-cyan-400/20 dark:bg-cyan-500/25 blur-[120px]" />
+          <div className="absolute bottom-0 left-1/4 w-[26rem] h-[26rem] rounded-full bg-sky-400/15 dark:bg-sky-500/22 blur-[120px]" />
         </div>
 
         <ThemeProvider>

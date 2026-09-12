@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 
 import type { BiliVideoItem, VideoStatus } from '@/lib/bili/types';
@@ -32,31 +33,43 @@ export default function VideoList({
       )}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {videos.map((v) => (
-          <a
+          // 容器用 div：卡片内同时有「B 站观看」外链与「查数据」站内链接，a 不能嵌套 a
+          <div
             key={v.bvid}
-            href={`https://www.bilibili.com/video/${v.bvid}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group block overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] transition hover:border-[var(--accent)]/50"
+            className="group overflow-hidden rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] transition hover:border-[var(--accent)]/50"
           >
-            <div className="aspect-video overflow-hidden bg-black/10">
+            <a
+              href={`https://www.bilibili.com/video/${v.bvid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block aspect-video overflow-hidden bg-black/10"
+            >
               <img
                 src={v.pic.startsWith('//') ? `https:${v.pic}` : v.pic}
                 alt={v.title}
                 loading="lazy"
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
               />
-            </div>
+            </a>
             <div className="p-3">
               <h4 className="line-clamp-2 text-sm font-medium text-[var(--text-primary)] group-hover:text-[var(--accent)]">
                 {v.title}
               </h4>
-              <div className="mt-2 flex justify-between text-xs text-[var(--text-muted)]">
-                <span>播放 {v.play.toLocaleString()}</span>
-                <span>{new Date(v.created * 1000).toLocaleDateString('zh-CN')}</span>
+              <div className="mt-2 flex items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
+                <span className="min-w-0 truncate">
+                  播放 {v.play.toLocaleString()}
+                  <span className="mx-1.5">·</span>
+                  {new Date(v.created * 1000).toLocaleDateString('zh-CN')}
+                </span>
+                <Link
+                  href={`/tools/bili-video?bvid=${v.bvid}`}
+                  className="shrink-0 text-[var(--accent)] hover:underline"
+                >
+                  查数据
+                </Link>
               </div>
             </div>
-          </a>
+          </div>
         ))}
       </div>
     </div>

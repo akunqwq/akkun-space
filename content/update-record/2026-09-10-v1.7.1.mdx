@@ -1,0 +1,27 @@
+---
+title: "Header v1.7.1：Dock 液态玻璃修饰层 + 鼠标跟随光效全栈接入"
+date: "2026-09-10"
+category: "update"
+version: "v1.7.1"
+---
+
+> 本次更新：Header 浮岛胶囊在 WebGL `LiquidGlass` 折射层之上，补齐 CSS 兼容层（边缘折射 + 顶部高光 + 鼠标跟随光晕），并把光晕层挂到三处岛（桌面单岛 + 移动端双岛），鼠标移动时 WebGL 与 CSS 双轨同步光效。
+
+### 新增
+
+- `app/components/LiquidGlass.tsx`（v1.7.1）：WebGL Fragment Shader 渲染的液态玻璃折射装饰层——SDF 圆角矩形 + 三通道色散（red/green/blue 不同 falloff 模拟光波长分离）+ 顶部高光带 + 中心淡 tint + 鼠标光晕带波纹呼吸（sin(dist*24 - time*2.5) 扰动）。性能：仅 resize/hover 重绘，hover 时启动 RAF 推进 uTime（离开停止），DPR 上限 2。降级：WebGL 不可用 / prefers-reduced-motion / SSR → 渲染空，CSS 修饰层仍工作
+- `lib/hooks/useScrollDirection.ts`（v1.7.1）：`useSyncExternalStore` 订阅滚动方向，返回 `'top' | 'up' | 'down'`，primitive 稳定 → 仅方向变化时 re-render
+- Dock CSS 兼容层：`.dock-refract`（径向遮罩留边缘一圈 + 渐变模拟厚玻璃光线弯折，inset -6px 溢出胶囊边界）+ `.dock-sheen`（175° 线性渐变 + screen 混合，强度按主题变量区分）+ `.dock-glow`（accent 浅蓝光晕，JS 直写 `--glow-x/y` 驱动 radial-gradient，`.liquid-dock:hover` 淡入）
+- Dock 主题变量族：`--dock-sheen-strong` / `--dock-sheen-weak` / `--dock-sheen-bottom` / `--dock-glow-color`，按 light/dark 分别取值
+
+### 调整
+
+- Header 浮岛胶囊三层岛化（v1.7.1 滑动交互）：桌面单岛（md+）保持 `liquid-dock glass-header px-5 py-3.5`；移动端拆为双岛——岛 1 信息岛（时间 + 倒计时，滚动向下液态收缩 `h-0 opacity-0 -translate-y-2`，500ms cubic-bezier 收放）/ 岛 2 操作岛（导航横滚 + 搜索 + 登录，常驻）。文章页岛 1 收缩为 compact 形态（进度条 + 简化标题）
+- `Header.tsx` 接入 Dock CSS 鼠标跟随光效：三个岛容器挂 `liquid-dock` 类 + `onPointerMove` / `onPointerLeave` handler，handler 直写 style 的 `--glow-x/y` 变量（不走 state 零重渲染），WebGL 不可用时 CSS 光晕接棒
+- `LiquidGlass` 透明度按场景调档：桌面单岛 `radius=30`（浮岛胶囊）/ 移动端岛 1 `radius=16-22`（紧凑胶囊）/ 岛 2 `radius=22`
+
+### 说明
+
+- 双轨光效：WebGL 路径（`LiquidGlass` 内置，window.pointermove 自驱动，有波纹呼吸）+ CSS 路径（`.dock-glow`，currentTarget 写 CSS 变量）。WebGL 可用时两者叠加增强「液态」质感；不可用时 CSS 单独降级
+- 降级纪律：`.dock-glow` 默认 `opacity: 0` 仅 hover 淡入；`@supports not (backdrop-filter)` 时整组降级为不透明底色保可读；`prefers-reduced-motion` 时关闭光晕过渡与折射层
+- 与 v1.6.0 关系：v1.6.0 完成「浮岛胶囊形态 + WebGL LiquidGlass 集成 + Dock CSS 修饰层定义」，v1.7.1 在此之上完成「滑动交互 + 双岛结构 + CSS 光晕 JS 鼠标跟随补齐」——v1.6.0 更新记录同步时需补这一段

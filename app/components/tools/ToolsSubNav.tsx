@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 const ITEMS = [
   { href: '/tools', label: '工具首页' },
   { href: '/tools/bili-up', label: 'B 站 UP 主' },
+  { href: '/tools/bili-video', label: '视频数据' },
   { href: '/tools/finance', label: '游戏财报' },
 ];
 

@@ -20,9 +20,9 @@ import type {
   BiliRelationStat,
   BiliUpCard,
   BiliUpInfo,
+  BiliVideoDetail,
   BiliVideoItem,
   BiliVideoListResponse,
-  BiliVideoStat,
   CacheResult,
   UpCardInfo,
   UpInfoResult,
@@ -264,8 +264,8 @@ export class BiliClient {
     });
   }
 
-  /** 获取单视频互动统计 */
-  async getVideoStat(bvid: string): Promise<CacheResult<BiliVideoStat>> {
+  /** 获取单视频统计 + 元信息（独立 tool 页 /tools/bili-video 数据源） */
+  async getVideoStat(bvid: string): Promise<CacheResult<BiliVideoDetail>> {
     return getCachedVideoStat(bvid, async () => {
       return this.fetchVideoStat(bvid);
     });
@@ -467,8 +467,9 @@ export class BiliClient {
     return { list: listData };
   }
 
-  /** /x/web-interface/view — 单视频统计（无 WBI，按 bvid） */
-  private async fetchVideoStat(bvid: string): Promise<BiliVideoStat> {
+  /** /x/web-interface/view — 单视频统计 + 元信息（无 WBI，按 bvid）。
+   *  元信息（标题/UP主/封面/时长/发布时间）与 stat 出自同一响应，零额外请求。 */
+  private async fetchVideoStat(bvid: string): Promise<BiliVideoDetail> {
     const url = `${BASE_URL}/x/web-interface/view?bvid=${bvid}`;
     await randomDelay();
     const resp = await fetch(url, { headers: await authHeaders() });
@@ -478,6 +479,11 @@ export class BiliClient {
     const json = (await resp.json()) as BiliApiResponse<{
       bvid: string;
       aid: number;
+      title?: string;
+      pic?: string;
+      pubdate?: number;
+      duration?: number;
+      owner?: { mid?: number; name?: string };
       stat?: {
         view: number;
         danmaku: number;
@@ -496,6 +502,12 @@ export class BiliClient {
     return {
       bvid: json.data.bvid,
       aid: json.data.aid,
+      title: json.data.title ?? '',
+      owner_mid: json.data.owner?.mid ?? 0,
+      owner_name: json.data.owner?.name ?? '',
+      pic: json.data.pic ?? '',
+      pubdate: json.data.pubdate ?? 0,
+      duration: json.data.duration ?? 0,
       view: json.data.stat.view,
       danmaku: json.data.stat.danmaku,
       reply: json.data.stat.reply,

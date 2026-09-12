@@ -1,0 +1,144 @@
+/* animations.css —— 全站通用动画与关键帧
+   收纳跨组件复用的 @keyframes 与 .animate-* 工具类，以及 rainbow-text 等动画文本。
+   Splash 与 B 站工具的私有动画已分别下沉到各自的组件 CSS Module。
+
+   设计类统一置于 @layer components，确保 Tailwind 的 Utility 类优先级更高。
+   而 @keyframes 与 reduced-motion / scroll-behavior 覆盖规则保持非分层（unlayered），
+   优先级天然高于 @layer components，保证无障碍偏好始终生效、不被 utility 覆盖。 */
+
+/* 锚点平滑滚动（尊重 reduced-motion 偏好） */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .rainbow-text {
+    background: linear-gradient(
+      90deg,
+      #ff6b6b,
+      #feca57,
+      #1dd1a1,
+      #54a0ff,
+      #5f27cd,
+      #ff6b6b
+    );
+    background-size: 300%;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: rainbowMove 4s linear infinite;
+    font-weight: 600;
+  }
+
+  .rainbow-text-light {
+    background: linear-gradient(
+      90deg,
+      #667eea,
+      #4f8ef7,
+      #06b6d4,
+      #667eea
+    );
+    background-size: 300%;
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: rainbowMove 3s ease-in-out infinite;
+    font-weight: 500;
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn .15s ease-out;
+  }
+
+  /* 半屏搜索面板：从顶部轻量下滑 + 淡入（cubic-bezier 与 splash 入场一致） */
+  .animate-search-slide {
+    animation: searchSlideDown 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 8s linear infinite;
+  }
+
+  .animate-fall {
+    animation: fall linear infinite;
+  }
+
+  /* ===== Lobby Hero 频道切换动画 ===== */
+  /* 用 key 强制重挂载，使每次切换频道都重放进入动画 */
+  .hero-title-anim {
+    animation: heroTitleIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .hero-feat-anim {
+    animation: heroFeatIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+  }
+}
+
+@keyframes rainbowMove {
+  0%   { background-position: 0%; }
+  100% { background-position: 300%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes searchSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-50px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes heroTitleIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFeatIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 无障碍：reduced-motion 下关闭对应动画（非分层，始终生效） */
+@media (prefers-reduced-motion: reduce) {
+  .animate-search-slide { animation: none; }
+  .hero-title-anim,
+  .hero-feat-anim {
+    animation: none;
+  }
+}

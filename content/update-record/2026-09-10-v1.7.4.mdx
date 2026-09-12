@@ -1,0 +1,22 @@
+---
+title: "Header v1.7.4：取消滚动透明态，Header 永远使用白玻璃态"
+date: "2026-09-10"
+category: "update"
+version: "v1.7.4"
+---
+
+> 本次更新：把 Header 浮岛的"深底白字透明态"彻底移除，无论是否滚动、无论是否在 Hero 轮播图上方，Header 永远使用正常的白半透玻璃态（`--header-bg` + `--header-text`），dark 模式与 light 模式观感一致。
+
+### 调整
+
+- `app/components/Header.tsx`：移除 `scrolled` state 与 `transparent` 派生逻辑；`islandSurface()` 改为无参函数，恒返回 `bg-[var(--header-bg)] text-[var(--header-text)]`
+- 三处浮岛调用（桌面单岛 + 移动端岛 1 + 移动端岛 2）同步改为 `islandSurface()`，不再随滚动切换背景
+- dark 模式沿用 light 白玻璃：`--header-bg: rgba(255,255,255,0.55)` / `--header-border: rgba(226,232,240,0.8)` / `--header-text: #0f172a` / `--header-accent: #3b82f6`
+- Hero 轮播图底部遮罩阴影在 dark 模式全部置为 `transparent`，与 light 模式一致（`--hero-overlay-*: transparent`）
+- 时间回退为完整格式 `yyyy/MM/dd HH:mm:ss`
+
+### 说明
+
+- "滚动到底部的正常效果"即白玻璃态；现在首屏浮于 Hero 上时也不再变黑底白字
+- `transition-colors duration-300` 保留但已无颜色切换可过渡，仅为未来扩展预留
+- 验证：Edge headless 强制 dark 模式截图，首页 Hero 上方的 Header 为白玻璃胶囊条 + 深色文字，无黑色阴影覆盖层

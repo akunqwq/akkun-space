@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import styles from "./SplashScreen.module.css";
 
 // 时序：硬刷新 vs SPA 路由切回首页
 const DELAY_RELOAD = 1200; // 硬刷新首页：品牌驻留
@@ -105,22 +106,22 @@ export default function SplashScreen() {
 
   return (
     <div
-      className={`splash-overlay${phase === "exiting" ? " splash-exiting" : ""}`}
+      className={`${styles.splashOverlay}${phase === "exiting" ? ` ${styles.splashExiting}` : ""}`}
       aria-hidden="true"
       suppressHydrationWarning
     >
-      <div className={`splash-content splash-${entrance}`}>
+      <div className={`${styles.splashContent} ${entrance === "reveal" ? styles.splashReveal : styles.splashLight}`}>
         {/* 站名 */}
-        <div className="splash-title">
+        <div className={styles.splashTitle}>
           <span className="text-[var(--text-primary)]">阿鲲</span>
           <span className="text-[var(--accent)]"> の小窝</span>
         </div>
 
         {/* 副标题 */}
-        <p className="splash-subtitle">Welcome to my space</p>
+        <p className={styles.splashSubtitle}>Welcome to my space</p>
 
         {/* 极细隐蔽 Loading 条 */}
-        <div className="splash-loading-bar" />
+        <div className={styles.splashLoadingBar} />
       </div>
     </div>
   );

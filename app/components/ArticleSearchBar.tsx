@@ -19,7 +19,10 @@ import { useDebouncedValue, SEARCH_DEBOUNCE_MS } from '@/lib/hooks/useDebouncedV
 // ==================== 类型定义 ====================
 
 interface ArticleSearchBarProps {
+  /** 实际展示/可搜索的文章列表（游客态为限流后的切片） */
   articles: PostListItem[];
+  /** 类型筛选标签的计数基准：传入全量文章，使统计与登录态无关；缺省回退到 articles */
+  totalArticles?: PostListItem[];
 }
 
 /** 带索引的数据结构 */
@@ -56,7 +59,7 @@ const FILTERS = [
 
 // ==================== 组件 ====================
 
-export function ArticleSearchBar({ articles }: ArticleSearchBarProps) {
+export function ArticleSearchBar({ articles, totalArticles }: ArticleSearchBarProps) {
   const [query, setQuery] = useState('');
   // 防抖后的查询值（实际用于搜索的值）
   const debouncedQuery = useDebouncedValue(query, SEARCH_DEBOUNCE_MS);
@@ -127,10 +130,12 @@ export function ArticleSearchBar({ articles }: ArticleSearchBarProps) {
       <div className="flex flex-wrap justify-center gap-2">
         {FILTERS.map((f) => {
           const isActive = f.key === activeType;
+          // 计数基准用全量文章，使类型统计与登录态无关（游客态切片只影响实际展示/搜索）
+          const countBase = totalArticles ?? articles;
           const count =
             f.key === 'all'
-              ? articles.length
-              : articles.filter((a) => a.type === f.key).length;
+              ? countBase.length
+              : countBase.filter((a) => a.type === f.key).length;
 
           return (
             <button

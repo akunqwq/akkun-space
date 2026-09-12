@@ -1,0 +1,24 @@
+---
+title: "账号体系基建：游客与登录用户分离"
+date: "2026-09-09"
+category: "update"
+version: "v1.4.0"
+---
+
+> 本次更新：启动 auth 企划第一步——账号体系基建。游客与登录用户分离，文章内容仅登录后全量可见。
+
+### 新增
+- 自研轻量认证：邮箱 + 密码注册登录（scrypt 哈希 + opaque token 会话，HttpOnly cookie 30 天，零外部依赖）
+- 登录 / 注册页 `/login`（双模式切换，支持回跳原地址）、账号页 `/account`（基建占位，个人化功能后续接入）
+- `proxy.ts` 白名单拦截（Next 16 已将 middleware 约定更名为 proxy）：`/account` 需登录，游客访问非白名单文章详情返回真 307 跳登录，已登录访问 `/login` 自动回账号页
+- 文章游客限额：未登录仅可见最新 3 篇——列表页显示锁定卡、详情页 proxy 层 307 拦截 + 页面层 getCurrentUser 双保险（接受搜索引擎无法收录被锁文章）
+- prebuild 新增产出 `data/latest-posts.json`（游客可见 slug 白名单，与 getAllPosts 排序同源，入仓）
+- Header 桌面端与移动端新增「登录」入口
+
+### 调整
+- `/articles` 与 `/articles/[slug]` 由静态预渲染（SSG）转为按请求动态渲染（静态 HTML 无法区分登录态）
+
+### 说明
+- 认证方案曾评估 Supabase Auth / NextAuth / 自研三条路线，最终选自研轻量：数据与权限模型后续按 `auth.uid()` 演进时再评估迁移；腾讯系 OAuth 因 ICP 备案与主体资质门槛暂不可行，未来可加 GitHub OAuth
+- 登录方式与 session 骨架解耦，后续魔法链接 / OAuth 只是新增登录入口，表结构与会话层不动
+- 部署前需在 Supabase SQL Editor 执行 `supabase/migrations/003_auth_tables.sql`，否则注册/登录不可用（站点其余功能不受影响）

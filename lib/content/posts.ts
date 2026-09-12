@@ -79,6 +79,14 @@ export function getAllPosts(): PostListItem[] {
         return {
           slug,
           ...meta,
+          // 归一化 date：gray-matter 会把 YAML 日期解析成 Date 对象，
+          // 但 PostMeta.date 声明为 string（与 posts.json 索引一致），此处强制归一。
+          date:
+            meta.date instanceof Date
+              ? meta.date.toISOString().slice(0, 10)
+              : typeof meta.date === "string"
+                ? meta.date
+                : "",
           type: normalizePostType(meta.type),
           summary: meta.summary ?? "-",
           readingTime,

@@ -18,8 +18,8 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 
 import type {
+  BiliVideoDetail,
   BiliVideoListResponse,
-  BiliVideoStat,
   CacheResult,
   UpInfoResult,
   VideoListResult,
@@ -237,28 +237,28 @@ export async function getCachedBiliVideos(
 }
 
 /**
- * 获取单视频互动统计。
- * fetcher 负责实际请求 B 站 view 接口。
+ * 获取单视频统计 + 元信息。
+ * fetcher 负责实际请求 B 站 view 接口并提取 BiliVideoDetail。
  * TTL 5min（互动数据变化快，但调用频次高，短缓存降负载）。
  */
 export async function getCachedVideoStat(
   bvid: string,
-  fetcher: () => Promise<BiliVideoStat>,
-): Promise<CacheResult<BiliVideoStat>> {
+  fetcher: () => Promise<BiliVideoDetail>,
+): Promise<CacheResult<BiliVideoDetail>> {
   const key = `bili:videostat:${bvid}`;
 
-  const l1Hit = l1Get<BiliVideoStat>(key);
+  const l1Hit = l1Get<BiliVideoDetail>(key);
   if (l1Hit && !l1Hit.degraded) {
     return l1Hit;
   }
 
   try {
-    const data = await wrapL2<BiliVideoStat>(
+    const data = await wrapL2<BiliVideoDetail>(
       [key],
       VIDEO_STAT_TTL_SEC,
       fetcher,
     );
-    const result: CacheResult<BiliVideoStat> = {
+    const result: CacheResult<BiliVideoDetail> = {
       data,
       degraded: false,
       cachedAt: Date.now(),
@@ -266,7 +266,7 @@ export async function getCachedVideoStat(
     l1Set(key, data, VIDEO_STAT_TTL_MS);
     return result;
   } catch (err) {
-    const stale = l1GetStale<BiliVideoStat>(key);
+    const stale = l1GetStale<BiliVideoDetail>(key);
     if (stale) {
       return stale;
     }

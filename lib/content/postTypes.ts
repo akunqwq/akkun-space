@@ -1,8 +1,8 @@
 // 文章类型
 import postTypesData from "@/data/content/post-types.json";
 
-// tech=技术  tinker=折腾  essay=随笔  news=资讯存档
-export type PostType = "tech" | "tinker" | "essay" | "news";
+// tech=技术  tinker=折腾  essay=随笔  news=资讯存档  reprint=转载  life=生活
+export type PostType = "tech" | "tinker" | "essay" | "news" | "reprint" | "life";
 
 export interface PostTypeDef {
   key: PostType;

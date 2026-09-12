@@ -1,0 +1,35 @@
+/* biliTools.module.css —— B 站工具私有样式（随工具路由按需打包）
+   收纳骨架屏与品牌渐变，仅 B 站工具组件引用，不再进入全局 globals.css。 */
+
+/* 蓝→粉品牌渐变（搜索按钮等强调元素） */
+.biliGradient {
+  background-image: var(--bili-gradient);
+}
+
+/* 骨架屏：毛玻璃底 + 流光扫过，避免请求等待期画面突兀闪烁 */
+@keyframes biliShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--card-bg-subtle), transparent 35%);
+  border: 1px solid var(--card-border);
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--panel-ring), transparent 35%) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: biliShimmer 1.5s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after { animation: none; }
+}

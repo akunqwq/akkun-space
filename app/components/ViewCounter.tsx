@@ -81,8 +81,15 @@ export default function ViewCounter({ slug }: { slug: string }) {
     : String(views)
 
   return (
-    <span className="inline-flex items-center ml-4 text-[var(--text-secondary)]">
-      👁 {formattedViews}
+    <span className="inline-flex items-center gap-1 ml-4 text-[var(--text-secondary)]">
+      {/* eslint-disable-next-line @next/next/no-img-element -- 阅读量眼标：eyes.svg 中性灰，深浅主题均可见 */}
+      <img
+        src="/eyes.svg"
+        alt="阅读量"
+        className="h-3.5 w-auto"
+        aria-hidden="true"
+      />
+      {formattedViews}
     </span>
   )
 }

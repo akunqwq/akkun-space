@@ -1,12 +1,16 @@
-import { getPostsIndex, getPostsMeta } from "../lib/content/posts";
-import type { PostsIndexStats } from "../lib/content";
+import { getPostsIndex } from "../lib/content/posts";
 import { socials } from "../lib/site";
 import PostCard from "./components/PostCard";
 import Pagination from "./components/Pagination";
+import { Lock } from "lucide-react";
+import { getCurrentUser } from "@/lib/auth/session";
 import Link from "next/link";
 
 // 每页文章数
 const PAGE_SIZE = 10;
+
+/** 游客可见文章数上限（与 /articles 一致：未登录仅可看最新 3 篇，接受 SEO 损失） */
+const GUEST_ARTICLE_LIMIT = 3;
 
 // 「关注我」卡片：数据来自 data/site/socials.json；各平台差异化配色属呈现层，按 key 映射
 const SOCIAL_CARD_STYLES: Record<
@@ -40,34 +44,34 @@ export default async function Home({
 }) {
   const { page } = await searchParams;
 
+  const user = await getCurrentUser(); // cookies() 介入 → 本页按请求动态渲染（区分登录态）
+
   const allPosts = getPostsIndex(); // 只读元数据索引，不含正文
 
-  // 分类统计：优先用构建时生成的 meta，旧格式则实时从索引计算
-  // 首页不再展开分类明细（兴趣+明细统计已移至底部资讯区 + 关于我页）
-  const meta = getPostsMeta();
-  const stats: PostsIndexStats =
-    meta?.stats ?? (() => {
-      const s: PostsIndexStats = { total: allPosts.length, tech: 0, tinker: 0, essay: 0, news: 0 };
-      for (const p of allPosts) s[p.type] += 1;
-      return s;
-    })();
+  // 内容分层：首页主信息流只展示「个人创作」（技术/折腾/随笔）；
+  // 资讯存档(news) 已迁至 /articles 专栏页面，首页不再展示。
+  // 显式按发布时间倒序（最新在前），保证首页信息流顺序与登录态无关。
+  const featuredPosts = allPosts
+    .filter((p) => p.type !== "news")
+    .sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateB - dateA;
+    });
 
-  // 内容分层：首页主信息流只展示「个人创作」（技术/折腾/随笔），
-  // 资讯存档(news) 单独放在底部低权重区，不抢占首页第一印象。
-  const featuredPosts = allPosts.filter((p) => p.type !== "news");
-  const newsPosts = allPosts
-    .filter((p) => p.type === "news")
-    .sort((a, b) => b.date.localeCompare(a.date));
+  // 游客限制：未登录仅展示最新 3 篇（按发布时间倒序取前 3；与 /articles 一致；接受 SEO 损失）
+  const visibleFeatured = user ? featuredPosts : featuredPosts.slice(0, GUEST_ARTICLE_LIMIT);
+  const lockedCount = featuredPosts.length - visibleFeatured.length;
 
-  // 分页（仅基于 featuredPosts）
-  const totalPages = Math.max(1, Math.ceil(featuredPosts.length / PAGE_SIZE));
+  // 分页（仅基于 visibleFeatured）
+  const totalPages = Math.max(1, Math.ceil(visibleFeatured.length / PAGE_SIZE));
   const requestedPage = parseInt(page ?? "1", 10);
   const currentPage = Math.min(
     Math.max(1, isNaN(requestedPage) ? 1 : requestedPage),
     totalPages
   );
   const start = (currentPage - 1) * PAGE_SIZE;
-  const posts = featuredPosts.slice(start, start + PAGE_SIZE);
+  const posts = visibleFeatured.slice(start, start + PAGE_SIZE);
 
   // 首页 Lobby 轮播（channels）已上移到 layout 的 GlobalHero，
   // 此处仅渲染内容面板，负 margin 上浮骑在 Hero 底部。
@@ -97,6 +101,22 @@ export default async function Home({
                   <PostCard key={post.slug} post={post} />
                 ))}
                 <Pagination currentPage={currentPage} totalPages={totalPages} />
+
+                {/* 游客锁定卡：列表仅展示最新 3 篇，其余引导登录 */}
+                {!user && lockedCount > 0 && (
+                  <div className="mt-8 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] p-6 text-center">
+                    <Lock className="mx-auto h-6 w-6 text-[var(--text-muted)]" />
+                    <p className="mt-3 text-sm text-[var(--text-secondary)]">
+                      还有 {lockedCount} 篇文章需要登录后查看
+                    </p>
+                    <Link
+                      href="/login?next=%2F"
+                      className="mt-3 inline-flex items-center gap-2 rounded-xl bg-[var(--accent)] px-5 py-2 text-sm font-medium text-white transition-all duration-200 hover:brightness-110 active:scale-[0.99]"
+                    >
+                      登录 / 注册
+                    </Link>
+                  </div>
+                )}
               </main>
 
               {/* 右：关注我（移动端堆在文章后，桌面端右栏 sticky 底部） */}
@@ -152,46 +172,6 @@ export default async function Home({
             </div>
           </div>
         </div>
-
-        {/* 资讯存档：低权重区，面板下方
-            标题处追加"空间共 X 篇文章"小统计，把原左栏的明细统计降级为页脚补充信息
-            （明细分类统计对回访用户是冗余信息，放底部作为档案区补充即可） */}
-        {newsPosts.length > 0 && (
-          <section className="mt-10 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl mx-auto">
-              <details className="group bg-[var(--card-bg)] backdrop-blur-lg rounded-2xl border border-[var(--card-border)] p-5">
-                <summary className="cursor-pointer list-none flex items-center justify-between text-[var(--text-secondary)]">
-                  <span className="flex items-baseline gap-2 flex-wrap">
-                    <span className="font-medium">
-                      📂 资讯存档（{newsPosts.length} 篇新闻记录）
-                    </span>
-                    <span className="text-xs text-[var(--text-muted)] font-normal">
-                      · 空间共 {stats.total} 篇文章
-                    </span>
-                  </span>
-                  <span className="text-xs group-open:rotate-180 transition-transform">▾</span>
-                </summary>
-                <ul className="mt-4 space-y-2 text-sm">
-                  {newsPosts.slice(0, 8).map((post) => (
-                    <li key={post.slug}>
-                      <a
-                        href={`/articles/${encodeURIComponent(post.slug)}`}
-                        className="text-[var(--text-secondary)] hover:text-accent transition-colors"
-                      >
-                        · {post.title}
-                      </a>
-                    </li>
-                  ))}
-                  <li className="pt-1">
-                    <Link href="/articles?type=news" className="text-accent hover:underline text-xs">
-                      查看全部资讯存档 →
-                    </Link>
-                  </li>
-                </ul>
-              </details>
-            </div>
-          </section>
-        )}
       </div>
     </div>
   );

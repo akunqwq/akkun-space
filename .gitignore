@@ -47,6 +47,9 @@ debug-*.xml
 *.tsbuildinfo
 next-env.d.ts
 
+# agent 一次性调试/验证产物（输出重定向文件、临时验证脚本等）
+tmp_*
+
 # runtime data
 scripts/crawler/cache/
 /data/posts.json

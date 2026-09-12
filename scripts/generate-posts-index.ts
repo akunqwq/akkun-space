@@ -27,7 +27,7 @@ const outputFile = path.join(process.cwd(), 'data/posts.json');
 
 // 合法的文章类型：单一数据源 data/content/post-types.json（与 lib/postTypes.ts 同源）
 const VALID_TYPES = postTypesData.map((t) => t.key);
-type PostType = 'tech' | 'tinker' | 'essay' | 'news';
+type PostType = 'tech' | 'tinker' | 'essay' | 'news' | 'reprint' | 'life';
 
 function normalizePostType(type: unknown): PostType {
   return (VALID_TYPES as readonly string[]).includes(type as string)
